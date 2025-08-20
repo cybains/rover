@@ -18,10 +18,6 @@ build/
 /data/logs/*
 
 
-# --- data ---
-/data/*
-!/data/.gitkeep
-
 # Local model binaries
 /models/*
 
@@ -42,18 +38,5 @@ __pycache__/
 .eggs/
 dist/
 build/
-
-
-# macOS / Windows
-.DS_Store
-Thumbs.db
-
-# VSCode / PyCharm
-.vscode/
-.idea/
-
-
-.venv/
-venv/
 
 

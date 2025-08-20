@@ -18,42 +18,5 @@ build/
 /data/logs/*
 
 
-# --- data ---
-/data/*
-!/data/.gitkeep
-
 # Local model binaries
 /models/*
-
-
-# Envs
-.env
-.env.*
-!.env.example
-
-
-# Byte-compiled
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Build
-*.egg-info/
-.eggs/
-dist/
-build/
-
-
-# macOS / Windows
-.DS_Store
-Thumbs.db
-
-# VSCode / PyCharm
-.vscode/
-.idea/
-
-
-.venv/
-venv/
-
-

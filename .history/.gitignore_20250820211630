@@ -1,0 +1,20 @@
+/models/
+/data/raw/
+/**/*.env
+/.venv
+__pycache__/
+.DS_Store
+dist/
+build/
+*.log
+
+# Data outputs
+/data/docs.jsonl
+/data/chunks.parquet
+/data/faiss.index
+/data/faiss.meta.json
+/data/state.last_hash.json
+/data/inbox/*
+/data/logs/*
+
+
