@@ -71,7 +71,13 @@ class BenchReq(BaseModel):
 # =========================
 # RAG: retriever + endpoint
 # =========================
+from pathlib import Path
+import os
 
+# OLD (wrong: jumps 2 levels up to ...\GitHub)
+# DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+
+# NEW (correct: repo root == ...\rover)
 DATA_DIR = (Path(os.getenv("DATA_DIR")) 
             if os.getenv("DATA_DIR") 
             else Path(__file__).resolve().parents[1] / "data")
@@ -198,10 +204,7 @@ def rag_health():
 
 @app.post("/rag/ask")
 def rag_ask(req: RAGReq):
-    try:
-        hits = _retrieve(req.question, k=req.k)
-    except RuntimeError as e:
-        return {"error": str(e)}, 400
+    hits = _retrieve(req.question, k=req.k)
     prompt = _build_prompt(req.question, hits)
 
     if req.mode == "chat":

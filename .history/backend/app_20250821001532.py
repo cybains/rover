@@ -202,6 +202,7 @@ def rag_ask(req: RAGReq):
         hits = _retrieve(req.question, k=req.k)
     except RuntimeError as e:
         return {"error": str(e)}, 400
+    prompt = _build_prompt(req.question, hits
     prompt = _build_prompt(req.question, hits)
 
     if req.mode == "chat":

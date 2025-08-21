@@ -198,10 +198,7 @@ def rag_health():
 
 @app.post("/rag/ask")
 def rag_ask(req: RAGReq):
-    try:
-        hits = _retrieve(req.question, k=req.k)
-    except RuntimeError as e:
-        return {"error": str(e)}, 400
+    hits = _retrieve(req.question, k=req.k)
     prompt = _build_prompt(req.question, hits)
 
     if req.mode == "chat":

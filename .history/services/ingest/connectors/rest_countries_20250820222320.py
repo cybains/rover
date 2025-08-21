@@ -29,7 +29,6 @@ class RestCountries:
             f"Languages: {langs or 'N/A'}. Currencies: {currs or 'N/A'}."
         )
 
-        
         core = make_core(
     source_id=source_id_kv(self.name, cca2 or name.lower()),
     doc_type="country_profile",

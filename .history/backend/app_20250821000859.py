@@ -71,11 +71,7 @@ class BenchReq(BaseModel):
 # =========================
 # RAG: retriever + endpoint
 # =========================
-
-DATA_DIR = (Path(os.getenv("DATA_DIR")) 
-            if os.getenv("DATA_DIR") 
-            else Path(__file__).resolve().parents[1] / "data")
-
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"  # <repo_root>/data
 IDX_PATH = DATA_DIR / "faiss.index"
 META_PATH = DATA_DIR / "meta.jsonl"
 DOCS_PATH = DATA_DIR / "docs.jsonl"
@@ -198,10 +194,7 @@ def rag_health():
 
 @app.post("/rag/ask")
 def rag_ask(req: RAGReq):
-    try:
-        hits = _retrieve(req.question, k=req.k)
-    except RuntimeError as e:
-        return {"error": str(e)}, 400
+    hits = _retrieve(req.question, k=req.k)
     prompt = _build_prompt(req.question, hits)
 
     if req.mode == "chat":

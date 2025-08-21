@@ -29,17 +29,16 @@ class RestCountries:
             f"Languages: {langs or 'N/A'}. Currencies: {currs or 'N/A'}."
         )
 
-        
         core = make_core(
-    source_id=source_id_kv(self.name, cca2 or name.lower()),
-    doc_type="country_profile",
-    title=f"{name} — profile",
-    text=text,
-    links=[f"https://restcountries.com/v3.1/alpha/{cca2}" if cca2 else self.URL],
-    country=[cca2, name] if cca2 or name else None,
-    tags=["country", "profile"],
-)
-
+            source_id=source_id_kv(self.name, cca2 or name.lower()),
+            source=self.name,
+            doc_type="country_profile",
+            title=f"{name} — profile",
+            text=text,
+            links=[f"https://restcountries.com/v3.1/alpha/{cca2}" if cca2 else self.URL],
+            country=[cca2, name] if cca2 or name else None,
+            tags=["country", "profile"],
+        )
 
         facet = facet_article(
             url=self.URL, canonical=None, headings=[name],
@@ -49,5 +48,4 @@ class RestCountries:
         facet_str = json.dumps(facet, ensure_ascii=False, sort_keys=True)
         core.content_hash = content_hash(core.text, facet_str)
 
-        # ✅ This return must be indented inside normalize()
         return NormalizedDoc(core=core, facet=facet, raw=r)
