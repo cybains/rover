@@ -1,0 +1,133 @@
+{
+  "iso3": "BEL",
+  "country_name": "Belgium",
+  "year": 2024,
+  "summary_md": "Belgium, in the year 2024, has a GDP per capita of 44,838 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 3.14% (FP.CPI.TOTL.ZG), and an unemployment rate of 5.49% (SL.UEM.TOTL.ZS). The average life expectancy is 82.40 years years (SP.DYN.LE00.IN), and internet usage stands at 94.60% (IT.NET.USER.ZS). The country's export growth is at 79.22% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Belgium's economy is characterized by a GDP per capita of 44,838 USD per person (NY.GDP.PCAP.KD) and an export growth of 79.22% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market shows an unemployment rate of 5.49% (SL.UEM.TOTL.ZS), indicating the general employment situation.",
+    "digital_md": "With an internet usage rate of 94.60% (IT.NET.USER.ZS), Belgium demonstrates a significant level of digital connectivity.",
+    "health_env_md": "The average life expectancy in Belgium is 82.40 years years (SP.DYN.LE00.IN), reflecting the country's health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **52.5**",
+      "Consider Belgium for employment opportunities with a GDP per capita of 44,838 USD per person (NY.GDP.PCAP.KD) and an unemployment rate of 5.49% (SL.UEM.TOTL.ZS)."
+    ],
+    "entrepreneur": [
+      "Score **78.6**",
+      "Belgium's export growth of 79.22% (NE.EXP.GNFS.ZS) may offer a favorable environment for business expansion."
+    ],
+    "digital_nomad": [
+      "Score **58.7**",
+      "With a high internet usage rate of 94.60% (IT.NET.USER.ZS), Belgium is suitable for digital nomads."
+    ],
+    "expat_family": [
+      "Score **81.6**",
+      "The average life expectancy of 82.40 years years (SP.DYN.LE00.IN) in Belgium suggests a stable and healthy environment for expat families."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 44837.7242665704,
+      "lag_years": 0,
+      "pctl": {
+        "world": 90.27027027027027,
+        "region": 78.0,
+        "income": 72.3076923076923
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.14349136500041,
+      "lag_years": 0,
+      "pctl": {
+        "world": 47.46835443037975,
+        "region": 63.04347826086956,
+        "income": 79.3103448275862
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 5.488,
+      "lag_years": 0,
+      "pctl": {
+        "world": 42.857142857142854,
+        "region": 50.0,
+        "income": 58.73015873015873
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 82.3975609756098,
+      "lag_years": 1,
+      "pctl": {
+        "world": 87.55760368663594,
+        "region": 74.13793103448276,
+        "income": 68.6046511627907
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 94.6,
+      "lag_years": 1,
+      "pctl": {
+        "world": 85.0828729281768,
+        "region": 72.54901960784314,
+        "income": 59.375
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 79.2199111409925,
+      "lag_years": 0,
+      "pctl": {
+        "world": 91.17647058823529,
+        "region": 86.66666666666667,
+        "income": 77.55102040816327
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

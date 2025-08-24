@@ -1,0 +1,119 @@
+{
+  "iso3": "HRV",
+  "country_name": "Croatia",
+  "year": 2024,
+  "summary_md": "Croatia, in the year 2024, has a GDP per capita of 17,771 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 2.97% (FP.CPI.TOTL.ZG), and an unemployment rate of 5.24% (SL.UEM.TOTL.ZS). The average life expectancy is 78.47 years years (SP.DYN.LE00.IN), and internet usage stands at 83.20% (IT.NET.USER.ZS). The country's export growth is at 49.80% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Croatia's economy is characterized by a GDP per capita of 17,771 USD per person (NY.GDP.PCAP.KD), with an export growth rate of 49.80% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Croatia shows an unemployment rate of 5.24% (SL.UEM.TOTL.ZS), indicating the general employment situation.",
+    "digital_md": "Internet penetration in Croatia is at 83.20% (IT.NET.USER.ZS), reflecting the country's digital connectivity.",
+    "health_env_md": "The average life expectancy in Croatia is 78.47 years years (SP.DYN.LE00.IN), suggesting the overall health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **54.3**",
+      "Consider Croatia for employment opportunities with an unemployment rate of 5.24% (SL.UEM.TOTL.ZS) and a GDP per capita of 17,771 USD per person (NY.GDP.PCAP.KD) to gauge economic stability."
+    ],
+    "entrepreneur": [
+      "Score **69.8**",
+      "Explore Croatia's market with a GDP per capita of 17,771 USD per person (NY.GDP.PCAP.KD) and an export growth rate of 49.80% (NE.EXP.GNFS.ZS) for business expansion potential.",
+      "Consider the inflation rate of 2.97% (FP.CPI.TOTL.ZG) when planning financial strategies."
+    ],
+    "digital_nomad": [
+      "Score **57.5**",
+      "With an internet usage rate of 83.20% (IT.NET.USER.ZS), Croatia offers a conducive environment for digital nomads.",
+      "The country's digital infrastructure supports remote work and connectivity."
+    ],
+    "expat_family": [
+      "Score **73.1**",
+      "Croatia's life expectancy of 78.47 years years (SP.DYN.LE00.IN) indicates a healthy living environment for expat families.",
+      "The country's economic indicators, including a GDP per capita of 17,771 USD per person (NY.GDP.PCAP.KD) and an export growth rate of 49.80% (NE.EXP.GNFS.ZS), suggest a stable economy for long-term settlement."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 17770.8686584043,
+      "lag_years": 0,
+      "pctl": {
+        "world": 71.89189189189189,
+        "region": 48.0,
+        "income": 20.0
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.97200477643618,
+      "lag_years": 0,
+      "pctl": {
+        "world": 50.0,
+        "region": 60.869565217391305,
+        "income": 75.86206896551724
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 5.236,
+      "lag_years": 0,
+      "pctl": {
+        "world": 48.35164835164835,
+        "region": 43.75,
+        "income": 52.38095238095238
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 78.4731707317073,
+      "lag_years": 1,
+      "pctl": {
+        "world": 72.35023041474655,
+        "region": 44.827586206896555,
+        "income": 32.55813953488372
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 83.2,
+      "lag_years": 1,
+      "pctl": {
+        "world": 54.14364640883978,
+        "region": 15.686274509803921,
+        "income": 10.9375
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 49.7993080704898,
+      "lag_years": 0,
+      "pctl": {
+        "world": 72.05882352941177,
+        "region": 51.111111111111114,
+        "income": 46.93877551020408
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

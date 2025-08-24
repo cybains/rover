@@ -2,29 +2,33 @@
   "iso3": "ARM",
   "country_name": "Armenia",
   "year": 2024,
-  "summary_md": "In 2024, **Armenia** recorded a GDP per capita of **5,378 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **0.27%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **13.33%** (SL.UEM.TOTL.ZS), while residents could expect to live **77.47 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **80.00%** of the population online (IT.NET.USER.ZS), and exports accounted for **76.35% of GDP** (NE.EXP.GNFS.ZS).",
+  "summary_md": "Armenia, in the year 2024, has a GDP per capita of 5,378 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 0.27% (FP.CPI.TOTL.ZG), and an unemployment rate of 13.33% (SL.UEM.TOTL.ZS). The average life expectancy is 77.47 years years (SP.DYN.LE00.IN), and internet usage stands at 80.00% (IT.NET.USER.ZS). The country's export growth is at 76.35% (NE.EXP.GNFS.ZS).",
   "sections": {
-    "economy_md": "GDP per capita **5,378 USD per person**; exports **76.35%**; inflation **0.27%**.",
-    "labor_md": "Unemployment **13.33%**; participation and skills in KPI cards.",
-    "digital_md": "Internet usage **80.00%**; see mobile and broadband adoption.",
-    "health_env_md": "Life expectancy **77.47 years**; environmental pressures shown in CO₂/air-quality KPIs."
+    "economy_md": "Armenia's economy is characterized by a GDP per capita of 5,378 USD per person (NY.GDP.PCAP.KD), with an export growth rate of 76.35% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market shows an unemployment rate of 13.33% (SL.UEM.TOTL.ZS), indicating the percentage of the workforce that is jobless.",
+    "digital_md": "Internet penetration in Armenia is at 80.00% (IT.NET.USER.ZS), reflecting the proportion of the population with internet access.",
+    "health_env_md": "The average life expectancy in Armenia is 77.47 years years (SP.DYN.LE00.IN), suggesting the general health and longevity of the population."
   },
   "persona_highlights": {
     "job_seeker": [
       "Score **56.4**",
-      "Tracks unemployment, LFPR, skills and growth momentum."
+      "Considering the unemployment rate of 13.33% (SL.UEM.TOTL.ZS), job seekers may find opportunities in Armenia's labor market.",
+      "With an inflation rate of 0.27% (FP.CPI.TOTL.ZG), understanding the cost of living is crucial for job seekers."
     ],
     "entrepreneur": [
       "Score **67.4**",
-      "Regulation, finance depth, power reliability and innovation."
+      "The GDP per capita of 5,378 USD per person (NY.GDP.PCAP.KD) could influence the potential market size for new businesses.",
+      "Internet usage at 80.00% (IT.NET.USER.ZS) indicates a digitally connected consumer base for e-commerce."
     ],
     "digital_nomad": [
       "Score **65.2**",
-      "Connectivity, price stability and livability."
+      "Armenia's internet penetration at 80.00% (IT.NET.USER.ZS) supports remote work opportunities.",
+      "The country's export growth rate of 76.35% (NE.EXP.GNFS.ZS) may offer insights into global market trends."
     ],
     "expat_family": [
       "Score **68.8**",
-      "Health, education, safety and environment."
+      "The average life expectancy of 77.47 years years (SP.DYN.LE00.IN) suggests a stable health environment for expat families.",
+      "An unemployment rate of 13.33% (SL.UEM.TOTL.ZS) may affect the job market for family members seeking employment."
     ]
   },
   "facts_used": [
@@ -96,7 +100,7 @@
     }
   ],
   "generator": {
-    "mode": "template",
+    "mode": "llamacpp",
     "prompt_version": "v2.0",
     "narrative_version": "v2"
   },

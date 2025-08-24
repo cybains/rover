@@ -1,0 +1,130 @@
+{
+  "iso3": "BIH",
+  "country_name": "Bosnia and Herzegovina",
+  "year": 2024,
+  "summary_md": "Bosnia and Herzegovina's economy is characterized by a per capita GDP of 6,698 USD per person (NY.GDP.PCAP.KD), with a moderate inflation rate of 1.69% (FP.CPI.TOTL.ZG). The unemployment rate stands at 10.72% (SL.UEM.TOTL.ZS), while the average life expectancy is 77.85 years (SP.DYN.LE00.IN). The country has a significant internet user base, accounting for 83.40% (IT.NET.USER.ZS) of the population.",
+  "sections": {
+    "economy_md": "The economy of Bosnia and Herzegovina is reflected by a per capita GDP of 6,698 USD per person (NY.GDP.PCAP.KD), alongside a moderate inflation rate of 1.69% (FP.CPI.TOTL.ZG).",
+    "labor_md": "With an unemployment rate of 10.72% (SL.UEM.TOTL.ZS), the labor market presents certain challenges. The average life expectancy is 77.85 years (SP.DYN.LE00.IN), indicating the general health environment.",
+    "digital_md": "The digital landscape is marked by a substantial internet user base, representing 83.40% (IT.NET.USER.ZS) of the population.",
+    "health_env_md": "The average life expectancy in Bosnia and Herzegovina is 77.85 years (SP.DYN.LE00.IN), suggesting a stable health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **38.5**",
+      "Moderate unemployment rate of 10.72% (SL.UEM.TOTL.ZS) may present opportunities for employment.",
+      "Average life expectancy of 77.85 years (SP.DYN.LE00.IN) indicates a stable workforce."
+    ],
+    "entrepreneur": [
+      "Score **56.3**",
+      "A per capita GDP of 6,698 USD per person (NY.GDP.PCAP.KD) could influence business opportunities.",
+      "Internet user base of 83.40% (IT.NET.USER.ZS) may suggest potential for digital business ventures."
+    ],
+    "digital_nomad": [
+      "Score **63.6**",
+      "Internet user base of 83.40% (IT.NET.USER.ZS) supports remote work opportunities.",
+      "Moderate inflation rate of 1.69% (FP.CPI.TOTL.ZG) may affect cost of living for digital nomads."
+    ],
+    "expat_family": [
+      "Score **59.4**",
+      "Moderate unemployment rate of 10.72% (SL.UEM.TOTL.ZS) may influence family job opportunities.",
+      "Average life expectancy of 77.85 years (SP.DYN.LE00.IN) indicates a stable environment for family health."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 6698.04067371484,
+      "lag_years": 0,
+      "pctl": {
+        "world": 51.351351351351354,
+        "region": 20.0,
+        "income": 50.98039215686274
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.69212733599724,
+      "lag_years": 0,
+      "pctl": {
+        "world": 75.31645569620252,
+        "region": 23.91304347826087,
+        "income": 28.26086956521739
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 10.723,
+      "lag_years": 0,
+      "pctl": {
+        "world": 17.582417582417577,
+        "region": 87.5,
+        "income": 72.91666666666667
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 77.85,
+      "lag_years": 1,
+      "pctl": {
+        "world": 68.66359447004608,
+        "region": 39.6551724137931,
+        "income": 90.74074074074075
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 83.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 55.248618784530386,
+        "region": 17.647058823529413,
+        "income": 71.15384615384616
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 42.8209562840181,
+      "lag_years": 0,
+      "pctl": {
+        "world": 63.970588235294116,
+        "region": 37.77777777777778,
+        "income": 65.78947368421052
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

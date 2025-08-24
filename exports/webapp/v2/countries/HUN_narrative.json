@@ -1,0 +1,125 @@
+{
+  "iso3": "HUN",
+  "country_name": "Hungary",
+  "year": 2024,
+  "summary_md": "Hungary's economy is characterized by a per capita GDP (16,525 USD per person) and a moderate inflation rate (3.70%). The unemployment rate (4.43%) and life expectancy (76.77 years) provide insights into the labor market and health environment. The country has a significant internet user base (91.50%), contributing to its digital landscape. Overall, Hungary presents a balanced economic and social environment.",
+  "sections": {
+    "economy_md": "Hungary's economy is reflected by its per capita GDP (16,525 USD per person) and a moderate inflation rate (3.70%).",
+    "labor_md": "The labor market is indicated by an unemployment rate (4.43%) and a life expectancy (76.77 years), suggesting stability and a healthy workforce.",
+    "digital_md": "With a substantial portion of the population as internet users (91.50%), Hungary is actively engaged in the digital economy.",
+    "health_env_md": "The health environment in Hungary is supported by a life expectancy (76.77 years), indicating a relatively high standard of living."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **49.2**",
+      "Consider the unemployment rate (4.43%) when evaluating job opportunities.",
+      "Life expectancy (76.77 years) may influence long-term career planning."
+    ],
+    "entrepreneur": [
+      "Score **61.2**",
+      "The per capita GDP (16,525 USD per person) suggests a market with potential for business growth.",
+      "Internet user base (91.50%) indicates a digitally connected consumer base."
+    ],
+    "digital_nomad": [
+      "Score **53.2**",
+      "A significant internet user base (91.50%) supports remote work opportunities.",
+      "Moderate inflation (3.70%) affects cost of living considerations for digital nomads."
+    ],
+    "expat_family": [
+      "Score **67.1**",
+      "Life expectancy (76.77 years) is a factor in assessing the quality of life for expat families.",
+      "The unemployment rate (4.43%) can impact job availability for family members."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 16524.8168617828,
+      "lag_years": 0,
+      "pctl": {
+        "world": 69.1891891891892,
+        "region": 44.0,
+        "income": 12.307692307692308
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.70370370370369,
+      "lag_years": 0,
+      "pctl": {
+        "world": 36.075949367088604,
+        "region": 78.26086956521739,
+        "income": 89.65517241379311
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 4.434,
+      "lag_years": 0,
+      "pctl": {
+        "world": 59.89010989010989,
+        "region": 35.416666666666664,
+        "income": 44.44444444444444
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 76.7707317073171,
+      "lag_years": 1,
+      "pctl": {
+        "world": 60.8294930875576,
+        "region": 31.03448275862069,
+        "income": 20.930232558139537
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2024,
+      "value": 91.5,
+      "lag_years": 0,
+      "pctl": {
+        "world": 44.44444444444444,
+        "region": 42.857142857142854,
+        "income": 28.571428571428573
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 74.6638285685979,
+      "lag_years": 0,
+      "pctl": {
+        "world": 88.23529411764706,
+        "region": 80.0,
+        "income": 73.46938775510205
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

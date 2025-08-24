@@ -2,29 +2,30 @@
   "iso3": "ALB",
   "country_name": "Albania",
   "year": 2024,
-  "summary_md": "In 2024, **Albania** recorded a GDP per capita of **5,726 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **2.21%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **10.25%** (SL.UEM.TOTL.ZS), while residents could expect to live **79.60 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **83.10%** of the population online (IT.NET.USER.ZS), and exports accounted for **36.11% of GDP** (NE.EXP.GNFS.ZS).",
+  "summary_md": "Albania's economy is characterized by a per capita GDP of 5,726 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 2.21% (FP.CPI.TOTL.ZG). The unemployment rate stands at 10.25% (SL.UEM.TOTL.ZS), while the average life expectancy is 79.60 years (SP.DYN.LE00.IN). The country has a significant internet user base, represented by 83.10% (IT.NET.USER.ZS). The GDP growth rate is 36.11% (NE.EXP.GNFS.ZS).",
   "sections": {
-    "economy_md": "GDP per capita **5,726 USD per person**; exports **36.11%**; inflation **2.21%**.",
-    "labor_md": "Unemployment **10.25%**; participation and skills in KPI cards.",
-    "digital_md": "Internet usage **83.10%**; see mobile and broadband adoption.",
-    "health_env_md": "Life expectancy **79.60 years**; environmental pressures shown in CO₂/air-quality KPIs."
+    "economy_md": "Albania's economy is reflected by a per capita GDP of 5,726 USD per person (NY.GDP.PCAP.KD), alongside a GDP growth rate of 36.11% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Albania is marked by an unemployment rate of 10.25% (SL.UEM.TOTL.ZS), indicating the percentage of the workforce that is jobless.",
+    "digital_md": "With an internet user base of 83.10% (IT.NET.USER.ZS), Albania is progressively integrating digital technology into its societal fabric.",
+    "health_env_md": "The average life expectancy in Albania is 79.60 years (SP.DYN.LE00.IN), suggesting the general health and living conditions of its population."
   },
   "persona_highlights": {
     "job_seeker": [
       "Score **45.1**",
-      "Tracks unemployment, LFPR, skills and growth momentum."
+      "Considering opportunities in Albania's labor market with an unemployment rate of 10.25% (SL.UEM.TOTL.ZS)."
     ],
     "entrepreneur": [
       "Score **50.9**",
-      "Regulation, finance depth, power reliability and innovation."
+      "Exploring the potential for business growth in Albania, where the per capita GDP is 5,726 USD per person (NY.GDP.PCAP.KD) and the internet user base is significant at 83.10% (IT.NET.USER.ZS)."
     ],
     "digital_nomad": [
       "Score **55.3**",
-      "Connectivity, price stability and livability."
+      "Leveraging Albania's internet user base of 83.10% (IT.NET.USER.ZS) for remote work opportunities.",
+      "Adapting to the country's digital environment, which is growing in significance."
     ],
     "expat_family": [
       "Score **63.0**",
-      "Health, education, safety and environment."
+      "Assessing the quality of life in Albania, where the average life expectancy is 79.60 years (SP.DYN.LE00.IN) and the economic indicators are stable with a per capita GDP of 5,726 USD per person (NY.GDP.PCAP.KD) and a GDP growth rate of 36.11% (NE.EXP.GNFS.ZS)."
     ]
   },
   "facts_used": [
@@ -96,7 +97,7 @@
     }
   ],
   "generator": {
-    "mode": "template",
+    "mode": "llamacpp",
     "prompt_version": "v2.0",
     "narrative_version": "v2"
   },

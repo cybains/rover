@@ -1,0 +1,97 @@
+{
+  "iso3": "AND",
+  "country_name": "Andorra",
+  "year": 2024,
+  "summary_md": "Andorra, a small principality, has a per capita GDP (41,035 USD per person) and a life expectancy (84.04 years) indicative of its developed economy and high standard of living. With a significant portion of its population connected to the internet (95.40%), it offers a conducive environment for digital nomads and expatriates. The country's health environment is also favorable, contributing to its overall quality of life.",
+  "sections": {
+    "economy_md": "Andorra's economy is characterized by a high per capita GDP (41,035 USD per person), reflecting its developed status and the prosperity of its residents.",
+    "labor_md": "The labor market in Andorra is supported by a high life expectancy (84.04 years), suggesting a healthy workforce and a stable demographic structure.",
+    "digital_md": "A considerable percentage of Andorra's population is internet-connected (95.40%), indicating a strong digital infrastructure that supports remote work and connectivity.",
+    "health_env_md": "The favorable health environment in Andorra, as suggested by its life expectancy (84.04 years), contributes to the well-being of its citizens and the attractiveness of the country for expatriates."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **74.5**",
+      "High per capita GDP (41,035 USD per person) indicating potential job opportunities in a developed economy.",
+      "High life expectancy (84.04 years) suggesting a stable and healthy workforce."
+    ],
+    "entrepreneur": [
+      "Score **79.2**",
+      "Strong digital infrastructure (95.40%), providing opportunities for tech-based businesses and startups.",
+      "Developed economy with high per capita GDP (41,035 USD per person) offering a supportive environment for business growth."
+    ],
+    "digital_nomad": [
+      "Score **61.7**",
+      "Significant internet connectivity (95.40%), facilitating remote work and digital nomad lifestyle.",
+      "High quality of life and stable demographic structure (84.04 years) making it an attractive destination for digital nomads."
+    ],
+    "expat_family": [
+      "Score **74.0**",
+      "High per capita GDP (41,035 USD per person) ensuring a comfortable standard of living for expat families.",
+      "Favorable health environment (84.04 years) contributing to the well-being of expat families and children."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 41034.5073956102,
+      "lag_years": 0,
+      "pctl": {
+        "world": 86.48648648648648,
+        "region": 74.0,
+        "income": 61.53846153846154
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 84.041,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 95.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 87.84530386740332,
+        "region": 78.43137254901961,
+        "income": 67.1875
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json"
+  }
+}

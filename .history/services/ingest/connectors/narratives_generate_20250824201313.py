@@ -157,7 +157,7 @@ def llamacpp_chat(messages: List[Dict[str,str]]) -> str:
         "temperature": 0.1,
         "response_format": {"type":"json_object"},
     }
-    r = requests.post(url, json=payload, timeout=300)
+    r = requests.post(url, json=payload, timeout=120)
     r.raise_for_status()
     data = r.json()
     return data["choices"][0]["message"]["content"]
@@ -169,7 +169,6 @@ SYS = (
   "When you need to reference a numeric fact, insert the exact placeholder token (e.g., <GDP_PC>) "
   "and write the indicator code in parentheses after it, e.g., (<CODE>). "
   "Do NOT include any other digits anywhere in the output (no years, counts, percents) — only placeholders. "
-  "Avoid hype adjectives (e.g., 'boasts', 'notable', 'impressive'); use calm, matter‑of‑fact phrasing. "
   "Output strict JSON with keys: summary, sections, persona_highlights."
 )
 
@@ -218,7 +217,6 @@ Provide sections for economy, labor, digital and health_env (1–2 sentences eac
 Rules:
 - Insert placeholders exactly (e.g., "<GDP_PC>") and codes in parentheses after each number, e.g., (<NY.GDP.PCAP.KD>).
 - Do NOT include any digits outside placeholders.
-- Avoid hype adjectives (e.g., "boasts", "notable", "impressive"); use calm, matter‑of‑fact phrasing.
 - If a fact is missing, just omit it.
 
 Return JSON:
@@ -355,56 +353,6 @@ def make_callouts(bundle: Dict[str, Any], codes: List[str]) -> Dict[str, List[Di
                 watchouts.append({"code": code, "label": f"Low {title_case(label)}"})
     return {"strengths": strengths, "watchouts": watchouts}
 
-# ---- persona score merge (keep numeric indices with LLM text) ----
-def _fmt_score(x: Optional[float]) -> Optional[str]:
-    try:
-        return f"{float(x):.1f}"
-    except Exception:
-        return None
-
-def merge_persona_scores(bundle: Dict[str, Any], nar: Dict[str, Any]) -> None:
-    """Ensure persona_highlights include the numeric 'Score **x.x**' as the first bullet,
-    while keeping LLM-generated narrative bullets."""
-    default_desc = {
-        "job_seeker":    "Tracks unemployment, LFPR, skills and growth momentum.",
-        "entrepreneur":  "Regulation, finance depth, power reliability and innovation.",
-        "digital_nomad": "Connectivity, price stability and livability.",
-        "expat_family":  "Health, education, safety and environment.",
-    }
-    personas = (bundle.get("personas") or {})
-    ph = nar.setdefault("persona_highlights", {})
-
-    for key in ("job_seeker", "entrepreneur", "digital_nomad", "expat_family"):
-        score = _fmt_score((personas.get(key) or {}).get("score"))
-        bullets = ph.get(key)
-
-        # normalise
-        if bullets is None:
-            bullets = []
-        elif isinstance(bullets, str):
-            bullets = [bullets]
-        elif not isinstance(bullets, list):
-            bullets = [str(bullets)]
-
-        # ensure first bullet is Score **x.x**
-        if score:
-            score_md = f"Score **{score}**"
-            if bullets:
-                if isinstance(bullets[0], str) and bullets[0].strip().lower().startswith("score **"):
-                    bullets[0] = score_md
-                else:
-                    bullets.insert(0, score_md)
-            else:
-                bullets = [score_md]
-
-        # ensure at least one narrative bullet
-        if len(bullets) == (1 if score else 0):
-            bullets.append(default_desc.get(key, ""))
-
-        ph[key] = bullets
-
-    nar["persona_highlights"] = ph
-
 def build_narrative(bundle: Dict[str,Any], narrative_version: str) -> Dict[str,Any]:
     facts = collect_facts(bundle)
 
@@ -471,10 +419,6 @@ def build_narrative(bundle: Dict[str,Any], narrative_version: str) -> Dict[str,A
     nar["facts_used"] = facts_used
     nar["callouts"] = make_callouts(bundle, codes_for_callouts)
     nar["source_links"] = links
-
-    # <-- ensure persona scores are present even with LLM outputs
-    merge_persona_scores(bundle, nar)
-
     return nar
 
 # -------------------- CLI --------------------

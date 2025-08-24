@@ -1,0 +1,119 @@
+{
+  "iso3": "AZE",
+  "country_name": "Azerbaijan",
+  "year": 2024,
+  "summary_md": "In 2024, Azerbaijan's per capita GDP stands at 5,871 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 2.21% (FP.CPI.TOTL.ZG), and an unemployment rate of 5.59% (SL.UEM.TOTL.ZS). The average life expectancy is 74.43 years (SP.DYN.LE00.IN), and internet usage is at 89.00% (IT.NET.USER.ZS). The country's share of global exports is 45.90% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Azerbaijan's economy is characterized by a per capita GDP of 5,871 USD per person (NY.GDP.PCAP.KD) and a share of global exports at 45.90% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market shows an unemployment rate of 5.59% (SL.UEM.TOTL.ZS), indicating the general employment situation.",
+    "digital_md": "Internet penetration in Azerbaijan is relatively high, with usage at 89.00% (IT.NET.USER.ZS).",
+    "health_env_md": "The average life expectancy in Azerbaijan is 74.43 years (SP.DYN.LE00.IN), reflecting the country's health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **54.4**",
+      "Considering opportunities in a country with a per capita GDP of 5,871 USD per person (NY.GDP.PCAP.KD) and an unemployment rate of 5.59% (SL.UEM.TOTL.ZS)."
+    ],
+    "entrepreneur": [
+      "Score **38.6**",
+      "Entrepreneurs may find a market share of global exports at 45.90% (NE.EXP.GNFS.ZS) appealing.",
+      "Internet usage at 89.00% (IT.NET.USER.ZS) could facilitate digital business operations."
+    ],
+    "digital_nomad": [
+      "Score **61.2**",
+      "With an internet usage rate of 89.00% (IT.NET.USER.ZS), Azerbaijan could be a suitable destination for digital nomads.",
+      "The country's economic indicators, including a per capita GDP of 5,871 USD per person (NY.GDP.PCAP.KD), suggest a stable environment for remote work."
+    ],
+    "expat_family": [
+      "Score **62.4**",
+      "Families considering expatriation might note the average life expectancy of 74.43 years (SP.DYN.LE00.IN), indicating a healthy living environment.",
+      "The country's economic stability, reflected in a per capita GDP of 5,871 USD per person (NY.GDP.PCAP.KD), could provide a secure foundation for family life."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 5871.13221811331,
+      "lag_years": 0,
+      "pctl": {
+        "world": 47.567567567567565,
+        "region": 18.0,
+        "income": 37.254901960784316
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.21217188919901,
+      "lag_years": 0,
+      "pctl": {
+        "world": 66.45569620253164,
+        "region": 36.95652173913044,
+        "income": 39.130434782608695
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 5.594,
+      "lag_years": 0,
+      "pctl": {
+        "world": 40.65934065934066,
+        "region": 54.166666666666664,
+        "income": 47.916666666666664
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 74.429,
+      "lag_years": 1,
+      "pctl": {
+        "world": 49.30875576036866,
+        "region": 18.96551724137931,
+        "income": 55.55555555555556
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 89.0,
+      "lag_years": 1,
+      "pctl": {
+        "world": 71.8232044198895,
+        "region": 47.05882352941177,
+        "income": 88.46153846153847
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 45.9025463640897,
+      "lag_years": 0,
+      "pctl": {
+        "world": 66.91176470588235,
+        "region": 42.22222222222222,
+        "income": 71.05263157894737
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "iso3": "GEO",
+  "country_name": "Georgia",
+  "year": 2024,
+  "summary_md": "Georgia's economy is characterized by a per capita GDP of 6,840 USD per person (NY.GDP.PCAP.KD), with a moderate inflation rate of 1.11% (FP.CPI.TOTL.ZG). The unemployment rate stands at 11.48% (SL.UEM.TOTL.ZS), while the average life expectancy is 74.50 years (SP.DYN.LE00.IN). The country has a significant internet user base, represented by 81.90% (IT.NET.USER.ZS). The GDP growth rate is 48.36% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Georgia's economy is characterized by a per capita GDP of 6,840 USD per person (NY.GDP.PCAP.KD), with a moderate inflation rate of 1.11% (FP.CPI.TOTL.ZG). The GDP growth rate is 48.36% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The unemployment rate in Georgia is 11.48% (SL.UEM.TOTL.ZS), indicating the general state of the labor market.",
+    "digital_md": "With a significant internet user base, represented by 81.90% (IT.NET.USER.ZS), Georgia is embracing digital connectivity.",
+    "health_env_md": "The average life expectancy in Georgia is 74.50 years (SP.DYN.LE00.IN), reflecting the country's health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **61.7**",
+      "Georgia's moderate unemployment rate of 11.48% (SL.UEM.TOTL.ZS) may offer opportunities for job seekers.",
+      "The per capita GDP of 6,840 USD per person (NY.GDP.PCAP.KD) suggests a stable economy with potential for employment growth."
+    ],
+    "entrepreneur": [
+      "Score **67.5**",
+      "Georgia's significant internet user base, represented by 81.90% (IT.NET.USER.ZS), indicates a favorable environment for digital entrepreneurship.",
+      "The moderate inflation rate of 1.11% (FP.CPI.TOTL.ZG) provides a stable economic backdrop for business planning."
+    ],
+    "digital_nomad": [
+      "Score **67.1**",
+      "With a significant internet user base, represented by 81.90% (IT.NET.USER.ZS), Georgia is a suitable destination for digital nomads.",
+      "The stable economy, indicated by the per capita GDP of 6,840 USD per person (NY.GDP.PCAP.KD), supports remote work and digital nomadism."
+    ],
+    "expat_family": [
+      "Score **69.2**",
+      "The average life expectancy in Georgia is 74.50 years (SP.DYN.LE00.IN), which may be appealing to expat families considering long-term relocation.",
+      "The moderate unemployment rate of 11.48% (SL.UEM.TOTL.ZS) suggests a stable job market for expat families."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 6840.0090445366,
+      "lag_years": 0,
+      "pctl": {
+        "world": 53.513513513513516,
+        "region": 26.0,
+        "income": 58.8235294117647
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.10971758022096,
+      "lag_years": 0,
+      "pctl": {
+        "world": 85.44303797468355,
+        "region": 10.869565217391305,
+        "income": 15.217391304347826
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 11.48,
+      "lag_years": 0,
+      "pctl": {
+        "world": 14.835164835164832,
+        "region": 91.66666666666667,
+        "income": 79.16666666666667
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 74.496,
+      "lag_years": 1,
+      "pctl": {
+        "world": 49.76958525345622,
+        "region": 20.689655172413794,
+        "income": 57.407407407407405
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 81.9,
+      "lag_years": 1,
+      "pctl": {
+        "world": 51.93370165745856,
+        "region": 9.803921568627452,
+        "income": 61.53846153846154
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 48.3647220910365,
+      "lag_years": 0,
+      "pctl": {
+        "world": 70.58823529411765,
+        "region": 48.888888888888886,
+        "income": 76.3157894736842
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

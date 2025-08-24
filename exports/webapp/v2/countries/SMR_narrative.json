@@ -1,0 +1,126 @@
+{
+  "iso3": "SMR",
+  "country_name": "San Marino",
+  "year": 2024,
+  "summary_md": "San Marino, in the year 2024, has a per capita GDP of 51,277 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 1.24% (FP.CPI.TOTL.ZG), and an average life expectancy of 85.71 years years (SP.DYN.LE00.IN). The country's internet user penetration stands at 87.00% (IT.NET.USER.ZS), and its export growth is recorded at 197.41% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "San Marino's economy is characterized by a per capita GDP of 51,277 USD per person (NY.GDP.PCAP.KD) and an export growth of 197.41% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The country has a life expectancy of 85.71 years years (SP.DYN.LE00.IN), indicating a stable labor environment.",
+    "digital_md": "With an internet user penetration of 87.00% (IT.NET.USER.ZS), San Marino shows a growing digital presence.",
+    "health_env_md": "The average life expectancy of 85.71 years years (SP.DYN.LE00.IN) reflects the health environment in San Marino."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **75.2**",
+      "A stable labor environment with a life expectancy of 85.71 years years (SP.DYN.LE00.IN)",
+      "A growing digital presence indicated by an internet user penetration of 87.00% (IT.NET.USER.ZS)"
+    ],
+    "entrepreneur": [
+      "Score **68.3**",
+      "A per capita GDP of 51,277 USD per person (NY.GDP.PCAP.KD) suggests a supportive economic environment for business growth",
+      "Export growth of 197.41% (NE.EXP.GNFS.ZS) may provide opportunities for entrepreneurial ventures"
+    ],
+    "digital_nomad": [
+      "Score **73.9**",
+      "An internet user penetration of 87.00% (IT.NET.USER.ZS) supports remote work and digital nomadism",
+      "A stable economic environment with a per capita GDP of 51,277 USD per person (NY.GDP.PCAP.KD) may offer a conducive setting for digital nomads"
+    ],
+    "expat_family": [
+      "Score **70.8**",
+      "A life expectancy of 85.71 years years (SP.DYN.LE00.IN) indicates a healthy living environment for expat families",
+      "A per capita GDP of 51,277 USD per person (NY.GDP.PCAP.KD) and export growth of 197.41% (NE.EXP.GNFS.ZS) suggest a stable economy for expat families"
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2022,
+      "value": 51277.3460993917,
+      "lag_years": 2,
+      "pctl": {
+        "world": 91.34615384615384,
+        "region": 78.57142857142857,
+        "income": 77.77777777777777
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.24216507945569,
+      "lag_years": 0,
+      "pctl": {
+        "world": 83.54430379746836,
+        "region": 13.043478260869565,
+        "income": 20.689655172413794
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 85.706,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 87.0,
+      "lag_years": 1,
+      "pctl": {
+        "world": 66.29834254143647,
+        "region": 35.294117647058826,
+        "income": 28.125
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2022,
+      "value": 197.412351319317,
+      "lag_years": 2,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

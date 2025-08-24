@@ -2,29 +2,33 @@
   "iso3": "AUT",
   "country_name": "Austria",
   "year": 2024,
-  "summary_md": "In 2024, **Austria** recorded a GDP per capita of **45,562 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **2.94%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **5.44%** (SL.UEM.TOTL.ZS), while residents could expect to live **81.54 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **94.90%** of the population online (IT.NET.USER.ZS), and exports accounted for **56.92% of GDP** (NE.EXP.GNFS.ZS).",
+  "summary_md": "Austria, in the year 2024, has a GDP per capita of 45,562 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 2.94% (FP.CPI.TOTL.ZG), and an unemployment rate of 5.44% (SL.UEM.TOTL.ZS). The average life expectancy is 81.54 years years (SP.DYN.LE00.IN), and internet usage stands at 94.90% (IT.NET.USER.ZS). The country's export growth is at 56.92% (NE.EXP.GNFS.ZS).",
   "sections": {
-    "economy_md": "GDP per capita **45,562 USD per person**; exports **56.92%**; inflation **2.94%**.",
-    "labor_md": "Unemployment **5.44%**; participation and skills in KPI cards.",
-    "digital_md": "Internet usage **94.90%**; see mobile and broadband adoption.",
-    "health_env_md": "Life expectancy **81.54 years**; environmental pressures shown in CO₂/air-quality KPIs."
+    "economy_md": "Austria's economy is characterized by a GDP per capita of 45,562 USD per person (NY.GDP.PCAP.KD), with an export growth rate of 56.92% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Austria shows an unemployment rate of 5.44% (SL.UEM.TOTL.ZS), indicating a relatively stable employment environment.",
+    "digital_md": "Internet penetration in Austria is significant, with usage at 94.90% (IT.NET.USER.ZS), reflecting a well-connected digital infrastructure.",
+    "health_env_md": "The health environment in Austria is robust, with an average life expectancy of 81.54 years years (SP.DYN.LE00.IN)."
   },
   "persona_highlights": {
     "job_seeker": [
       "Score **53.4**",
-      "Tracks unemployment, LFPR, skills and growth momentum."
+      "Austria's stable employment environment with an unemployment rate of 5.44% (SL.UEM.TOTL.ZS) may offer opportunities for job seekers.",
+      "The country's GDP per capita of 45,562 USD per person (NY.GDP.PCAP.KD) suggests a strong economy with potential job growth."
     ],
     "entrepreneur": [
       "Score **79.3**",
-      "Regulation, finance depth, power reliability and innovation."
+      "Austria's significant internet usage at 94.90% (IT.NET.USER.ZS) provides a conducive environment for digital entrepreneurship.",
+      "The country's export growth rate of 56.92% (NE.EXP.GNFS.ZS) indicates a favorable market for business expansion."
     ],
     "digital_nomad": [
       "Score **58.2**",
-      "Connectivity, price stability and livability."
+      "With an internet usage rate of 94.90% (IT.NET.USER.ZS), Austria is suitable for digital nomads seeking connectivity and remote work opportunities.",
+      "The stable economic conditions, reflected by the GDP per capita of 45,562 USD per person (NY.GDP.PCAP.KD), support a comfortable lifestyle for digital nomads."
     ],
     "expat_family": [
       "Score **77.2**",
-      "Health, education, safety and environment."
+      "Austria's high life expectancy of 81.54 years years (SP.DYN.LE00.IN) ensures a healthy environment for expat families.",
+      "The country's low unemployment rate of 5.44% (SL.UEM.TOTL.ZS) suggests a stable job market for expat spouses or partners."
     ]
   },
   "facts_used": [
@@ -96,7 +100,7 @@
     }
   ],
   "generator": {
-    "mode": "template",
+    "mode": "llamacpp",
     "prompt_version": "v2.0",
     "narrative_version": "v2"
   },

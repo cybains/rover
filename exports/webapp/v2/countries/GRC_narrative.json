@@ -1,0 +1,133 @@
+{
+  "iso3": "GRC",
+  "country_name": "Greece",
+  "year": 2024,
+  "summary_md": "Greece, in the year 2024, has a GDP per capita (21,654 USD per person) and an inflation rate (2.74%). The unemployment rate (10.13%) and life expectancy (81.54 years) are also recorded, alongside internet usage (85.00%) and export growth (41.98%).",
+  "sections": {
+    "economy_md": "The GDP per capita (21,654 USD per person) and export growth (41.98%) indicate the economic status, while the inflation rate (2.74%) reflects the cost of living adjustments.",
+    "labor_md": "With an unemployment rate (10.13%), the labor market dynamics are crucial for understanding the job opportunities and challenges in Greece.",
+    "digital_md": "Internet usage (85.00%) suggests the level of digital connectivity and potential for digital entrepreneurship in the country.",
+    "health_env_md": "Life expectancy (81.54 years) provides insight into the health environment and quality of life for residents."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **43.7**",
+      "Considering the unemployment rate (10.13%), job seekers may find opportunities in sectors with lower unemployment.",
+      "The GDP per capita (21,654 USD per person) could influence the types of jobs available and their remuneration."
+    ],
+    "entrepreneur": [
+      "Score **63.0**",
+      "The export growth (41.98%) may indicate potential markets for new businesses.",
+      "Internet usage (85.00%) suggests a digitally connected population, suitable for online businesses."
+    ],
+    "digital_nomad": [
+      "Score **61.5**",
+      "High internet usage (85.00%) supports the lifestyle of digital nomads.",
+      "The economic indicators, including GDP per capita (21,654 USD per person), may affect the cost of living and business operations."
+    ],
+    "expat_family": [
+      "Score **79.2**",
+      "Life expectancy (81.54 years) and health environment are important considerations for expat families.",
+      "The inflation rate (2.74%) and GDP per capita (21,654 USD per person) can impact the family's financial planning and quality of life."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 21654.3443122365,
+      "lag_years": 0,
+      "pctl": {
+        "world": 76.75675675675676,
+        "region": 60.0,
+        "income": 33.84615384615385
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.74149045788606,
+      "lag_years": 0,
+      "pctl": {
+        "world": 58.22784810126582,
+        "region": 50.0,
+        "income": 60.3448275862069
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 10.133,
+      "lag_years": 0,
+      "pctl": {
+        "world": 20.329670329670336,
+        "region": 83.33333333333333,
+        "income": 92.06349206349206
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 81.5365853658537,
+      "lag_years": 1,
+      "pctl": {
+        "world": 82.02764976958525,
+        "region": 60.3448275862069,
+        "income": 54.651162790697676
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 85.0,
+      "lag_years": 1,
+      "pctl": {
+        "world": 59.668508287292816,
+        "region": 19.607843137254903,
+        "income": 14.0625
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 41.9794041507247,
+      "lag_years": 0,
+      "pctl": {
+        "world": 61.029411764705884,
+        "region": 33.333333333333336,
+        "income": 38.775510204081634
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

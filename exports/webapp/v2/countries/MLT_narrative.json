@@ -1,0 +1,146 @@
+{
+  "iso3": "MLT",
+  "country_name": "Malta",
+  "year": 2024,
+  "summary_md": "Malta, in the year 2024, has a GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 1.65% (FP.CPI.TOTL.ZG), and an unemployment rate of 2.70% (SL.UEM.TOTL.ZS). The average life expectancy is 83.51 years years (SP.DYN.LE00.IN), and internet usage stands at 92.10% (IT.NET.USER.ZS). The country's export growth is represented by 123.47% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Malta's economy is characterized by a GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD) and an export growth of 123.47% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Malta shows an unemployment rate of 2.70% (SL.UEM.TOTL.ZS), indicating a relatively stable employment environment.",
+    "digital_md": "Internet penetration in Malta is at 92.10% (IT.NET.USER.ZS), reflecting a well-connected digital infrastructure.",
+    "health_env_md": "The average life expectancy in Malta is 83.51 years years (SP.DYN.LE00.IN), suggesting a healthy living environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **81.6**",
+      "Malta's stable employment environment with an unemployment rate of 2.70% (SL.UEM.TOTL.ZS) may offer opportunities for job seekers.",
+      "The GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD) indicates a strong economy with potential job growth."
+    ],
+    "entrepreneur": [
+      "Score **72.8**",
+      "The well-connected digital infrastructure, with internet usage at 92.10% (IT.NET.USER.ZS), provides a conducive environment for entrepreneurs.",
+      "A GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD) suggests a market with potential for business expansion."
+    ],
+    "digital_nomad": [
+      "Score **75.9**",
+      "Internet penetration at 92.10% (IT.NET.USER.ZS) supports the lifestyle of digital nomads in Malta.",
+      "The stable economy with a GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD) may offer a reliable income source for digital nomads."
+    ],
+    "expat_family": [
+      "Score **81.1**",
+      "The average life expectancy of 83.51 years years (SP.DYN.LE00.IN) indicates a healthy living environment for expat families.",
+      "A GDP per capita of 33,467 USD per person (NY.GDP.PCAP.KD) suggests a comfortable standard of living for expat families."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 33467.4584263258,
+      "lag_years": 0,
+      "pctl": {
+        "world": 83.24324324324324,
+        "region": 85.0,
+        "income": 52.30769230769231
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.65079469283109,
+      "lag_years": 0,
+      "pctl": {
+        "world": 77.21518987341773,
+        "region": 31.57894736842105,
+        "income": 29.310344827586206
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 2.703,
+      "lag_years": 0,
+      "pctl": {
+        "world": 83.51648351648352,
+        "region": 23.80952380952381,
+        "income": 17.46031746031746
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 83.5073170731707,
+      "lag_years": 1,
+      "pctl": {
+        "world": 94.93087557603687,
+        "region": 100.0,
+        "income": 87.20930232558139
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 92.1,
+      "lag_years": 1,
+      "pctl": {
+        "world": 78.45303867403315,
+        "region": 66.66666666666667,
+        "income": 43.75
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 123.466079204708,
+      "lag_years": 0,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "High Unemployment"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

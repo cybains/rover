@@ -1,0 +1,125 @@
+{
+  "iso3": "MKD",
+  "country_name": "North Macedonia",
+  "year": 2024,
+  "summary_md": "North Macedonia, in the year 2024, has a GDP per capita of 6,701 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 3.49% (FP.CPI.TOTL.ZG), and an unemployment rate of 13.42% (SL.UEM.TOTL.ZS). The average life expectancy is 75.32 years years (SP.DYN.LE00.IN), and internet usage stands at 87.20% (IT.NET.USER.ZS). The country's GDP from exports is 62.68% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "The GDP per capita of North Macedonia is 6,701 USD per person (NY.GDP.PCAP.KD), with a GDP from exports making up 62.68% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The unemployment rate is 13.42% (SL.UEM.TOTL.ZS), indicating the labor market's current state.",
+    "digital_md": "Internet usage is at 87.20% (IT.NET.USER.ZS), reflecting the country's digital connectivity.",
+    "health_env_md": "The average life expectancy is 75.32 years (SP.DYN.LE00.IN), suggesting the general health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **38.3**",
+      "Considering opportunities in a country with a GDP per capita of 6,701 USD per person (NY.GDP.PCAP.KD) and an unemployment rate of 13.42% (SL.UEM.TOTL.ZS)."
+    ],
+    "entrepreneur": [
+      "Score **59.0**",
+      "Entrepreneurs may find a market with an internet usage rate of 87.20% (IT.NET.USER.ZS)."
+    ],
+    "digital_nomad": [
+      "Score **57.0**",
+      "With an internet usage rate of 87.20% (IT.NET.USER.ZS), North Macedonia could be a suitable destination for digital nomads."
+    ],
+    "expat_family": [
+      "Score **56.3**",
+      "Families considering relocation might note the average life expectancy of 75.32 years (SP.DYN.LE00.IN)."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 6700.64452236948,
+      "lag_years": 0,
+      "pctl": {
+        "world": 51.891891891891895,
+        "region": 22.0,
+        "income": 52.94117647058823
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.48974086026947,
+      "lag_years": 0,
+      "pctl": {
+        "world": 39.24050632911393,
+        "region": 73.91304347826087,
+        "income": 58.69565217391305
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 13.417,
+      "lag_years": 0,
+      "pctl": {
+        "world": 9.890109890109883,
+        "region": 97.91666666666667,
+        "income": 85.41666666666667
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 75.3160975609756,
+      "lag_years": 1,
+      "pctl": {
+        "world": 53.91705069124424,
+        "region": 22.413793103448278,
+        "income": 62.96296296296296
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 87.2,
+      "lag_years": 1,
+      "pctl": {
+        "world": 67.40331491712708,
+        "region": 39.21568627450981,
+        "income": 84.61538461538461
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 62.6777180012752,
+      "lag_years": 0,
+      "pctl": {
+        "world": 78.67647058823529,
+        "region": 64.44444444444444,
+        "income": 81.57894736842105
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

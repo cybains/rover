@@ -1,0 +1,97 @@
+{
+  "iso3": "MCO",
+  "country_name": "Monaco",
+  "year": 2024,
+  "summary_md": "Monaco, a sovereign city-state, offers a high standard of living with a per capita GDP (224,582 USD per person). The average life expectancy (86.37 years) is relatively high, indicating a healthy environment. With a significant portion of the population using the internet (99.10%), the country is well-connected digitally. The small size and wealth of Monaco make it an attractive destination for various demographics.",
+  "sections": {
+    "economy_md": "Monaco's economy is characterized by a high per capita GDP (224,582 USD per person), reflecting its affluent status.",
+    "labor_md": "The average life expectancy (86.37 years) suggests a robust health environment, potentially contributing to a productive workforce.",
+    "digital_md": "A considerable percentage of the population is internet users (99.10%), indicating a strong digital presence.",
+    "health_env_md": "The high average life expectancy (86.37 years) points to a favorable health environment in Monaco."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **71.3**",
+      "Affluent economy with high per capita GDP (224,582 USD per person)",
+      "High average life expectancy (86.37 years) suggesting a stable environment for long-term employment"
+    ],
+    "entrepreneur": [
+      "Score **72.2**",
+      "High per capita GDP (224,582 USD per person) indicating potential for business growth",
+      "Strong digital infrastructure with a significant internet user base (99.10%)"
+    ],
+    "digital_nomad": [
+      "Score **84.6**",
+      "Strong digital infrastructure with a significant internet user base (99.10%)",
+      "High per capita GDP (224,582 USD per person) providing a comfortable lifestyle for remote work"
+    ],
+    "expat_family": [
+      "Score **82.8**",
+      "High per capita GDP (224,582 USD per person) ensuring a comfortable standard of living",
+      "High average life expectancy (86.37 years) indicating a healthy environment for family life"
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2023,
+      "value": 224582.449752101,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 86.372,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 99.1,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json"
+  }
+}

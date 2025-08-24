@@ -1,0 +1,125 @@
+{
+  "iso3": "UKR",
+  "country_name": "Ukraine",
+  "year": 2024,
+  "summary_md": "Ukraine's economy is characterized by a per capita GDP (2,219 USD per person), with an inflation rate (6.50%) and a percentage of the population employed (9.83%). The average life expectancy (73.42 years) and internet user penetration (82.40%) are also notable aspects. The country's export growth (29.41%) reflects its economic dynamics.",
+  "sections": {
+    "economy_md": "Ukraine's economy is reflected by its per capita GDP (2,219 USD per person), with an inflation rate (6.50%) and a percentage of the population employed (9.83%). The country's export growth (29.41%) is indicative of its economic trends.",
+    "labor_md": "The labor market in Ukraine is marked by a certain level of unemployment (9.83%), which is a key factor in the country's economic health.",
+    "digital_md": "Internet user penetration (82.40%) in Ukraine suggests a growing digital landscape, which is an important aspect of modern economies.",
+    "health_env_md": "The average life expectancy (73.42 years) in Ukraine provides insight into the country's health environment and overall quality of life."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **43.5**",
+      "Considering employment opportunities in a country with a per capita GDP (2,219 USD per person) and an unemployment rate (9.83%).",
+      "Exploring job markets in Ukraine, where the average life expectancy (73.42 years) indicates a stable health environment."
+    ],
+    "entrepreneur": [
+      "Score **47.1**",
+      "Entrepreneurs may find opportunities in Ukraine's economy, which has a per capita GDP (2,219 USD per person) and an inflation rate (6.50%).",
+      "The growing digital landscape, indicated by internet user penetration (82.40%), presents new avenues for business ventures."
+    ],
+    "digital_nomad": [
+      "Score **49.7**",
+      "Ukraine's internet user penetration (82.40%) makes it a viable destination for digital nomads.",
+      "The country's economic indicators, such as per capita GDP (2,219 USD per person) and export growth (29.41%), suggest a stable environment for remote work."
+    ],
+    "expat_family": [
+      "Score **53.6**",
+      "Families considering relocation to Ukraine should note the country's per capita GDP (2,219 USD per person) and life expectancy (73.42 years).",
+      "The relatively low unemployment rate (9.83%) and growing digital landscape (82.40%) may offer a supportive environment for expat families."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 2219.04248046875,
+      "lag_years": 0,
+      "pctl": {
+        "world": 25.945945945945947,
+        "region": 6.0,
+        "income": 1.9607843137254901
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 6.50198464669254,
+      "lag_years": 0,
+      "pctl": {
+        "world": 18.35443037974683,
+        "region": 93.47826086956522,
+        "income": 86.95652173913044
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2021,
+      "value": 9.834,
+      "lag_years": 3,
+      "pctl": {
+        "world": 27.272727272727266,
+        "region": 77.55102040816327,
+        "income": 59.183673469387756
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 73.422,
+      "lag_years": 1,
+      "pctl": {
+        "world": 45.16129032258065,
+        "region": 13.793103448275861,
+        "income": 42.592592592592595
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 82.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 52.48618784530387,
+        "region": 11.764705882352942,
+        "income": 63.46153846153846
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 29.4102139813249,
+      "lag_years": 0,
+      "pctl": {
+        "world": 38.23529411764706,
+        "region": 8.88888888888889,
+        "income": 34.21052631578947
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "Favourable Inflation"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

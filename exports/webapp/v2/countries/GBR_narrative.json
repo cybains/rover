@@ -1,0 +1,133 @@
+{
+  "iso3": "GBR",
+  "country_name": "United Kingdom",
+  "year": 2024,
+  "summary_md": "The United Kingdom, in the year 2024, has a GDP per capita (47,265 USD per person) and an inflation rate (3.27%). The unemployment rate (4.11%) is relatively low, while the average life expectancy (81.24 years) is high. Internet usage (96.30%) is widespread, and the country's export growth (30.64%) is significant. The nation's economic, labor, digital, and health environments reflect a stable and connected society.",
+  "sections": {
+    "economy_md": "The United Kingdom's economy is characterized by a GDP per capita (47,265 USD per person) and a moderate export growth (30.64%).",
+    "labor_md": "With an unemployment rate (4.11%), the labor market in the United Kingdom is relatively stable.",
+    "digital_md": "Internet usage (96.30%) is high in the United Kingdom, indicating a well-connected digital environment.",
+    "health_env_md": "The average life expectancy (81.24 years) in the United Kingdom is high, suggesting a strong health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **57.5**",
+      "Low unemployment rate (4.11%) suggests a favorable job market.",
+      "High life expectancy (81.24 years) indicates a stable and potentially long-term employment outlook."
+    ],
+    "entrepreneur": [
+      "Score **89.8**",
+      "Moderate export growth (30.64%) may offer opportunities for business expansion.",
+      "High GDP per capita (47,265 USD per person) suggests a strong consumer base for new ventures."
+    ],
+    "digital_nomad": [
+      "Score **60.1**",
+      "Widespread internet usage (96.30%) supports remote work and digital nomad lifestyles.",
+      "Stable economic conditions (47,265 USD per person) provide a reliable environment for digital entrepreneurship."
+    ],
+    "expat_family": [
+      "Score **74.0**",
+      "High life expectancy (81.24 years) ensures a healthy environment for families.",
+      "Low unemployment rate (4.11%) indicates a stable job market for expat spouses."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 47265.0009525678,
+      "lag_years": 0,
+      "pctl": {
+        "world": 91.89189189189189,
+        "region": 84.0,
+        "income": 76.92307692307692
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.2715729463592,
+      "lag_years": 0,
+      "pctl": {
+        "world": 43.67088607594937,
+        "region": 67.3913043478261,
+        "income": 84.48275862068965
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 4.111,
+      "lag_years": 0,
+      "pctl": {
+        "world": 62.637362637362635,
+        "region": 29.166666666666668,
+        "income": 41.26984126984127
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 81.2380975609756,
+      "lag_years": 1,
+      "pctl": {
+        "world": 81.10599078341014,
+        "region": 58.62068965517241,
+        "income": 52.325581395348834
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 96.3,
+      "lag_years": 1,
+      "pctl": {
+        "world": 90.05524861878453,
+        "region": 82.3529411764706,
+        "income": 73.4375
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 30.6377190511784,
+      "lag_years": 0,
+      "pctl": {
+        "world": 39.705882352941174,
+        "region": 11.11111111111111,
+        "income": 14.285714285714286
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

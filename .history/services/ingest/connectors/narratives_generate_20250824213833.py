@@ -157,7 +157,7 @@ def llamacpp_chat(messages: List[Dict[str,str]]) -> str:
         "temperature": 0.1,
         "response_format": {"type":"json_object"},
     }
-    r = requests.post(url, json=payload, timeout=300)
+    r = requests.post(url, json=payload, timeout=120)
     r.raise_for_status()
     data = r.json()
     return data["choices"][0]["message"]["content"]

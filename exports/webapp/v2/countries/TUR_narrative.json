@@ -1,0 +1,130 @@
+{
+  "iso3": "TUR",
+  "country_name": "Turkiye",
+  "year": 2024,
+  "summary_md": "Turkiye, in the latest year, has a GDP per capita (15,148 USD per person) and an inflation rate (58.51%) of significant figures, with an unemployment rate (8.45%) and life expectancy (77.16 years) that reflect its socio-economic status. The country's internet user penetration (87.30%) indicates a growing digital presence, while its share of global exports (28.05%) shows its participation in international trade. The nation's economic, labor, digital, and health environments provide a comprehensive overview of its current state.",
+  "sections": {
+    "economy_md": "Turkiye's economy is characterized by a GDP per capita (15,148 USD per person) and a share of global exports (28.05%), indicating its economic output and international trade involvement.",
+    "labor_md": "The labor market in Turkiye is marked by an unemployment rate (8.45%), suggesting the proportion of the workforce that is actively seeking employment.",
+    "digital_md": "With an internet user penetration (87.30%), Turkiye is experiencing an increase in digital connectivity among its population.",
+    "health_env_md": "The life expectancy (77.16 years) in Turkiye reflects the overall health and well-being of its citizens."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **38.7**",
+      "Considering the unemployment rate (8.45%), job seekers may find opportunities in Turkiye's labor market.",
+      "The GDP per capita (15,148 USD per person) indicates the potential for economic growth and job creation."
+    ],
+    "entrepreneur": [
+      "Score **55.8**",
+      "The share of global exports (28.05%) suggests opportunities for business expansion and international trade.",
+      "A growing digital presence (87.30%) may offer new avenues for entrepreneurial ventures."
+    ],
+    "digital_nomad": [
+      "Score **42.5**",
+      "The increasing internet user penetration (87.30%) in Turkiye supports the lifestyle of digital nomads.",
+      "The country's economic indicators (15,148 USD per person, 28.05%) may provide a stable environment for remote work."
+    ],
+    "expat_family": [
+      "Score **65.5**",
+      "The life expectancy (77.16 years) and economic conditions (15,148 USD per person, 28.05%) are important factors for expat families considering long-term relocation.",
+      "The unemployment rate (8.45%) may influence the job market accessibility for family members."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 15147.8414851726,
+      "lag_years": 0,
+      "pctl": {
+        "world": 68.10810810810811,
+        "region": 42.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 58.5064507300343,
+      "lag_years": 0,
+      "pctl": {
+        "world": 0.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 8.449,
+      "lag_years": 0,
+      "pctl": {
+        "world": 25.27472527472527,
+        "region": 79.16666666666667,
+        "income": 64.58333333333333
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 77.156,
+      "lag_years": 1,
+      "pctl": {
+        "world": 62.21198156682028,
+        "region": 34.48275862068966,
+        "income": 75.92592592592592
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2024,
+      "value": 87.3,
+      "lag_years": 0,
+      "pctl": {
+        "world": 22.22222222222222,
+        "region": 14.285714285714286,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 28.045069179622,
+      "lag_years": 0,
+      "pctl": {
+        "world": 31.61764705882353,
+        "region": 6.666666666666667,
+        "income": 26.31578947368421
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "Favourable Inflation"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Low Internet usage"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

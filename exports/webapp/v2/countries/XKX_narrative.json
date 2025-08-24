@@ -1,0 +1,118 @@
+{
+  "iso3": "XKX",
+  "country_name": "Kosovo",
+  "year": 2024,
+  "summary_md": "Kosovo, with a GDP per capita (5,870 USD per person), experiences a moderate inflation rate (1.62%) and has a life expectancy (78.03 years). The country's internet user penetration (89.40%) is relatively high, and its gross expenditure per capita (41.92%) reflects its economic standing. The digital environment is growing, and the health environment is stable.",
+  "sections": {
+    "economy_md": "Kosovo's economy is characterized by a GDP per capita (5,870 USD per person) and a gross expenditure per capita (41.92%), indicating its economic position. The inflation rate (1.62%) provides insight into the purchasing power within the country.",
+    "labor_md": "The labor market in Kosovo is supported by a life expectancy (78.03 years), suggesting a workforce that is relatively healthy and potentially productive over time.",
+    "digital_md": "With an internet user penetration (89.40%), Kosovo is embracing digital advancements, which may contribute to economic growth and improved access to information.",
+    "health_env_md": "The health environment in Kosovo is reflected by a life expectancy (78.03 years), indicating the general well-being of its population."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **36.3**",
+      "GDP per capita (5,870 USD per person) may influence job opportunities and salary expectations.",
+      "Life expectancy (78.03 years) suggests a stable workforce demographic."
+    ],
+    "entrepreneur": [
+      "Score **49.6**",
+      "Gross expenditure per capita (41.92%) indicates potential market size for new businesses.",
+      "Internet user penetration (89.40%) suggests a digitally connected consumer base."
+    ],
+    "digital_nomad": [
+      "Score **45.1**",
+      "Internet user penetration (89.40%) supports the lifestyle of digital nomads.",
+      "Gross expenditure per capita (41.92%) may affect the cost of living and business operations."
+    ],
+    "expat_family": [
+      "Score **61.8**",
+      "Life expectancy (78.03 years) provides a sense of stability for expat families.",
+      "Gross expenditure per capita (41.92%) can influence the affordability of living and quality of life."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 5869.82243326128,
+      "lag_years": 0,
+      "pctl": {
+        "world": 47.027027027027025,
+        "region": 16.0,
+        "income": 35.294117647058826
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.61944994559476,
+      "lag_years": 0,
+      "pctl": {
+        "world": 77.84810126582278,
+        "region": 21.73913043478261,
+        "income": 26.08695652173913
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 78.033,
+      "lag_years": 1,
+      "pctl": {
+        "world": 70.50691244239631,
+        "region": 43.10344827586207,
+        "income": 94.44444444444444
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2018,
+      "value": 89.4,
+      "lag_years": 6,
+      "pctl": {
+        "world": 90.3409090909091,
+        "region": 85.1063829787234,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 41.9207502862577,
+      "lag_years": 0,
+      "pctl": {
+        "world": 60.294117647058826,
+        "region": 31.11111111111111,
+        "income": 63.1578947368421
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

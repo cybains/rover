@@ -1,0 +1,97 @@
+{
+  "iso3": "LIE",
+  "country_name": "Liechtenstein",
+  "year": 2024,
+  "summary_md": "Liechtenstein, a principality in Central Europe, maintains a high standard of living with a GDP per capita (167,187 USD per person) and a life expectancy (84.84 years). The country has a high internet user penetration rate (97.30%).",
+  "sections": {
+    "economy_md": "The GDP per capita (167,187 USD per person) indicates a strong economic position for Liechtenstein.",
+    "labor_md": "With a life expectancy (84.84 years), the labor force in Liechtenstein enjoys a high quality of life.",
+    "digital_md": "The internet user penetration rate (97.30%) reflects the country's advanced digital infrastructure.",
+    "health_env_md": "The life expectancy (84.84 years) suggests a favorable health environment in Liechtenstein."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **60.8**",
+      "High GDP per capita (167,187 USD per person) may offer competitive job opportunities.",
+      "Long life expectancy (84.84 years) indicates a stable workforce."
+    ],
+    "entrepreneur": [
+      "Score **73.6**",
+      "Strong economic position (167,187 USD per person) supports business growth.",
+      "Advanced digital infrastructure (97.30%) facilitates online entrepreneurship."
+    ],
+    "digital_nomad": [
+      "Score **76.7**",
+      "High internet user penetration rate (97.30%) enables remote work.",
+      "Stable economy (167,187 USD per person) provides a reliable environment for digital nomads."
+    ],
+    "expat_family": [
+      "Score **67.9**",
+      "High GDP per capita (167,187 USD per person) ensures a comfortable lifestyle.",
+      "Long life expectancy (84.84 years) contributes to a healthy family environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2015,
+      "value": 167187.15730982,
+      "lag_years": 9,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 84.8414634146342,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 97.3,
+      "lag_years": 1,
+      "pctl": {
+        "world": 92.81767955801105,
+        "region": 90.19607843137256,
+        "income": 81.25
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json"
+  }
+}

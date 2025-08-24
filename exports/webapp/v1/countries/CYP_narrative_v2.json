@@ -1,29 +1,29 @@
 {
-  "iso3": "ARM",
-  "country_name": "Armenia",
+  "iso3": "CYP",
+  "country_name": "Cyprus",
   "year": 2024,
-  "summary_md": "In 2024, **Armenia** recorded a GDP per capita of **5,378 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **0.27%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **13.33%** (SL.UEM.TOTL.ZS), while residents could expect to live **77.47 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **80.00%** of the population online (IT.NET.USER.ZS), and exports accounted for **76.35% of GDP** (NE.EXP.GNFS.ZS).",
+  "summary_md": "In 2024, **Cyprus** recorded a GDP per capita of **32,999 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **1.80%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **5.60%** (SL.UEM.TOTL.ZS), while residents could expect to live **81.65 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **91.20%** of the population online (IT.NET.USER.ZS), and exports accounted for **96.69% of GDP** (NE.EXP.GNFS.ZS).",
   "sections": {
-    "economy_md": "GDP per capita **5,378 USD per person**; exports **76.35%**; inflation **0.27%**.",
-    "labor_md": "Unemployment **13.33%**; participation and skills in KPI cards.",
-    "digital_md": "Internet usage **80.00%**; see mobile and broadband adoption.",
-    "health_env_md": "Life expectancy **77.47 years**; environmental pressures shown in CO₂/air-quality KPIs."
+    "economy_md": "GDP per capita **32,999 USD per person**; exports **96.69%**; inflation **1.80%**.",
+    "labor_md": "Unemployment **5.60%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **91.20%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **81.65 years**; environmental pressures shown in CO₂/air-quality KPIs."
   },
   "persona_highlights": {
     "job_seeker": [
-      "Score **56.4**",
+      "Score **71.4**",
       "Tracks unemployment, LFPR, skills and growth momentum."
     ],
     "entrepreneur": [
-      "Score **67.4**",
+      "Score **72.7**",
       "Regulation, finance depth, power reliability and innovation."
     ],
     "digital_nomad": [
-      "Score **65.2**",
+      "Score **67.6**",
       "Connectivity, price stability and livability."
     ],
     "expat_family": [
-      "Score **68.8**",
+      "Score **69.3**",
       "Health, education, safety and environment."
     ]
   },
@@ -31,66 +31,66 @@
     {
       "code": "NY.GDP.PCAP.KD",
       "year": 2024,
-      "value": 5378.31799981682,
+      "value": 32998.671875,
       "lag_years": 0,
       "pctl": {
-        "world": 44.32432432432432,
-        "region": 12.0,
-        "income": 25.49019607843137
+        "world": 82.70270270270271,
+        "region": 68.0,
+        "income": 50.76923076923077
       }
     },
     {
       "code": "FP.CPI.TOTL.ZG",
       "year": 2024,
-      "value": 0.269511978259125,
+      "value": 1.80023018624815,
       "lag_years": 0,
       "pctl": {
-        "world": 94.9367088607595,
-        "region": 2.1739130434782608,
-        "income": 6.521739130434782
+        "world": 73.41772151898735,
+        "region": 26.08695652173913,
+        "income": 36.206896551724135
       }
     },
     {
       "code": "SL.UEM.TOTL.ZS",
       "year": 2024,
-      "value": 13.329,
+      "value": 5.602,
       "lag_years": 0,
       "pctl": {
-        "world": 10.439560439560438,
-        "region": 95.83333333333333,
-        "income": 83.33333333333333
+        "world": 40.10989010989011,
+        "region": 56.25,
+        "income": 63.492063492063494
       }
     },
     {
       "code": "SP.DYN.LE00.IN",
       "year": 2023,
-      "value": 77.4658536585366,
+      "value": 81.648,
       "lag_years": 1,
       "pctl": {
-        "world": 64.51612903225806,
-        "region": 36.206896551724135,
-        "income": 81.48148148148148
+        "world": 83.41013824884793,
+        "region": 63.793103448275865,
+        "income": 58.13953488372093
       }
     },
     {
       "code": "IT.NET.USER.ZS",
       "year": 2023,
-      "value": 80.0,
+      "value": 91.2,
       "lag_years": 1,
       "pctl": {
-        "world": 48.06629834254144,
-        "region": 3.9215686274509802,
-        "income": 51.92307692307692
+        "world": 76.79558011049724,
+        "region": 54.90196078431372,
+        "income": 40.625
       }
     },
     {
       "code": "NE.EXP.GNFS.ZS",
       "year": 2024,
-      "value": 76.3471180026783,
+      "value": 96.6913864500045,
       "lag_years": 0,
       "pctl": {
-        "world": 90.44117647058823,
-        "region": 84.44444444444444,
+        "world": 100.0,
+        "region": 100.0,
         "income": 100.0
       }
     }
@@ -104,20 +104,23 @@
   "callouts": {
     "strengths": [
       {
-        "code": "SL.UEM.TOTL.ZS",
-        "label": "Favourable Unemployment"
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
       },
       {
         "code": "NE.EXP.GNFS.ZS",
         "label": "Strong Exports share"
       }
     ],
-    "watchouts": [
-      {
-        "code": "FP.CPI.TOTL.ZG",
-        "label": "High Inflation"
-      }
-    ]
+    "watchouts": []
   },
   "source_links": {
     "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",

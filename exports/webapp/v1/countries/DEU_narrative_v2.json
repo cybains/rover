@@ -1,29 +1,29 @@
 {
-  "iso3": "ALB",
-  "country_name": "Albania",
+  "iso3": "DEU",
+  "country_name": "Germany",
   "year": 2024,
-  "summary_md": "In 2024, **Albania** recorded a GDP per capita of **5,726 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **2.21%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **10.25%** (SL.UEM.TOTL.ZS), while residents could expect to live **79.60 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **83.10%** of the population online (IT.NET.USER.ZS), and exports accounted for **36.11% of GDP** (NE.EXP.GNFS.ZS).",
+  "summary_md": "In 2024, **Germany** recorded a GDP per capita of **44,109 USD per person** (NY.GDP.PCAP.KD) and an inflation rate of **2.26%** (FP.CPI.TOTL.ZG). The unemployment rate stood at **3.41%** (SL.UEM.TOTL.ZS), while residents could expect to live **80.54 years** on average (SP.DYN.LE00.IN). Digital connectivity was high with **93.50%** of the population online (IT.NET.USER.ZS), and exports accounted for **42.10% of GDP** (NE.EXP.GNFS.ZS).",
   "sections": {
-    "economy_md": "GDP per capita **5,726 USD per person**; exports **36.11%**; inflation **2.21%**.",
-    "labor_md": "Unemployment **10.25%**; participation and skills in KPI cards.",
-    "digital_md": "Internet usage **83.10%**; see mobile and broadband adoption.",
-    "health_env_md": "Life expectancy **79.60 years**; environmental pressures shown in CO₂/air-quality KPIs."
+    "economy_md": "GDP per capita **44,109 USD per person**; exports **42.10%**; inflation **2.26%**.",
+    "labor_md": "Unemployment **3.41%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **93.50%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **80.54 years**; environmental pressures shown in CO₂/air-quality KPIs."
   },
   "persona_highlights": {
     "job_seeker": [
-      "Score **45.1**",
+      "Score **56.1**",
       "Tracks unemployment, LFPR, skills and growth momentum."
     ],
     "entrepreneur": [
-      "Score **50.9**",
+      "Score **78.1**",
       "Regulation, finance depth, power reliability and innovation."
     ],
     "digital_nomad": [
-      "Score **55.3**",
+      "Score **61.9**",
       "Connectivity, price stability and livability."
     ],
     "expat_family": [
-      "Score **63.0**",
+      "Score **75.0**",
       "Health, education, safety and environment."
     ]
   },
@@ -31,67 +31,67 @@
     {
       "code": "NY.GDP.PCAP.KD",
       "year": 2024,
-      "value": 5726.02570530968,
+      "value": 44108.7012570242,
       "lag_years": 0,
       "pctl": {
-        "world": 45.4054054054054,
-        "region": 14.0,
-        "income": 29.41176470588235
+        "world": 88.64864864864865,
+        "region": 76.0,
+        "income": 67.6923076923077
       }
     },
     {
       "code": "FP.CPI.TOTL.ZG",
       "year": 2024,
-      "value": 2.21448953273292,
+      "value": 2.2564981433876,
       "lag_years": 0,
       "pctl": {
-        "world": 65.82278481012659,
-        "region": 39.130434782608695,
-        "income": 41.30434782608695
+        "world": 64.55696202531647,
+        "region": 41.30434782608695,
+        "income": 46.55172413793103
       }
     },
     {
       "code": "SL.UEM.TOTL.ZS",
       "year": 2024,
-      "value": 10.25,
+      "value": 3.406,
       "lag_years": 0,
       "pctl": {
-        "world": 19.230769230769226,
-        "region": 85.41666666666667,
-        "income": 70.83333333333333
+        "world": 69.23076923076923,
+        "region": 18.75,
+        "income": 28.571428571428573
       }
     },
     {
       "code": "SP.DYN.LE00.IN",
       "year": 2023,
-      "value": 79.602,
+      "value": 80.5414634146342,
       "lag_years": 1,
       "pctl": {
-        "world": 75.57603686635944,
-        "region": 50.0,
-        "income": 98.14814814814815
+        "world": 78.3410138248848,
+        "region": 53.44827586206897,
+        "income": 46.51162790697674
       }
     },
     {
       "code": "IT.NET.USER.ZS",
-      "year": 2023,
-      "value": 83.1,
-      "lag_years": 1,
+      "year": 2024,
+      "value": 93.5,
+      "lag_years": 0,
       "pctl": {
-        "world": 53.591160220994475,
-        "region": 13.72549019607843,
-        "income": 67.3076923076923
+        "world": 55.55555555555556,
+        "region": 57.142857142857146,
+        "income": 42.857142857142854
       }
     },
     {
       "code": "NE.EXP.GNFS.ZS",
       "year": 2024,
-      "value": 36.1095621958381,
+      "value": 42.1002680442064,
       "lag_years": 0,
       "pctl": {
-        "world": 50.0,
-        "region": 22.22222222222222,
-        "income": 50.0
+        "world": 61.76470588235294,
+        "region": 35.55555555555556,
+        "income": 40.816326530612244
       }
     }
   ],
@@ -104,8 +104,8 @@
   "callouts": {
     "strengths": [
       {
-        "code": "SL.UEM.TOTL.ZS",
-        "label": "Favourable Unemployment"
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
       },
       {
         "code": "SP.DYN.LE00.IN",

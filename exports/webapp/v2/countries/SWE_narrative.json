@@ -1,0 +1,141 @@
+{
+  "iso3": "SWE",
+  "country_name": "Sweden",
+  "year": 2024,
+  "summary_md": "Sweden, in the year 2024, has a per capita GDP of 54,916 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 2.84% (FP.CPI.TOTL.ZG), and an unemployment rate of 8.53% (SL.UEM.TOTL.ZS). The average life expectancy is 83.31 years years (SP.DYN.LE00.IN), and internet usage stands at 95.70% (IT.NET.USER.ZS). The country's share of global exports is 54.60% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Sweden's economy is characterized by a per capita GDP of 54,916 USD per person (NY.GDP.PCAP.KD) and a significant share of global exports at 54.60% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Sweden shows an unemployment rate of 8.53% (SL.UEM.TOTL.ZS), indicating a relatively stable job market.",
+    "digital_md": "Internet penetration in Sweden is high, with usage at 95.70% (IT.NET.USER.ZS), reflecting the country's advanced digital infrastructure.",
+    "health_env_md": "Sweden boasts a high average life expectancy of 83.31 years years (SP.DYN.LE00.IN), suggesting a strong health environment."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **57.3**",
+      "Stable job market with an unemployment rate of 8.53% (SL.UEM.TOTL.ZS)",
+      "High GDP per capita of 54,916 USD per person (NY.GDP.PCAP.KD)"
+    ],
+    "entrepreneur": [
+      "Score **88.5**",
+      "Strong economy with a significant share of global exports at 54.60% (NE.EXP.GNFS.ZS)",
+      "High GDP per capita of 54,916 USD per person (NY.GDP.PCAP.KD)"
+    ],
+    "digital_nomad": [
+      "Score **65.6**",
+      "High internet usage at 95.70% (IT.NET.USER.ZS)",
+      "Strong digital infrastructure"
+    ],
+    "expat_family": [
+      "Score **78.2**",
+      "High average life expectancy of 83.31 years years (SP.DYN.LE00.IN)",
+      "Stable job market with an unemployment rate of 8.53% (SL.UEM.TOTL.ZS)"
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 54916.0303899717,
+      "lag_years": 0,
+      "pctl": {
+        "world": 93.51351351351352,
+        "region": 88.0,
+        "income": 81.53846153846153
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.83581658224034,
+      "lag_years": 0,
+      "pctl": {
+        "world": 55.063291139240505,
+        "region": 56.52173913043478,
+        "income": 65.51724137931035
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 8.528,
+      "lag_years": 0,
+      "pctl": {
+        "world": 24.175824175824175,
+        "region": 81.25,
+        "income": 88.88888888888889
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 83.309756097561,
+      "lag_years": 1,
+      "pctl": {
+        "world": 93.54838709677419,
+        "region": 84.48275862068965,
+        "income": 83.72093023255815
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 95.7,
+      "lag_years": 1,
+      "pctl": {
+        "world": 88.39779005524862,
+        "region": 80.3921568627451,
+        "income": 68.75
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 54.601308444525,
+      "lag_years": 0,
+      "pctl": {
+        "world": 75.73529411764706,
+        "region": 57.77777777777778,
+        "income": 53.06122448979592
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

@@ -16,7 +16,7 @@ build/
 /data/state.last_hash.json
 /data/inbox/*
 /data/logs/*
-/llama
+/lla
 
 # --- data ---
 /data/*

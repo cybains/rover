@@ -1,0 +1,131 @@
+{
+  "iso3": "EST",
+  "country_name": "Estonia",
+  "year": 2024,
+  "summary_md": "Estonia, in the year 2024, has a GDP per capita of 20,046 USD per person (NY.GDP.PCAP.KD), with an inflation rate of 3.52% (FP.CPI.TOTL.ZG), and an unemployment rate of 7.83% (SL.UEM.TOTL.ZS). The average life expectancy is 78.49 years years (SP.DYN.LE00.IN), and internet usage stands at 93.20% (IT.NET.USER.ZS). The country's export growth is represented by 76.27% (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "Estonia's economy is characterized by a GDP per capita of 20,046 USD per person (NY.GDP.PCAP.KD) and an export growth of 76.27% (NE.EXP.GNFS.ZS).",
+    "labor_md": "The labor market in Estonia shows an unemployment rate of 7.83% (SL.UEM.TOTL.ZS).",
+    "digital_md": "Internet penetration in Estonia is high, with usage at 93.20% (IT.NET.USER.ZS).",
+    "health_env_md": "The average life expectancy in Estonia is 78.49 years years (SP.DYN.LE00.IN)."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **57.3**",
+      "Consider Estonia for employment opportunities with a low unemployment rate of 7.83% (SL.UEM.TOTL.ZS) and a strong digital infrastructure."
+    ],
+    "entrepreneur": [
+      "Score **78.6**",
+      "Estonia's GDP per capita of 20,046 USD per person (NY.GDP.PCAP.KD) and export growth of 76.27% (NE.EXP.GNFS.ZS) may offer a favorable environment for business ventures.",
+      "The country's high internet usage at 93.20% (IT.NET.USER.ZS) supports digital entrepreneurship."
+    ],
+    "digital_nomad": [
+      "Score **58.3**",
+      "With an internet usage rate of 93.20% (IT.NET.USER.ZS), Estonia provides a conducive environment for digital nomads.",
+      "The country's strong digital infrastructure and low unemployment rate of 7.83% (SL.UEM.TOTL.ZS) make it an attractive destination for remote work."
+    ],
+    "expat_family": [
+      "Score **67.4**",
+      "Estonia's high life expectancy of 78.49 years years (SP.DYN.LE00.IN) and low unemployment rate of 7.83% (SL.UEM.TOTL.ZS) contribute to a stable and healthy living environment for expat families."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 20046.0298759116,
+      "lag_years": 0,
+      "pctl": {
+        "world": 75.13513513513513,
+        "region": 56.0,
+        "income": 29.23076923076923
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.52056053296586,
+      "lag_years": 0,
+      "pctl": {
+        "world": 38.607594936708864,
+        "region": 76.08695652173913,
+        "income": 87.93103448275862
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 7.828,
+      "lag_years": 0,
+      "pctl": {
+        "world": 28.02197802197803,
+        "region": 75.0,
+        "income": 80.95238095238095
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 78.490243902439,
+      "lag_years": 1,
+      "pctl": {
+        "world": 72.8110599078341,
+        "region": 46.55172413793103,
+        "income": 33.72093023255814
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 93.2,
+      "lag_years": 1,
+      "pctl": {
+        "world": 82.32044198895028,
+        "region": 68.62745098039215,
+        "income": 51.5625
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 76.2720927532628,
+      "lag_years": 0,
+      "pctl": {
+        "world": 89.70588235294117,
+        "region": 82.22222222222223,
+        "income": 75.51020408163265
+      }
+    }
+  ],
+  "generator": {
+    "mode": "llamacpp",
+    "prompt_version": "v2.0",
+    "narrative_version": "v2"
+  },
+  "snapshot_date": "2025-08-24",
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}
