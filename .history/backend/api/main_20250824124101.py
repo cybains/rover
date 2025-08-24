@@ -21,12 +21,11 @@ app = FastAPI(title="Rover API", version="0.1.0")
 # CORS (adjust for your frontend origin)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","http://localhost:3000"],  # adjust
+    allow_origins=["*"],  # tighten in prod
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 def get_bundle(iso3: str, year: Optional[int] = None):
     iso3 = iso3.upper()

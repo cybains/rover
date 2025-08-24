@@ -1,0 +1,118 @@
+{
+  "iso3": "BGR",
+  "year": 2024,
+  "summary_md": "**Bulgaria** (latest 2024) shows GDP per capita of **10,090 USD per person** (NY.GDP.PCAP.KD). Inflation is **2.45%** (FP.CPI.TOTL.ZG), unemployment **4.10%** (SL.UEM.TOTL.ZS). Life expectancy is **75.71 years** (SP.DYN.LE00.IN). Internet usage stands at **80.40%** (IT.NET.USER.ZS), and exports are **55.81% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **10,090 USD per person**; exports **55.81%**; inflation **2.45%**.",
+    "labor_md": "Unemployment **4.10%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **80.40%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **75.71 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **57.5**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **66.7**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **58.2**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **63.1**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 10089.9202053232,
+      "lag_years": 0,
+      "pctl": {
+        "world": 60.54054054054054,
+        "region": 34.0,
+        "income": 3.076923076923077
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.44651943006079,
+      "lag_years": 0,
+      "pctl": {
+        "world": 60.75949367088607,
+        "region": 47.82608695652174,
+        "income": 56.89655172413793
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 4.104,
+      "lag_years": 0,
+      "pctl": {
+        "world": 64.28571428571428,
+        "region": 25.0,
+        "income": 36.507936507936506
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 75.7073170731707,
+      "lag_years": 1,
+      "pctl": {
+        "world": 55.29953917050691,
+        "region": 25.862068965517242,
+        "income": 15.116279069767442
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 80.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 49.171270718232044,
+        "region": 7.8431372549019605,
+        "income": 7.8125
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 55.8071638055329,
+      "lag_years": 0,
+      "pctl": {
+        "world": 76.47058823529412,
+        "region": 60.0,
+        "income": 55.10204081632653
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

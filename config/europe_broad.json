@@ -1,0 +1,201 @@
+{
+  "countries": [
+    {
+      "id": "ALB",
+      "name": "Albania"
+    },
+    {
+      "id": "AND",
+      "name": "Andorra"
+    },
+    {
+      "id": "ARM",
+      "name": "Armenia"
+    },
+    {
+      "id": "AUT",
+      "name": "Austria"
+    },
+    {
+      "id": "AZE",
+      "name": "Azerbaijan"
+    },
+    {
+      "id": "BEL",
+      "name": "Belgium"
+    },
+    {
+      "id": "BGR",
+      "name": "Bulgaria"
+    },
+    {
+      "id": "BIH",
+      "name": "Bosnia and Herzegovina"
+    },
+    {
+      "id": "BLR",
+      "name": "Belarus"
+    },
+    {
+      "id": "CHE",
+      "name": "Switzerland"
+    },
+    {
+      "id": "CYP",
+      "name": "Cyprus"
+    },
+    {
+      "id": "CZE",
+      "name": "Czechia"
+    },
+    {
+      "id": "DEU",
+      "name": "Germany"
+    },
+    {
+      "id": "DNK",
+      "name": "Denmark"
+    },
+    {
+      "id": "ESP",
+      "name": "Spain"
+    },
+    {
+      "id": "EST",
+      "name": "Estonia"
+    },
+    {
+      "id": "FIN",
+      "name": "Finland"
+    },
+    {
+      "id": "FRA",
+      "name": "France"
+    },
+    {
+      "id": "GBR",
+      "name": "United Kingdom"
+    },
+    {
+      "id": "GEO",
+      "name": "Georgia"
+    },
+    {
+      "id": "GRC",
+      "name": "Greece"
+    },
+    {
+      "id": "HRV",
+      "name": "Croatia"
+    },
+    {
+      "id": "HUN",
+      "name": "Hungary"
+    },
+    {
+      "id": "IRL",
+      "name": "Ireland"
+    },
+    {
+      "id": "ISL",
+      "name": "Iceland"
+    },
+    {
+      "id": "ITA",
+      "name": "Italy"
+    },
+    {
+      "id": "LIE",
+      "name": "Liechtenstein"
+    },
+    {
+      "id": "LTU",
+      "name": "Lithuania"
+    },
+    {
+      "id": "LUX",
+      "name": "Luxembourg"
+    },
+    {
+      "id": "LVA",
+      "name": "Latvia"
+    },
+    {
+      "id": "MCO",
+      "name": "Monaco"
+    },
+    {
+      "id": "MDA",
+      "name": "Moldova"
+    },
+    {
+      "id": "MKD",
+      "name": "North Macedonia"
+    },
+    {
+      "id": "MLT",
+      "name": "Malta"
+    },
+    {
+      "id": "MNE",
+      "name": "Montenegro"
+    },
+    {
+      "id": "NLD",
+      "name": "Netherlands"
+    },
+    {
+      "id": "NOR",
+      "name": "Norway"
+    },
+    {
+      "id": "POL",
+      "name": "Poland"
+    },
+    {
+      "id": "PRT",
+      "name": "Portugal"
+    },
+    {
+      "id": "ROU",
+      "name": "Romania"
+    },
+    {
+      "id": "RUS",
+      "name": "Russian Federation"
+    },
+    {
+      "id": "SMR",
+      "name": "San Marino"
+    },
+    {
+      "id": "SRB",
+      "name": "Serbia"
+    },
+    {
+      "id": "SVK",
+      "name": "Slovak Republic"
+    },
+    {
+      "id": "SVN",
+      "name": "Slovenia"
+    },
+    {
+      "id": "SWE",
+      "name": "Sweden"
+    },
+    {
+      "id": "TUR",
+      "name": "Turkiye"
+    },
+    {
+      "id": "UKR",
+      "name": "Ukraine"
+    },
+    {
+      "id": "XKX",
+      "name": "Kosovo"
+    }
+  ],
+  "count": 49
+}

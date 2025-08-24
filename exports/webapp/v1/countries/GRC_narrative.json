@@ -1,0 +1,126 @@
+{
+  "iso3": "GRC",
+  "year": 2024,
+  "summary_md": "**Greece** (latest 2024) shows GDP per capita of **21,654 USD per person** (NY.GDP.PCAP.KD). Inflation is **2.74%** (FP.CPI.TOTL.ZG), unemployment **10.13%** (SL.UEM.TOTL.ZS). Life expectancy is **81.54 years** (SP.DYN.LE00.IN). Internet usage stands at **85.00%** (IT.NET.USER.ZS), and exports are **41.98% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **21,654 USD per person**; exports **41.98%**; inflation **2.74%**.",
+    "labor_md": "Unemployment **10.13%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **85.00%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **81.54 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **43.7**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **63.0**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **61.5**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **79.2**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 21654.3443122365,
+      "lag_years": 0,
+      "pctl": {
+        "world": 76.75675675675676,
+        "region": 60.0,
+        "income": 33.84615384615385
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.74149045788606,
+      "lag_years": 0,
+      "pctl": {
+        "world": 58.22784810126582,
+        "region": 50.0,
+        "income": 60.3448275862069
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 10.133,
+      "lag_years": 0,
+      "pctl": {
+        "world": 20.329670329670336,
+        "region": 83.33333333333333,
+        "income": 92.06349206349206
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 81.5365853658537,
+      "lag_years": 1,
+      "pctl": {
+        "world": 82.02764976958525,
+        "region": 60.3448275862069,
+        "income": 54.651162790697676
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 85.0,
+      "lag_years": 1,
+      "pctl": {
+        "world": 59.668508287292816,
+        "region": 19.607843137254903,
+        "income": 14.0625
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 41.9794041507247,
+      "lag_years": 0,
+      "pctl": {
+        "world": 61.029411764705884,
+        "region": 33.333333333333336,
+        "income": 38.775510204081634
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

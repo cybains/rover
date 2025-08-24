@@ -1,0 +1,127 @@
+{
+  "iso3": "LVA",
+  "year": 2024,
+  "summary_md": "**Latvia** (latest 2024) shows GDP per capita of **16,951 USD per person** (NY.GDP.PCAP.KD). Inflation is **1.27%** (FP.CPI.TOTL.ZG), unemployment **6.72%** (SL.UEM.TOTL.ZS). Life expectancy is **75.68 years** (SP.DYN.LE00.IN). Internet usage stands at **92.20%** (IT.NET.USER.ZS), and exports are **64.62% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **16,951 USD per person**; exports **64.62%**; inflation **1.27%**.",
+    "labor_md": "Unemployment **6.72%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **92.20%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **75.68 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **52.1**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **67.0**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **57.8**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **67.2**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 16951.3591613264,
+      "lag_years": 0,
+      "pctl": {
+        "world": 70.27027027027027,
+        "region": 46.0,
+        "income": 15.384615384615385
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.26579885828729,
+      "lag_years": 0,
+      "pctl": {
+        "world": 82.9113924050633,
+        "region": 15.217391304347826,
+        "income": 22.413793103448278
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 6.72,
+      "lag_years": 0,
+      "pctl": {
+        "world": 34.06593406593407,
+        "region": 64.58333333333333,
+        "income": 73.01587301587301
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 75.6780487804878,
+      "lag_years": 1,
+      "pctl": {
+        "world": 54.83870967741935,
+        "region": 24.137931034482758,
+        "income": 13.953488372093023
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 92.2,
+      "lag_years": 1,
+      "pctl": {
+        "world": 79.55801104972376,
+        "region": 62.745098039215684,
+        "income": 46.875
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 64.6217028148455,
+      "lag_years": 0,
+      "pctl": {
+        "world": 79.41176470588235,
+        "region": 66.66666666666667,
+        "income": 61.224489795918366
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "iso3": "IRL",
+  "year": 2024,
+  "summary_md": "**Ireland** (latest 2024) shows GDP per capita of **91,514 USD per person** (NY.GDP.PCAP.KD). Inflation is **2.11%** (FP.CPI.TOTL.ZG), unemployment **4.37%** (SL.UEM.TOTL.ZS). Life expectancy is **82.86 years** (SP.DYN.LE00.IN). Internet usage stands at **96.50%** (IT.NET.USER.ZS), and exports are **147.58% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **91,514 USD per person**; exports **147.58%**; inflation **2.11%**.",
+    "labor_md": "Unemployment **4.37%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **96.50%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **82.86 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **64.2**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **68.8**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **65.6**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **84.6**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 91514.3328443284,
+      "lag_years": 0,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.11344999577317,
+      "lag_years": 0,
+      "pctl": {
+        "world": 68.35443037974683,
+        "region": 34.78260869565217,
+        "income": 43.10344827586207
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 4.369,
+      "lag_years": 0,
+      "pctl": {
+        "world": 60.43956043956044,
+        "region": 33.333333333333336,
+        "income": 42.857142857142854
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 82.8609756097561,
+      "lag_years": 1,
+      "pctl": {
+        "world": 88.47926267281106,
+        "region": 77.58620689655173,
+        "income": 70.93023255813954
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 96.5,
+      "lag_years": 1,
+      "pctl": {
+        "world": 90.60773480662984,
+        "region": 84.31372549019608,
+        "income": 75.0
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 147.576831386831,
+      "lag_years": 0,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

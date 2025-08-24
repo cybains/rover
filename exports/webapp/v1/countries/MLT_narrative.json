@@ -1,0 +1,139 @@
+{
+  "iso3": "MLT",
+  "year": 2024,
+  "summary_md": "**Malta** (latest 2024) shows GDP per capita of **33,467 USD per person** (NY.GDP.PCAP.KD). Inflation is **1.65%** (FP.CPI.TOTL.ZG), unemployment **2.70%** (SL.UEM.TOTL.ZS). Life expectancy is **83.51 years** (SP.DYN.LE00.IN). Internet usage stands at **92.10%** (IT.NET.USER.ZS), and exports are **123.47% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **33,467 USD per person**; exports **123.47%**; inflation **1.65%**.",
+    "labor_md": "Unemployment **2.70%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **92.10%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **83.51 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **81.6**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **72.8**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **75.9**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **81.1**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 33467.4584263258,
+      "lag_years": 0,
+      "pctl": {
+        "world": 83.24324324324324,
+        "region": 85.0,
+        "income": 52.30769230769231
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.65079469283109,
+      "lag_years": 0,
+      "pctl": {
+        "world": 77.21518987341773,
+        "region": 31.57894736842105,
+        "income": 29.310344827586206
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 2.703,
+      "lag_years": 0,
+      "pctl": {
+        "world": 83.51648351648352,
+        "region": 23.80952380952381,
+        "income": 17.46031746031746
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 83.5073170731707,
+      "lag_years": 1,
+      "pctl": {
+        "world": 94.93087557603687,
+        "region": 100.0,
+        "income": 87.20930232558139
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 92.1,
+      "lag_years": 1,
+      "pctl": {
+        "world": 78.45303867403315,
+        "region": 66.66666666666667,
+        "income": 43.75
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 123.466079204708,
+      "lag_years": 0,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "High Unemployment"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

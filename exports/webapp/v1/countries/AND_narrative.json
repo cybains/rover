@@ -1,0 +1,90 @@
+{
+  "iso3": "AND",
+  "year": 2024,
+  "summary_md": "**Andorra** (latest 2024) shows GDP per capita of **41,035 USD per person** (NY.GDP.PCAP.KD). Inflation is **—** (FP.CPI.TOTL.ZG), unemployment **—** (SL.UEM.TOTL.ZS). Life expectancy is **84.04 years** (SP.DYN.LE00.IN). Internet usage stands at **95.40%** (IT.NET.USER.ZS), and exports are **— of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **41,035 USD per person**; exports **—**; inflation **—**.",
+    "labor_md": "Unemployment **—**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **95.40%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **84.04 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **74.5**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **79.2**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **61.7**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **74.0**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 41034.5073956102,
+      "lag_years": 0,
+      "pctl": {
+        "world": 86.48648648648648,
+        "region": 74.0,
+        "income": 61.53846153846154
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 84.041,
+      "lag_years": 1,
+      "pctl": {
+        "world": 100.0,
+        "region": 100.0,
+        "income": 100.0
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 95.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 87.84530386740332,
+        "region": 78.43137254901961,
+        "income": 67.1875
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json"
+  }
+}

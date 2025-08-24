@@ -1,0 +1,118 @@
+{
+  "iso3": "HUN",
+  "year": 2024,
+  "summary_md": "**Hungary** (latest 2024) shows GDP per capita of **16,525 USD per person** (NY.GDP.PCAP.KD). Inflation is **3.70%** (FP.CPI.TOTL.ZG), unemployment **4.43%** (SL.UEM.TOTL.ZS). Life expectancy is **76.77 years** (SP.DYN.LE00.IN). Internet usage stands at **91.50%** (IT.NET.USER.ZS), and exports are **74.66% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **16,525 USD per person**; exports **74.66%**; inflation **3.70%**.",
+    "labor_md": "Unemployment **4.43%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **91.50%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **76.77 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **49.2**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **61.2**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **53.2**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **67.1**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 16524.8168617828,
+      "lag_years": 0,
+      "pctl": {
+        "world": 69.1891891891892,
+        "region": 44.0,
+        "income": 12.307692307692308
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.70370370370369,
+      "lag_years": 0,
+      "pctl": {
+        "world": 36.075949367088604,
+        "region": 78.26086956521739,
+        "income": 89.65517241379311
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 4.434,
+      "lag_years": 0,
+      "pctl": {
+        "world": 59.89010989010989,
+        "region": 35.416666666666664,
+        "income": 44.44444444444444
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 76.7707317073171,
+      "lag_years": 1,
+      "pctl": {
+        "world": 60.8294930875576,
+        "region": 31.03448275862069,
+        "income": 20.930232558139537
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2024,
+      "value": 91.5,
+      "lag_years": 0,
+      "pctl": {
+        "world": 44.44444444444444,
+        "region": 42.857142857142854,
+        "income": 28.571428571428573
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 74.6638285685979,
+      "lag_years": 0,
+      "pctl": {
+        "world": 88.23529411764706,
+        "region": 80.0,
+        "income": 73.46938775510205
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

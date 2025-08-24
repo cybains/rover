@@ -1,0 +1,251 @@
+{
+  "version": "v1",
+  "generated_at": "2025-08-24T12:52:05Z",
+  "countries": [
+    {
+      "id": "ALB",
+      "name": "Albania",
+      "year": 2024
+    },
+    {
+      "id": "AND",
+      "name": "Andorra",
+      "year": 2024
+    },
+    {
+      "id": "ARM",
+      "name": "Armenia",
+      "year": 2024
+    },
+    {
+      "id": "AUT",
+      "name": "Austria",
+      "year": 2024
+    },
+    {
+      "id": "AZE",
+      "name": "Azerbaijan",
+      "year": 2024
+    },
+    {
+      "id": "BEL",
+      "name": "Belgium",
+      "year": 2024
+    },
+    {
+      "id": "BGR",
+      "name": "Bulgaria",
+      "year": 2024
+    },
+    {
+      "id": "BIH",
+      "name": "Bosnia and Herzegovina",
+      "year": 2024
+    },
+    {
+      "id": "BLR",
+      "name": "Belarus",
+      "year": 2024
+    },
+    {
+      "id": "CHE",
+      "name": "Switzerland",
+      "year": 2024
+    },
+    {
+      "id": "CYP",
+      "name": "Cyprus",
+      "year": 2024
+    },
+    {
+      "id": "CZE",
+      "name": "Czechia",
+      "year": 2024
+    },
+    {
+      "id": "DEU",
+      "name": "Germany",
+      "year": 2024
+    },
+    {
+      "id": "DNK",
+      "name": "Denmark",
+      "year": 2024
+    },
+    {
+      "id": "ESP",
+      "name": "Spain",
+      "year": 2024
+    },
+    {
+      "id": "EST",
+      "name": "Estonia",
+      "year": 2024
+    },
+    {
+      "id": "FIN",
+      "name": "Finland",
+      "year": 2024
+    },
+    {
+      "id": "FRA",
+      "name": "France",
+      "year": 2024
+    },
+    {
+      "id": "GBR",
+      "name": "United Kingdom",
+      "year": 2024
+    },
+    {
+      "id": "GEO",
+      "name": "Georgia",
+      "year": 2024
+    },
+    {
+      "id": "GRC",
+      "name": "Greece",
+      "year": 2024
+    },
+    {
+      "id": "HRV",
+      "name": "Croatia",
+      "year": 2024
+    },
+    {
+      "id": "HUN",
+      "name": "Hungary",
+      "year": 2024
+    },
+    {
+      "id": "IRL",
+      "name": "Ireland",
+      "year": 2024
+    },
+    {
+      "id": "ISL",
+      "name": "Iceland",
+      "year": 2024
+    },
+    {
+      "id": "ITA",
+      "name": "Italy",
+      "year": 2024
+    },
+    {
+      "id": "LIE",
+      "name": "Liechtenstein",
+      "year": 2024
+    },
+    {
+      "id": "LTU",
+      "name": "Lithuania",
+      "year": 2024
+    },
+    {
+      "id": "LUX",
+      "name": "Luxembourg",
+      "year": 2024
+    },
+    {
+      "id": "LVA",
+      "name": "Latvia",
+      "year": 2024
+    },
+    {
+      "id": "MCO",
+      "name": "Monaco",
+      "year": 2024
+    },
+    {
+      "id": "MDA",
+      "name": "Moldova",
+      "year": 2024
+    },
+    {
+      "id": "MKD",
+      "name": "North Macedonia",
+      "year": 2024
+    },
+    {
+      "id": "MLT",
+      "name": "Malta",
+      "year": 2024
+    },
+    {
+      "id": "MNE",
+      "name": "Montenegro",
+      "year": 2024
+    },
+    {
+      "id": "NLD",
+      "name": "Netherlands",
+      "year": 2024
+    },
+    {
+      "id": "NOR",
+      "name": "Norway",
+      "year": 2024
+    },
+    {
+      "id": "POL",
+      "name": "Poland",
+      "year": 2024
+    },
+    {
+      "id": "PRT",
+      "name": "Portugal",
+      "year": 2024
+    },
+    {
+      "id": "ROU",
+      "name": "Romania",
+      "year": 2024
+    },
+    {
+      "id": "RUS",
+      "name": "Russian Federation",
+      "year": 2024
+    },
+    {
+      "id": "SMR",
+      "name": "San Marino",
+      "year": 2024
+    },
+    {
+      "id": "SRB",
+      "name": "Serbia",
+      "year": 2024
+    },
+    {
+      "id": "SVK",
+      "name": "Slovak Republic",
+      "year": 2024
+    },
+    {
+      "id": "SVN",
+      "name": "Slovenia",
+      "year": 2024
+    },
+    {
+      "id": "SWE",
+      "name": "Sweden",
+      "year": 2024
+    },
+    {
+      "id": "TUR",
+      "name": "Turkiye",
+      "year": 2024
+    },
+    {
+      "id": "UKR",
+      "name": "Ukraine",
+      "year": 2024
+    },
+    {
+      "id": "XKX",
+      "name": "Kosovo",
+      "year": 2024
+    }
+  ]
+}

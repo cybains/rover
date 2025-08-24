@@ -1,0 +1,123 @@
+{
+  "iso3": "BIH",
+  "year": 2024,
+  "summary_md": "**Bosnia and Herzegovina** (latest 2024) shows GDP per capita of **6,698 USD per person** (NY.GDP.PCAP.KD). Inflation is **1.69%** (FP.CPI.TOTL.ZG), unemployment **10.72%** (SL.UEM.TOTL.ZS). Life expectancy is **77.85 years** (SP.DYN.LE00.IN). Internet usage stands at **83.40%** (IT.NET.USER.ZS), and exports are **42.82% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **6,698 USD per person**; exports **42.82%**; inflation **1.69%**.",
+    "labor_md": "Unemployment **10.72%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **83.40%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **77.85 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **38.5**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **56.3**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **63.6**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **59.4**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 6698.04067371484,
+      "lag_years": 0,
+      "pctl": {
+        "world": 51.351351351351354,
+        "region": 20.0,
+        "income": 50.98039215686274
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 1.69212733599724,
+      "lag_years": 0,
+      "pctl": {
+        "world": 75.31645569620252,
+        "region": 23.91304347826087,
+        "income": 28.26086956521739
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 10.723,
+      "lag_years": 0,
+      "pctl": {
+        "world": 17.582417582417577,
+        "region": 87.5,
+        "income": 72.91666666666667
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 77.85,
+      "lag_years": 1,
+      "pctl": {
+        "world": 68.66359447004608,
+        "region": 39.6551724137931,
+        "income": 90.74074074074075
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 83.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 55.248618784530386,
+        "region": 17.647058823529413,
+        "income": 71.15384615384616
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 42.8209562840181,
+      "lag_years": 0,
+      "pctl": {
+        "world": 63.970588235294116,
+        "region": 37.77777777777778,
+        "income": 65.78947368421052
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      }
+    ],
+    "watchouts": [
+      {
+        "code": "FP.CPI.TOTL.ZG",
+        "label": "High Inflation"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "iso3": "MNE",
+  "year": 2024,
+  "summary_md": "**Montenegro** (latest 2024) shows GDP per capita of **8,553 USD per person** (NY.GDP.PCAP.KD). Inflation is **3.34%** (FP.CPI.TOTL.ZG), unemployment **14.10%** (SL.UEM.TOTL.ZS). Life expectancy is **77.59 years** (SP.DYN.LE00.IN). Internet usage stands at **89.80%** (IT.NET.USER.ZS), and exports are **44.87% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **8,553 USD per person**; exports **44.87%**; inflation **3.34%**.",
+    "labor_md": "Unemployment **14.10%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **89.80%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **77.59 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **49.0**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **64.6**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **63.8**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **56.1**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 8552.58863705444,
+      "lag_years": 0,
+      "pctl": {
+        "world": 56.75675675675676,
+        "region": 30.0,
+        "income": 70.58823529411765
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.33675009282281,
+      "lag_years": 0,
+      "pctl": {
+        "world": 41.139240506329116,
+        "region": 69.56521739130434,
+        "income": 56.52173913043478
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 14.1,
+      "lag_years": 0,
+      "pctl": {
+        "world": 9.340659340659343,
+        "region": 100.0,
+        "income": 87.5
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 77.5878048780488,
+      "lag_years": 1,
+      "pctl": {
+        "world": 65.43778801843318,
+        "region": 37.93103448275862,
+        "income": 83.33333333333333
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 89.8,
+      "lag_years": 1,
+      "pctl": {
+        "world": 74.58563535911603,
+        "region": 50.98039215686274,
+        "income": 94.23076923076923
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 44.8732439316754,
+      "lag_years": 0,
+      "pctl": {
+        "world": 66.17647058823529,
+        "region": 40.0,
+        "income": 68.42105263157895
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

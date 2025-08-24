@@ -1,0 +1,134 @@
+{
+  "iso3": "SWE",
+  "year": 2024,
+  "summary_md": "**Sweden** (latest 2024) shows GDP per capita of **54,916 USD per person** (NY.GDP.PCAP.KD). Inflation is **2.84%** (FP.CPI.TOTL.ZG), unemployment **8.53%** (SL.UEM.TOTL.ZS). Life expectancy is **83.31 years** (SP.DYN.LE00.IN). Internet usage stands at **95.70%** (IT.NET.USER.ZS), and exports are **54.60% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **54,916 USD per person**; exports **54.60%**; inflation **2.84%**.",
+    "labor_md": "Unemployment **8.53%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **95.70%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **83.31 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **57.3**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **88.5**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **65.6**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **78.2**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 54916.0303899717,
+      "lag_years": 0,
+      "pctl": {
+        "world": 93.51351351351352,
+        "region": 88.0,
+        "income": 81.53846153846153
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 2.83581658224034,
+      "lag_years": 0,
+      "pctl": {
+        "world": 55.063291139240505,
+        "region": 56.52173913043478,
+        "income": 65.51724137931035
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 8.528,
+      "lag_years": 0,
+      "pctl": {
+        "world": 24.175824175824175,
+        "region": 81.25,
+        "income": 88.88888888888889
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 83.309756097561,
+      "lag_years": 1,
+      "pctl": {
+        "world": 93.54838709677419,
+        "region": 84.48275862068965,
+        "income": 83.72093023255815
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 95.7,
+      "lag_years": 1,
+      "pctl": {
+        "world": 88.39779005524862,
+        "region": 80.3921568627451,
+        "income": 68.75
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 54.601308444525,
+      "lag_years": 0,
+      "pctl": {
+        "world": 75.73529411764706,
+        "region": 57.77777777777778,
+        "income": 53.06122448979592
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [
+      {
+        "code": "NY.GDP.PCAP.KD",
+        "label": "Strong GDP per capita"
+      },
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "Favourable Unemployment"
+      },
+      {
+        "code": "SP.DYN.LE00.IN",
+        "label": "Strong Life expectancy"
+      },
+      {
+        "code": "IT.NET.USER.ZS",
+        "label": "Strong Internet usage"
+      },
+      {
+        "code": "NE.EXP.GNFS.ZS",
+        "label": "Strong Exports share"
+      }
+    ],
+    "watchouts": []
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}

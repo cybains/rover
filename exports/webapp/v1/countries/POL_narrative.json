@@ -1,0 +1,118 @@
+{
+  "iso3": "POL",
+  "year": 2024,
+  "summary_md": "**Poland** (latest 2024) shows GDP per capita of **17,984 USD per person** (NY.GDP.PCAP.KD). Inflation is **3.79%** (FP.CPI.TOTL.ZG), unemployment **2.47%** (SL.UEM.TOTL.ZS). Life expectancy is **78.51 years** (SP.DYN.LE00.IN). Internet usage stands at **86.40%** (IT.NET.USER.ZS), and exports are **52.33% of GDP** (NE.EXP.GNFS.ZS).",
+  "sections": {
+    "economy_md": "GDP per capita **17,984 USD per person**; exports **52.33%**; inflation **3.79%**.",
+    "labor_md": "Unemployment **2.47%**; participation and skills in KPI cards.",
+    "digital_md": "Internet usage **86.40%**; see mobile and broadband adoption.",
+    "health_env_md": "Life expectancy **78.51 years**; environmental pressures shown in CO₂/air-quality KPIs."
+  },
+  "persona_highlights": {
+    "job_seeker": [
+      "Score **67.5**",
+      "Tracks unemployment, LFPR, skills and growth momentum."
+    ],
+    "entrepreneur": [
+      "Score **59.1**",
+      "Regulation, finance depth, power reliability and innovation."
+    ],
+    "digital_nomad": [
+      "Score **59.8**",
+      "Connectivity, price stability and livability."
+    ],
+    "expat_family": [
+      "Score **70.4**",
+      "Health, education, safety and environment."
+    ]
+  },
+  "facts_used": [
+    {
+      "code": "NY.GDP.PCAP.KD",
+      "year": 2024,
+      "value": 17984.380010913,
+      "lag_years": 0,
+      "pctl": {
+        "world": 72.43243243243244,
+        "region": 50.0,
+        "income": 21.53846153846154
+      }
+    },
+    {
+      "code": "FP.CPI.TOTL.ZG",
+      "year": 2024,
+      "value": 3.79060897630203,
+      "lag_years": 0,
+      "pctl": {
+        "world": 34.810126582278485,
+        "region": 80.43478260869566,
+        "income": 91.37931034482759
+      }
+    },
+    {
+      "code": "SL.UEM.TOTL.ZS",
+      "year": 2024,
+      "value": 2.472,
+      "lag_years": 0,
+      "pctl": {
+        "world": 87.36263736263736,
+        "region": 4.166666666666667,
+        "income": 9.523809523809524
+      }
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "year": 2023,
+      "value": 78.5073170731707,
+      "lag_years": 1,
+      "pctl": {
+        "world": 73.27188940092167,
+        "region": 48.275862068965516,
+        "income": 34.883720930232556
+      }
+    },
+    {
+      "code": "IT.NET.USER.ZS",
+      "year": 2023,
+      "value": 86.4,
+      "lag_years": 1,
+      "pctl": {
+        "world": 62.98342541436464,
+        "region": 29.41176470588235,
+        "income": 20.3125
+      }
+    },
+    {
+      "code": "NE.EXP.GNFS.ZS",
+      "year": 2024,
+      "value": 52.3289523696531,
+      "lag_years": 0,
+      "pctl": {
+        "world": 73.52941176470588,
+        "region": 53.333333333333336,
+        "income": 51.02040816326531
+      }
+    }
+  ],
+  "generator": {
+    "mode": "template",
+    "prompt_version": "v1.0"
+  },
+  "callouts": {
+    "strengths": [],
+    "watchouts": [
+      {
+        "code": "SL.UEM.TOTL.ZS",
+        "label": "High Unemployment"
+      }
+    ]
+  },
+  "source_links": {
+    "NY.GDP.PCAP.KD": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.KD?format=json",
+    "FP.CPI.TOTL.ZG": "https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json",
+    "SL.UEM.TOTL.ZS": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json",
+    "SP.DYN.LE00.IN": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json",
+    "IT.NET.USER.ZS": "https://api.worldbank.org/v2/country/all/indicator/IT.NET.USER.ZS?format=json",
+    "NE.EXP.GNFS.ZS": "https://api.worldbank.org/v2/country/all/indicator/NE.EXP.GNFS.ZS?format=json"
+  }
+}
