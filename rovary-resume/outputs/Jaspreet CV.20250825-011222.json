@@ -1,0 +1,110 @@
+{
+  "full_name": "",
+  "job_title": "",
+  "contact": {
+    "emails": [],
+    "phones": [],
+    "address": ""
+  },
+  "summary": "Experienced and safety-focused heavy vehicle driver with over 20 years of experience in transporting passengers and goods safely, conducting vehicle inspections, and maintaining accurate logs. Skilled in electrical installations, adaptable, with strong problem-solving skills and excellent communication and interpersonal skills.",
+  "keywords": [
+    "Heavy Vehicle Driver",
+    "Safety-focused",
+    "Transportation",
+    "Vehicle Inspections",
+    "Logs Maintenance",
+    "Electrical Installations",
+    "Adaptable",
+    "Problem-solving",
+    "Communication",
+    "Interpersonal Skills"
+  ],
+  "skills": {
+    "hard": [
+      "Commercial Driving",
+      "Vehicle Safety",
+      "Maintenance"
+    ],
+    "soft": [
+      "Adaptability",
+      "Problem-solving",
+      "Communication",
+      "Interpersonal Skills"
+    ],
+    "tools": [],
+    "domains": []
+  },
+  "experience": [
+    {
+      "company": "Qatar Shell",
+      "title": "Heavy Duty Trailer Driver",
+      "start": "September 2024",
+      "end": "Present",
+      "location": "Mahilpur, Distt- Hoshiarpur, Punjab",
+      "bullets": [
+        "Responsible for transporting re(cid:976)inery equipment and operating ITI Kalgidhar (Pvt.), 40 feet heavy tractor-trailer trucks with a maximum capacity of 35 tonne."
+      ]
+    },
+    {
+      "company": "Qcon - Qatar Engineering & Construction Company",
+      "title": "Bus Driver",
+      "start": "June 2024",
+      "end": "August 2024",
+      "location": "W.L.L., Ras Laffan Industrial City",
+      "bullets": [
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus. Maintain accurate records of daily logs, incident reports, and maintenance checklists."
+      ]
+    },
+    {
+      "company": "ORYX GTL",
+      "title": "Heavy Duty Trailer Driver",
+      "start": "September 2023",
+      "end": "June 2024",
+      "location": "Mehtiana Hoshiarpur, Punjab, India",
+      "bullets": [
+        "Responsible for transporting re(cid:976)inery equipment and operating 40 feet heavy tractor-trailer trucks with a maximum capacity of 25 tonne."
+      ]
+    },
+    {
+      "company": "GNA Gears Private Limited",
+      "title": "Electrician",
+      "start": "January 2012",
+      "end": "July 2018",
+      "location": "Mehtiana Hoshiarpur, Punjab, India",
+      "bullets": [
+        "Provided timely and efficient transportation services, enhancing technology-based customer satisfaction. Ensured the safe handling and navigation of passengers within the hospital premises. Safety Practices and Problem-solving."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Govt High School, Kalra",
+      "degree": "High School Diploma",
+      "field_of_study": "",
+      "start": "",
+      "end": "",
+      "location": "District Jalandhar, Punjab"
+    }
+  ],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "source_file": "Jaspreet CV.pdf",
+    "generated_at": "2025-08-24T23:15:33.336121Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "full_name": "Jaspreet Singh",
+  "job_title": "Heavy Vehicle Driver",
+  "contact": {
+    "emails": [
+      "jaspreetsinghparhar@gmail.com"
+    ],
+    "phones": [
+      "+974 31314828"
+    ],
+    "address": ""
+  },
+  "summary": "Experienced and safety-focused driver with over five years of heavy and light vehicle driving experience, skilled in transporting passengers and goods safely, conducting vehicle inspections, and maintaining accurate logs. Adaptable, with strong problem-solving skills and a background in electrical installations. Excellent communication and interpersonal skills, with a proven ability to build strong working relationships.",
+  "keywords": [
+    "Heavy Vehicle Driver",
+    "Safety-focused",
+    "Transportation",
+    "Vehicle Inspection",
+    "Problem-solving",
+    "Electrical Installation",
+    "Communication",
+    "Adaptability"
+  ],
+  "skills": {
+    "hard": [
+      "Vehicle Safety",
+      "Maintenance",
+      "Navigation",
+      "Safety Practices",
+      "Problem-solving"
+    ],
+    "soft": [
+      "Communication",
+      "Interpersonal Skills"
+    ],
+    "tools": [],
+    "domains": [
+      "Transportation",
+      "Electrical Installation"
+    ]
+  },
+  "experience": [
+    {
+      "company": "Qatar Shell",
+      "title": "Heavy Vehicle Driver",
+      "start": "September 2024",
+      "end": "Present",
+      "location": "Ras Laffan Industrial City",
+      "bullets": [
+        "Responsible for transporting refinery equipment and operating 40 feet heavy tractor-trailer trucks with a maximum capacity of 35 tonne."
+      ]
+    },
+    {
+      "company": "Qcon - Qatar Engineering & Construction Company W.L.L.",
+      "title": "Heavy Vehicle Driver",
+      "start": "June 2024",
+      "end": "August 2024",
+      "location": "Ras Laffan Industrial City",
+      "bullets": [
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus. Maintain accurate records of daily logs, incident reports, and maintenance checklists."
+      ]
+    },
+    {
+      "company": "ORYX GTL",
+      "title": "Heavy Vehicle Driver",
+      "start": "September 2023",
+      "end": "June 2024",
+      "location": "Ras Laffan Industrial City",
+      "bullets": [
+        "Responsible for transporting refinery equipment and operating 40 feet heavy tractor-trailer trucks with a maximum capacity of 25 tonne."
+      ]
+    },
+    {
+      "company": "King Abdulaziz Airbase Hospital, Jeddah",
+      "title": "Heavy Vehicle Driver",
+      "start": "August 2018",
+      "end": "April 2021",
+      "location": "Jeddah",
+      "bullets": [
+        "Provided timely and efficient transportation services, enhancing customer satisfaction. Ensured the safe handling and transportation of passengers within the hospital premises."
+      ]
+    },
+    {
+      "company": "GNA Gears Private Limited, Mehtiana Hoshiarpur, Punjab, India",
+      "title": "Heavy Vehicle Driver",
+      "start": "January 2012",
+      "end": "July 2018",
+      "location": "Mehtiana Hoshiarpur, Punjab",
+      "bullets": []
+    }
+  ],
+  "education": [
+    {
+      "institution": "ITI Kalgidhar (Pvt.)",
+      "degree": "Vocational Diploma",
+      "field_of_study": "Electrician",
+      "start": "January 2013",
+      "end": "",
+      "location": "Mahilpur, Distt- Hoshiarpur, Punjab"
+    },
+    {
+      "institution": "Govt High School",
+      "degree": "High School Diploma",
+      "field_of_study": "",
+      "start": "March 2007",
+      "end": "",
+      "location": "Kalra, District Jalandhar, Punjab"
+    }
+  ],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {},
+  "availability": "",
+  "meta": {
+    "source_file": "Jaspreet Singh CV.odt",
+    "generated_at": "2025-08-24T23:19:04.225893Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s"
+  }
+}
