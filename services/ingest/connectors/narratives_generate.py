@@ -7,13 +7,12 @@ from pymongo import MongoClient
 # -------------------- Config --------------------
 load_dotenv()
 MONGO_URI   = os.getenv("MONGO_URI")
-PROVIDER    = (os.getenv("LLM_PROVIDER") or "").upper()  # "OPENAI" or "LLAMACPP"
-OPENAI_KEY  = os.getenv("OPENAI_API_KEY")
 LLAMA_URL   = os.getenv("LLAMA_BASE_URL", "http://127.0.0.1:8080")
 LLAMA_MODEL = os.getenv("LLAMA_MODEL")  # optional
 VERSION     = os.getenv("WEBAPP_EXPORT_VERSION", "v1")
+NARRATIVE_VERSION = os.getenv("NARRATIVE_VERSION", "v1")
 OUT_DIR     = os.path.join("exports", "webapp", VERSION, "countries")
-PROMPT_VERSION = "v1.0"
+PROMPT_VERSION = "v1.0" if NARRATIVE_VERSION == "v1" else "v2.0"
 
 # -------------------- DB --------------------
 if not MONGO_URI:
@@ -78,19 +77,26 @@ def render_fact(key: str, fact: Dict[str,Any]) -> str:
         return f"{v:.2f} years"
     return f"{v}"
 
-def make_template(bundle: Dict[str,Any], facts: Dict[str,Any]) -> Dict[str,Any]:
+def make_template(bundle: Dict[str,Any], facts: Dict[str,Any], version: str = "v1") -> Dict[str,Any]:
     c = bundle["country"]["name"]; y = bundle["year"]
     def get(key, default="—"):
         f = facts.get(key);  return render_fact(key,f) if f else default
     gdp = get("GDP_PC"); infl = get("INFL"); unemp = get("UNEMP")
     life = get("LIFE"); inet = get("INET"); exps = get("EXPGDP")
 
-    summary_md = (
-        f"**{c}** (latest {y}) shows GDP per capita of **{gdp}** (NY.GDP.PCAP.KD). "
-        f"Inflation is **{infl}** (FP.CPI.TOTL.ZG), unemployment **{unemp}** (SL.UEM.TOTL.ZS). "
-        f"Life expectancy is **{life}** (SP.DYN.LE00.IN). Internet usage stands at **{inet}** (IT.NET.USER.ZS), "
-        f"and exports are **{exps} of GDP** (NE.EXP.GNFS.ZS)."
-    )
+    if version == "v2":
+        summary_md = (
+            f"In {y}, **{c}** recorded a GDP per capita of **{gdp}** (NY.GDP.PCAP.KD) and an inflation rate of **{infl}** (FP.CPI.TOTL.ZG). "
+            f"The unemployment rate stood at **{unemp}** (SL.UEM.TOTL.ZS), while residents could expect to live **{life}** on average (SP.DYN.LE00.IN). "
+            f"Digital connectivity was high with **{inet}** of the population online (IT.NET.USER.ZS), and exports accounted for **{exps} of GDP** (NE.EXP.GNFS.ZS)."
+        )
+    else:
+        summary_md = (
+            f"**{c}** (latest {y}) shows GDP per capita of **{gdp}** (NY.GDP.PCAP.KD). "
+            f"Inflation is **{infl}** (FP.CPI.TOTL.ZG), unemployment **{unemp}** (SL.UEM.TOTL.ZS). "
+            f"Life expectancy is **{life}** (SP.DYN.LE00.IN). Internet usage stands at **{inet}** (IT.NET.USER.ZS), "
+            f"and exports are **{exps} of GDP** (NE.EXP.GNFS.ZS)."
+        )
     personas = bundle.get("personas") or {}
     def ps(name):
         s = personas.get(name,{}).get("score")
@@ -118,25 +124,10 @@ def make_template(bundle: Dict[str,Any], facts: Dict[str,Any]) -> Dict[str,Any]:
         "sections": sections,
         "persona_highlights": persona_highlights,
         "facts_used": facts_used,
-        "generator": {"mode":"template","prompt_version": PROMPT_VERSION}
+        "generator": {"mode":"template","prompt_version": PROMPT_VERSION, "narrative_version": version}
     }
 
-# -------------------- LLM adapters --------------------
-def openai_chat(messages: List[Dict[str,str]]) -> str:
-    import requests
-    url = "https://api.openai.com/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type":"application/json"}
-    payload = {
-        "model": "gpt-4o-mini",
-        "messages": messages,
-        "temperature": 0.1,
-        "response_format": {"type":"json_object"},
-    }
-    r = requests.post(url, headers=headers, json=payload, timeout=60)
-    r.raise_for_status()
-    data = r.json()
-    return data["choices"][0]["message"]["content"]
-
+# -------------------- LLM adapter --------------------
 def llamacpp_chat(messages: List[Dict[str,str]]) -> str:
     import requests
     url = f"{LLAMA_URL}/v1/chat/completions"
@@ -170,6 +161,37 @@ Your task:
 - summary: 3–4 sentences, neutral tone, British English.
 - sections: economy, labor, digital, health_env (1–2 short sentences each).
 - persona_highlights: short bullets for job_seeker, entrepreneur, digital_nomad, expat_family (no digits).
+
+Rules:
+- Insert placeholders exactly (e.g., "<GDP_PC>") and codes in parentheses after each number, e.g., (<NY.GDP.PCAP.KD>).
+- Do NOT include any digits outside placeholders.
+- If a fact is missing, just omit it.
+
+Return JSON:
+{
+  "summary": "...",
+  "sections": {
+    "economy": "...",
+    "labor": "...",
+    "digital": "...",
+    "health_env": "..."
+  },
+  "persona_highlights": {
+    "job_seeker": ["...", "..."],
+    "entrepreneur": ["...", "..."],
+    "digital_nomad": ["...", "..."],
+    "expat_family": ["...", "..."]
+  }
+}
+"""
+
+USER_TMPL_V2 = """Country: {name} ({iso3})
+Latest year: <YEAR>
+Allowed facts (use placeholders; never write digits yourself):
+{facts_list}
+
+Write a concise but flowing overview of the country in British English. Use 3–4 sentences that weave multiple facts together naturally.
+Provide sections for economy, labor, digital and health_env (1–2 sentences each), and persona_highlights bullets for job_seeker, entrepreneur, digital_nomad and expat_family (no digits).
 
 Rules:
 - Insert placeholders exactly (e.g., "<GDP_PC>") and codes in parentheses after each number, e.g., (<NY.GDP.PCAP.KD>).
@@ -313,38 +335,36 @@ def make_callouts(bundle: Dict[str, Any], codes: List[str]) -> Dict[str, List[Di
 def build_narrative(bundle: Dict[str,Any]) -> Dict[str,Any]:
     facts = collect_facts(bundle)
 
-    # generate base narrative (LLM or template)
-    if PROVIDER in {"OPENAI","LLAMACPP"}:
-        messages = [
-            {"role":"system","content": SYS},
-            {"role":"user","content": USER_TMPL.format(
-                name=bundle["country"]["name"],
-                iso3=bundle["country"]["id"],
-                facts_list=facts_block(facts)
-            )}
-        ]
-        try:
-            raw = openai_chat(messages) if PROVIDER=="OPENAI" else llamacpp_chat(messages)
-            data = postprocess_json(raw, facts)
-            nar = {
-                "iso3": bundle["country"]["id"],
-                "year": bundle["year"],
-                "summary_md": data["summary"],
-                "sections": {
-                    "economy_md": data["sections"].get("economy",""),
-                    "labor_md": data["sections"].get("labor",""),
-                    "digital_md": data["sections"].get("digital",""),
-                    "health_env_md": data["sections"].get("health_env",""),
-                },
-                "persona_highlights": data.get("persona_highlights",{}),
-                "facts_used": [],  # filled below
-                "generator": {"mode": PROVIDER.lower(), "prompt_version": PROMPT_VERSION}
-            }
-        except Exception as e:
-            print(f"[warn] LLM generation failed: {e} -> using template")
-            nar = make_template(bundle, facts)
-    else:
-        nar = make_template(bundle, facts)
+    messages = [
+        {"role": "system", "content": SYS},
+        {"role": "user", "content": (USER_TMPL if NARRATIVE_VERSION == "v1" else USER_TMPL_V2).format(
+            name=bundle["country"]["name"],
+            iso3=bundle["country"]["id"],
+            facts_list=facts_block(facts)
+        )}
+    ]
+    try:
+        raw = llamacpp_chat(messages)
+        data = postprocess_json(raw, facts)
+        nar = {
+            "iso3": bundle["country"]["id"],
+            "year": bundle["year"],
+            "summary_md": data["summary"],
+            "sections": {
+                "economy_md": data["sections"].get("economy", ""),
+                "labor_md": data["sections"].get("labor", ""),
+                "digital_md": data["sections"].get("digital", ""),
+                "health_env_md": data["sections"].get("health_env", ""),
+            },
+            "persona_highlights": data.get("persona_highlights", {}),
+            "facts_used": [],  # filled below
+            "generator": {"mode": "llamacpp", "prompt_version": PROMPT_VERSION}
+        }
+    except Exception as e:
+        print(f"[warn] LLM generation failed: {e} -> using template")
+        nar = make_template(bundle, facts, NARRATIVE_VERSION)
+
+    nar["generator"]["narrative_version"] = NARRATIVE_VERSION
 
     # augment: lag_years, percentiles, callouts, source_links
     bundle_year = bundle.get("year")
@@ -399,7 +419,8 @@ def main():
             print(f"[skip] no bundle for {iso3}")
             continue
         nar = build_narrative(doc)
-        path = os.path.join(OUT_DIR, f"{iso3}_narrative.json")
+        suffix = "" if NARRATIVE_VERSION == "v1" else f"_{NARRATIVE_VERSION}"
+        path = os.path.join(OUT_DIR, f"{iso3}_narrative{suffix}.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(nar, f, ensure_ascii=False, indent=2)
         print(f"[ok] {iso3} -> {path}")
