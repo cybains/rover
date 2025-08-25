@@ -49,10 +49,8 @@ TRY_LLM_ON_NONRESUME = True  # still ask LLM to structure whatever it can
 # ----------------------------
 # Errors
 # ----------------------------
-
 class LLMError(Exception):
     pass
-
 
 # ----------------------------
 # Generic text normalization
@@ -299,53 +297,27 @@ MRZ_RE = re.compile(r"^[A-Z0-9<]{20,}$")
 PASSPORT_HINTS = re.compile(r"(?i)\bpassport\b|P<|machine[- ]readable", re.I)
 CERT_HINTS = re.compile(r"(?i)(certificate|trade test|board of|education board|marks?|license|licen[cs]e|driving)", re.I)
 
-def classify_document(text: str, filename: str = "") -> str:
-    """Heuristic doc classifier with strong passport MRZ detection. Fail-safe bias: 'resume'."""
-    t = (text or "").strip()
-    if not t:
-        return "other"
-
-    fname = (filename or "").lower()
-    if "passport" in fname:
-        # filename says passport → trust unless very strong resume signal
-        filename_passport_hint = True
-    else:
-        filename_passport_hint = False
-
-    lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
-    # MRZ: 2 consecutive lines of A–Z0–9<, length 30–44, with at least one '<<'
-    def is_mrz_line(s: str) -> bool:
-        if not (30 <= len(s) <= 44):
-            return False
-        if not re.fullmatch(r"[A-Z0-9<]+", s):
-            return False
-        return "<<" in s
-
-    mrz_idx = [i for i, ln in enumerate(lines) if is_mrz_line(ln)]
-    mrz_pair = any((j + 1 in mrz_idx) for j in mrz_idx)  # consecutive pair
-
-    if mrz_pair or (filename_passport_hint and _contains_any(t.lower(), PASSPORT_KEYWORDS) >= 1):
-        return "passport"
-
-    # Resume vs certificate signals
-    cert_score = _contains_any(t.lower(), CERT_KEYWORDS)
-    resume_score = _contains_any(t.lower(), RESUME_KEYWORDS)
-    bullet_count = sum(1 for ln in lines if BULLET_RE.match(ln))
-    year_hits = len(re.findall(r"\b(19|20)\d{2}\b", t))
-    low_quality = is_low_quality_text(t, min_length=250)
-
-    # Strong cert
-    if cert_score >= 3 and resume_score <= 1 and bullet_count <= 1:
+def classify_document(text: str) -> str:
+    """Return 'resume', 'id_doc', 'certificate', or 'other'."""
+    if not text or is_low_quality_text(text):
+        # still try to catch MRZ & certs
+        pass
+    lines = [l.strip() for l in (text or "").splitlines() if l.strip()]
+    # MRZ-like lines often 2–3 lines of long < chars
+    mrz_hits = sum(1 for l in lines if MRZ_RE.fullmatch(l.replace(" ", "")))
+    if mrz_hits >= 2 or PASSPORT_HINTS.search(text or ""):
+        return "id_doc"
+    if CERT_HINTS.search(text or ""):
         return "certificate"
-    # Strong resume
-    if resume_score >= 2 or bullet_count >= 3 or year_hits >= 4:
+    # Heuristics for resume: presence of headings / years + role words
+    headings = sum(1 for l in lines if is_heading(l))
+    years = len(re.findall(r"(19|20)\d{2}", text or ""))
+    if headings >= 1 and years >= 2:
         return "resume"
-    # Low-quality but certificate-ish
-    if low_quality and cert_score >= 2 and resume_score == 0:
-        return "certificate"
-
-    # Default bias: try to parse as resume
-    return "resume"
+    # fallback by density of sentences & emails/phones
+    if EMAIL_RE.search(text or "") or PHONE_CAND_RE.search(text or ""):
+        return "resume"
+    return "other"
 
 # ----------------------------
 # Chunking & merge
@@ -864,35 +836,33 @@ def main():
     print("=== Rovari Local Resume Structurer v2 ===")
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", type=str, help="Process a directory (recursive). If omitted, opens file picker.")
-    parser.add_argument("--force-type", type=str, choices=["resume","certificate","passport","other"],
+    parser.add_argument("--force-type", type=str, choices=["resume", "certificate", "passport", "other"],
                         help="Override document classification.")
     args = parser.parse_args()
     print("argv:", " ".join(os.sys.argv), flush=True)
 
+    # Determine target paths
     if args.dir:
         root = os.path.abspath(args.dir)
         print(f"Batch mode: scanning {root}", flush=True)
         paths = list(iter_supported_files(root))
         print(f"Found {len(paths)} files:", flush=True)
-        for fp in paths: print(" -", fp, flush=True)
+        for fp in paths:
+            print(" -", fp, flush=True)
         if not paths:
             print("No supported files found. Exiting.", flush=True)
             return
     else:
         fp = pick_file()
         if not fp:
-            print("No file selected. Exiting."); return
+            print("No file selected. Exiting.")
+            return
         paths = [fp]
 
+    # Ensure output dir
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for file_path in paths:
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        base = Path(file_path).stem
-        txt_out = OUTPUT_DIR / f"{base}.{ts}.txt"
-        json_out = OUTPUT_DIR / f"{base}.{ts}.json"
-        err_out = OUTPUT_DIR / f"{base}.{ts}.error.txt"
-
         try:
             print(f"\n=== Processing: {file_path}", flush=True)
             # 1) Extract + normalize
@@ -903,6 +873,10 @@ def main():
             lang = detect_language(text)
 
             # 2) Save raw text
+            ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+            base = Path(file_path).stem
+            txt_out = OUTPUT_DIR / f"{base}.{ts}.txt"
+            json_out = OUTPUT_DIR / f"{base}.{ts}.json"
             txt_out.write_text(text, encoding="utf-8")
             print(f"✔ Saved extracted text → {txt_out}", flush=True)
 
@@ -910,44 +884,39 @@ def main():
             doc_type = args.force_type or classify_document(text, os.path.basename(file_path))
             print(f"• Classified as '{doc_type}'", flush=True)
 
-            # 4) Build result dict (always define d)
-            d = {
-                "full_name": "", "job_title": "",
-                "contact": contacts, "summary": "",
-                "keywords": [],
-                "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
-                "experience": [], "education": [], "projects": [],
-                "certifications": [], "languages": [], "publications": [],
-                "volunteering": [], "awards": [], "links": [],
-                "clearances": [], "preferences": {}, "availability": "",
-                "meta": {
-                    "language": lang,
-                    "source_file": os.path.basename(file_path),
-                    "generated_at": datetime.utcnow().isoformat() + "Z",
-                    "model": MODEL_NAME,
-                    "doc_type": doc_type,
-                }
-            }
-
-            # 5) Parse path depending on type
+            # 4) Build result dict
             if doc_type == "resume":
-                try:
-                    d2 = extract_structured_in_chunks(text, os.path.basename(file_path), build_messages)
-                    d2 = postprocess_structured(d2, contacts, lang)
-                    d = merge_structured_json(d, d2)
-                except Exception as e:
-                    err = f"Resume parsing failed, wrote minimal JSON. Error: {e}"
-                    print(f"ℹ️  {err}", flush=True)
-                    err_out.write_text(err, encoding="utf-8")
+                # Prefer chunked extraction
+                d = extract_structured_in_chunks(text, os.path.basename(file_path), build_messages)
+                d = postprocess_structured(d, contacts, lang)
             else:
-                # Deterministic ID-doc fields + optional LLM
+                # Non-resume scaffold + deterministic ID extraction + optional LLM merge
+                d = {
+                    "full_name": "", "job_title": "",
+                    "contact": contacts, "summary": "",
+                    "keywords": [],
+                    "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
+                    "experience": [], "education": [], "projects": [],
+                    "certifications": [], "languages": [], "publications": [],
+                    "volunteering": [], "awards": [], "links": [],
+                    "clearances": [], "preferences": {}, "availability": "",
+                    "meta": {
+                        "language": lang,
+                        "source_file": os.path.basename(file_path),
+                        "generated_at": datetime.utcnow().isoformat() + "Z",
+                        "model": MODEL_NAME,
+                        "doc_type": doc_type,
+                    }
+                }
+                # Deterministic passport/ID fields
                 try:
                     id_doc = extract_id_document_fields(text)
                     if id_doc:
                         d["meta"]["id_document"] = id_doc
-                except Exception as e:
-                    print(f"ℹ️  ID extraction skipped: {e}", flush=True)
+                except Exception as _e:
+                    print(f"ℹ️  ID extraction skipped: {_e}", flush=True)
 
+                # Still try LLM (merge) if enabled
                 if TRY_LLM_ON_NONRESUME:
                     try:
                         msgs = build_messages(text, os.path.basename(file_path), {"_all": text, "_doc_type": doc_type})
@@ -955,50 +924,26 @@ def main():
                         part = parse_llm_json(raw)
                         part_d = part.model_dump() if hasattr(part, "model_dump") else part.dict()
                         d = merge_structured_json(d, part_d)
-                    except Exception as e:
-                        msg = f"LLM on non-resume failed softly: {e}"
-                        print(f"ℹ️  {msg}", flush=True)
-                        err_out.write_text(msg, encoding="utf-8")
+                    except Exception as _e:
+                        print(f"ℹ️  LLM on non-resume failed softly: {_e}", flush=True)
+                else:
+                    print(f"ℹ️  Non-resume '{doc_type}'. Skipped LLM.", flush=True)
 
-            # 6) Save JSON (always)
+            # 5) Ensure meta and save
             d.setdefault("meta", {})
             d["meta"].update({
                 "source_file": os.path.basename(file_path),
                 "generated_at": datetime.utcnow().isoformat() + "Z",
                 "model": MODEL_NAME,
-                "doc_type": d["meta"].get("doc_type", doc_type),
+                "doc_type": doc_type,
             })
+
             json_out.write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
             print(f"✔ Saved structured JSON → {json_out}", flush=True)
 
         except Exception as e:
-            # last-resort minimal JSON with error recorded
-            err_text = f"Fatal error on {file_path}: {e}"
-            print(f"✖ {err_text}", flush=True)
-            try: err_out.write_text(err_text, encoding="utf-8")
-            except Exception: pass
-            minimal = {
-                "full_name": "", "job_title": "",
-                "contact": {"emails": [], "phones": [], "address": ""},
-                "summary": "", "keywords": [],
-                "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
-                "experience": [], "education": [], "projects": [],
-                "certifications": [], "languages": [], "publications": [],
-                "volunteering": [], "awards": [], "links": [],
-                "clearances": [], "preferences": {}, "availability": "",
-                "meta": {
-                    "error": err_text,
-                    "source_file": os.path.basename(file_path),
-                    "generated_at": datetime.utcnow().isoformat() + "Z",
-                    "model": MODEL_NAME,
-                    "doc_type": "other",
-                }
-            }
-            try:
-                json_out.write_text(json.dumps(minimal, indent=2, ensure_ascii=False), encoding="utf-8")
-                print(f"✔ Wrote minimal JSON with error → {json_out}", flush=True)
-            except Exception:
-                print("✖ Could not write minimal JSON file.", flush=True)
+            print(f"✖ Error on {file_path}: {e}", flush=True)
+
 
 if __name__ == "__main__":
     main()

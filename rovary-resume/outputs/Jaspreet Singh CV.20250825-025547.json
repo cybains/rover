@@ -6,38 +6,37 @@
       "jaspreetsinghparhar@gmail.com"
     ],
     "phones": [
-      "+974 31314828"
+      "+974 31314828",
+      "+97431314828"
     ],
-    "address": ""
+    "email": "",
+    "address": []
   },
   "summary": "Experienced and safety-focused driver with over five years of heavy and light vehicle driving experience, skilled in transporting passengers and goods safely, conducting vehicle inspections, and maintaining accurate logs. Adaptable, with strong problem-solving skills and a background in electrical installations. Excellent communication and interpersonal skills, with a proven ability to build strong working relationships.",
   "keywords": [
     "Adaptability",
-    "Communication",
+    "Commercial Driving",
+    "Communication and Interpersonal Skills",
     "Electrical Installation",
-    "Heavy Vehicle Driver",
     "Problem-solving",
-    "Safety-focused",
-    "Transportation",
-    "Vehicle Inspection"
+    "Safety Practices",
+    "Technology-based Navigation",
+    "Vehicle Safety and Maintenance"
   ],
   "skills": {
     "hard": [
-      "Maintenance",
-      "Navigation",
+      "Adaptability",
+      "Commercial Driving",
       "Problem-solving",
       "Safety Practices",
-      "Vehicle Safety"
+      "Technology-based Navigation",
+      "Vehicle Safety and Maintenance"
     ],
     "soft": [
-      "Communication",
-      "Interpersonal Skills"
+      "Communication and Interpersonal Skills"
     ],
     "tools": [],
-    "domains": [
-      "Electrical Installation",
-      "Transportation"
-    ]
+    "domains": []
   },
   "experience": [
     {
@@ -45,68 +44,69 @@
       "title": "Heavy Vehicle Driver",
       "start": "2024-09",
       "end": "present",
-      "location": "Ras Laffan Industrial City",
+      "location": "Doha, Qatar",
       "bullets": [
         "Responsible for transporting refinery equipment and operating 40 feet heavy tractor-trailer trucks with a maximum capacity of 35 tonne."
       ]
     },
     {
-      "company": "Heavy Vehicle Driver",
-      "title": "Qcon - Qatar Engineering & Construction Company W.L.L.",
+      "company": "Qcon - Qatar Engineering & Construction Company W.L.L., Ras Laffan Industrial City",
+      "title": "Heavy Duty Trailer Driver",
       "start": "2024-06",
       "end": "2024-08",
-      "location": "Ras Laffan Industrial City",
+      "location": "Ras Laffan Industrial City, Qatar",
       "bullets": [
-        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus. Maintain accurate records of daily logs, incident reports, and maintenance checklists."
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus.",
+        "Maintain accurate records of daily logs, incident reports, and maintenance checklists."
       ]
     },
     {
       "company": "ORYX GTL",
-      "title": "Heavy Vehicle Driver",
+      "title": "Heavy Duty Trailer Driver",
       "start": "2023-09",
       "end": "2024-06",
-      "location": "Ras Laffan Industrial City",
+      "location": "Ras Laffan Industrial City, Qatar",
       "bullets": [
         "Responsible for transporting refinery equipment and operating 40 feet heavy tractor-trailer trucks with a maximum capacity of 25 tonne."
       ]
     },
     {
       "company": "King Abdulaziz Airbase Hospital, Jeddah",
-      "title": "Heavy Vehicle Driver",
+      "title": "Heavy Duty Trailer Driver",
       "start": "2018-08",
       "end": "2021-04",
-      "location": "Jeddah",
+      "location": "Jeddah, Saudi Arabia",
       "bullets": [
-        "Provided timely and efficient transportation services, enhancing customer satisfaction. Ensured the safe handling and transportation of passengers within the hospital premises."
+        "Provided timely and efficient transportation services, enhancing customer satisfaction.",
+        "Ensured the safe handling and transportation of passengers within the hospital premises."
       ]
     },
     {
-      "company": "GNA Gears Private Limited, Mehtiana Hoshiarpur, Punjab, India",
-      "title": "Heavy Vehicle Driver",
+      "company": "ITI Kalgidhar (Pvt.)",
+      "title": "Heavy Duty Trailer Driver",
       "start": "2012-01",
       "end": "2018-07",
-      "location": "Mehtiana Hoshiarpur, Punjab",
+      "location": "Mahilpur, Hoshiarpur, Punjab, India",
+      "bullets": []
+    },
+    {
+      "company": "Govt High School",
+      "title": "Heavy Duty Trailer Driver",
+      "start": "2013-01",
+      "end": "2013-01",
+      "location": "Kalra, District Jalandhar, Punjab, India",
+      "bullets": []
+    },
+    {
+      "company": "March 2007",
+      "title": "Commercial Driving, Vehicle Safety and Maintenance, Technology-based Navigation, Safety Practices, Problem-solving, Adaptability, Communication and Interpersonal Skills, Electrical Installation",
+      "start": "2007-03",
+      "end": "present",
+      "location": "Unknown",
       "bullets": []
     }
   ],
-  "education": [
-    {
-      "institution": "ITI Kalgidhar (Pvt.)",
-      "degree": "Vocational Diploma",
-      "field_of_study": "Electrician",
-      "start": "2013-01",
-      "end": "present",
-      "location": "Mahilpur, Distt- Hoshiarpur, Punjab"
-    },
-    {
-      "institution": "Govt High School",
-      "degree": "High School Diploma",
-      "field_of_study": "",
-      "start": "2007-03",
-      "end": "present",
-      "location": "Kalra, District Jalandhar, Punjab"
-    }
-  ],
+  "education": [],
   "projects": [],
   "certifications": [],
   "languages": [],
@@ -120,7 +120,8 @@
   "meta": {
     "language": "en",
     "source_file": "Jaspreet Singh CV.odt",
-    "generated_at": "2025-08-24T23:55:44.487718Z",
-    "model": "phi-3.5-mini-instruct-q5_k_s"
+    "generated_at": "2025-08-25T01:00:02.562236Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s",
+    "doc_type": "resume"
   }
 }

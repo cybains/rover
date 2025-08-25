@@ -1,0 +1,133 @@
+{
+  "full_name": "Amanpreet Singh Bains",
+  "job_title": "Feinkost Verkäufer",
+  "contact": {
+    "emails": [
+      "abainscp@gmail.com"
+    ],
+    "phones": [],
+    "email": "",
+    "address": "Rosensteingasse 81-83/6/17, Wien 17"
+  },
+  "summary": "Experienced Feinkost Verkäufer with additional responsibilities in inventory management and product selection using REWE ordering software.",
+  "keywords": [
+    "Data Analysis",
+    "Excel",
+    "Inventory Management",
+    "Power BI",
+    "Python",
+    "R",
+    "REWE Ordering Software",
+    "Sales Assistant",
+    "WWS"
+  ],
+  "skills": {
+    "hard": [
+      "Data Analyses",
+      "Financial Evaluation",
+      "Operational Health"
+    ],
+    "soft": [
+      "Adaptability",
+      "Problem Solving",
+      "Teamwork"
+    ],
+    "tools": [
+      "Excel",
+      "Power BI",
+      "Python",
+      "R",
+      "WWS"
+    ],
+    "domains": [
+      "Hospitality Industry"
+    ]
+  },
+  "experience": [
+    {
+      "company": "BILLA/BILLA DEMIR",
+      "title": "Feinkost Verkäufer",
+      "start": "2022-06",
+      "end": "2024-09",
+      "location": "Wien 14",
+      "bullets": [
+        "Started as a sales assistant in the delicatessen department (Feinkost).",
+        "Took on additional responsibilities, including managing the delicatessen inventory and product selection with the REWE ordering software.",
+        "Carried out basic data analyses to optimize products and evaluate the financial and operational health of the business."
+      ]
+    },
+    {
+      "company": "Four Seasons Durians",
+      "title": "Production Worker and Restuarant Manager forecast",
+      "start": "2014",
+      "end": "2016",
+      "location": "Singapur",
+      "bullets": []
+    }
+  ],
+  "education": [
+    {
+      "institution": "Wirtschaftsuniversität Wien",
+      "degree": "Bachelors of Business and Economics",
+      "field_of_study": "On Hold",
+      "start": "2019",
+      "end": "present",
+      "location": ""
+    },
+    {
+      "institution": "FIC/SFU",
+      "degree": "Supervised Machine Learning",
+      "field_of_study": "Advanced Learning",
+      "start": "2011",
+      "end": "2013",
+      "location": ""
+    }
+  ],
+  "projects": [],
+  "certifications": [
+    {
+      "name": "R, Quant Analysis, Business & Economics Foundations",
+      "issuer": "Deep Learning.AI",
+      "date": "COURSERA"
+    },
+    {
+      "name": "Machine Learning Specialization",
+      "issuer": "Deep Learning.AI",
+      "date": "COURSERA"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Punjabi",
+      "level": "Mothertongue"
+    },
+    {
+      "language": "Hindi",
+      "level": "Mothertongue"
+    },
+    {
+      "language": "English",
+      "level": "Fluent"
+    }
+  ],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "language": "en",
+    "source_file": "CV BAINS EN PIC.pdf",
+    "generated_at": "2025-08-25T00:52:01.096534Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s",
+    "doc_type": "resume"
+  }
+}

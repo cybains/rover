@@ -1,16 +1,11 @@
 {
-  "full_name": "Jaspreet Singh",
+  "full_name": "",
   "job_title": "",
   "contact": {
     "emails": [],
-    "phones": [
-      "0075020963",
-      "107918",
-      "144059",
-      "350816",
-      "7070635091"
-    ],
-    "address": ""
+    "phones": [],
+    "email": "",
+    "address": []
   },
   "summary": "",
   "keywords": [],
@@ -20,7 +15,16 @@
     "tools": [],
     "domains": []
   },
-  "experience": [],
+  "experience": [
+    {
+      "company": "",
+      "title": "",
+      "start": "",
+      "end": "",
+      "location": "",
+      "bullets": []
+    }
+  ],
   "education": [],
   "projects": [],
   "certifications": [],
@@ -40,8 +44,9 @@
   "availability": "",
   "meta": {
     "language": "en",
-    "source_file": "Jaspreet Singh.pdf",
-    "generated_at": "2025-08-24T23:56:52.811973Z",
-    "model": "phi-3.5-mini-instruct-q5_k_s"
+    "source_file": "Passport.pdf",
+    "generated_at": "2025-08-25T01:06:02.752688Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s",
+    "doc_type": "resume"
   }
 }

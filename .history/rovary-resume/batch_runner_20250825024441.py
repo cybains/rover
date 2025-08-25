@@ -136,34 +136,5 @@ def run_one_with_classification(file_path: str, force_type: str = None):
             print("✖ Could not write minimal JSON file.", flush=True)
 
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("target", help="Directory or file path to process")
-    parser.add_argument("--force-type", type=str, choices=["resume","certificate","passport","other"],
-                        help="Override document classification for all files")
-    args = parser.parse_args()
-
-    target = args.target
-    if os.path.isdir(target):
-        files = list(iter_supported_files(target))
-        pf(f"Batch mode: found {len(files)} files under {os.path.abspath(target)}")
-        for fp in files:
-            try:
-                run_one_with_classification(fp, force_type=args.force_type)
-            except Exception as e:
-                pf(f"✖ Error on {fp}: {e}")
-    else:
-        run_one_with_classification(target, force_type=args.force_type)
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
-
 if __name__ == "__main__":
     main()

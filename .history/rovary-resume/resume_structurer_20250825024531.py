@@ -49,7 +49,6 @@ TRY_LLM_ON_NONRESUME = True  # still ask LLM to structure whatever it can
 # ----------------------------
 # Errors
 # ----------------------------
-
 class LLMError(Exception):
     pass
 

@@ -1,0 +1,126 @@
+{
+  "full_name": "",
+  "job_title": "",
+  "contact": {
+    "emails": [],
+    "phones": [],
+    "email": "",
+    "address": []
+  },
+  "summary": "Experienced and safety-focused driver with over 25 years of heavy and light vehicle driving experience. Skilled in transporting passengers and goods safely, conducting vehicle inspections, and maintaining accurate logs. Adaptable, with strong problem-solving skills and a background in electrical installations.",
+  "keywords": [
+    "Accurate Logs",
+    "Adaptable",
+    "Commercial Driving",
+    "Electrical Installation",
+    "Heavy Vehicle Driver",
+    "Problem-solving",
+    "Safety-focused",
+    "Vehicle Inspections"
+  ],
+  "skills": {
+    "hard": [
+      "Commercial Driving",
+      "Maintenance",
+      "Problem-solving",
+      "Vehicle Safety"
+    ],
+    "soft": [
+      "Interpersonal Skills"
+    ],
+    "tools": [],
+    "domains": []
+  },
+  "experience": [
+    {
+      "company": "Qatar Shell",
+      "title": "ITI Electrician",
+      "start": "2024-09",
+      "end": "present",
+      "location": "Ras Laffan Industrial City, Qatar",
+      "bullets": [
+        "Responsible for transporting re(cid:976)inery equipment and operating ITI Kalgidhar (Pvt.)",
+        "Provided timely and ef(cid:976)icient transportation services, enhancing - Technology-based customer satisfaction.",
+        "Ensured the safe handling and Navigation transportation of passengers within the hospital premises."
+      ]
+    },
+    {
+      "company": "Qatar Engineering & Construction Company W.L.L.",
+      "title": "Bus Driver",
+      "start": "2024-06",
+      "end": "2024-08",
+      "location": "Laffan Industrial City, Qatar",
+      "bullets": [
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus.",
+        "Maintain accurate records of daily logs, incident reports."
+      ]
+    },
+    {
+      "company": "GNA Gears Private Limited",
+      "title": "Electrician",
+      "start": "2012-01",
+      "end": "2018-07",
+      "location": "Mehtiana Hoshiarpur, Punjab, India",
+      "bullets": [
+        "Provided timely and ef(cid:976)icient transportation services, enhancing - Technology-based customer satisfaction.",
+        "Ensured the safe handling and Navigation transportation of passengers within the hospital premises."
+      ]
+    },
+    {
+      "company": "King Abdulaziz Airbase Hospital, Jeddah",
+      "title": "Heavy Duty Trailer Driver",
+      "start": "2018-08",
+      "end": "2021-04",
+      "location": "Jeddah, Saudi Arabia",
+      "bullets": [
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus.",
+        "Maintain accurate records of daily logs, incident reports."
+      ]
+    },
+    {
+      "company": "ORYX GTL",
+      "title": "Heavy Duty Trailer Driver",
+      "start": "2023-09",
+      "end": "2024-06",
+      "location": "March 2007",
+      "bullets": [
+        "Responsible for transporting re(cid:976)inery equipment and operating",
+        "Conduct pre-trip inspections to ensure safe operation of the 66 seater bus.",
+        "Maintain accurate records of daily logs, incident reports."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Govt High School, Kalra",
+      "degree": "High School Diploma",
+      "field_of_study": "",
+      "start": "unknown",
+      "end": "unknown",
+      "location": "District Jalandhar, Punjab"
+    }
+  ],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "language": "en",
+    "source_file": "Jaspreet CV.pdf",
+    "generated_at": "2025-08-25T00:55:47.061964Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s",
+    "doc_type": "resume"
+  }
+}

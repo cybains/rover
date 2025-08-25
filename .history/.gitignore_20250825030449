@@ -17,8 +17,7 @@ build/
 /data/inbox/*
 /data/logs/*
 /llama
-/samples
-
+/
 # --- data ---
 /data/*
 !/data/.gitkeep

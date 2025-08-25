@@ -43,16 +43,11 @@ if os.path.isdir(gs_path) and gs_path not in os.environ.get("PATH", ""):
 OUTPUT_DIR = Path(__file__).parent / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-TRY_LLM_ON_NONRESUME = True  # still ask LLM to structure whatever it can
-
-
 # ----------------------------
 # Errors
 # ----------------------------
-
 class LLMError(Exception):
     pass
-
 
 # ----------------------------
 # Generic text normalization
@@ -299,53 +294,27 @@ MRZ_RE = re.compile(r"^[A-Z0-9<]{20,}$")
 PASSPORT_HINTS = re.compile(r"(?i)\bpassport\b|P<|machine[- ]readable", re.I)
 CERT_HINTS = re.compile(r"(?i)(certificate|trade test|board of|education board|marks?|license|licen[cs]e|driving)", re.I)
 
-def classify_document(text: str, filename: str = "") -> str:
-    """Heuristic doc classifier with strong passport MRZ detection. Fail-safe bias: 'resume'."""
-    t = (text or "").strip()
-    if not t:
-        return "other"
-
-    fname = (filename or "").lower()
-    if "passport" in fname:
-        # filename says passport → trust unless very strong resume signal
-        filename_passport_hint = True
-    else:
-        filename_passport_hint = False
-
-    lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
-    # MRZ: 2 consecutive lines of A–Z0–9<, length 30–44, with at least one '<<'
-    def is_mrz_line(s: str) -> bool:
-        if not (30 <= len(s) <= 44):
-            return False
-        if not re.fullmatch(r"[A-Z0-9<]+", s):
-            return False
-        return "<<" in s
-
-    mrz_idx = [i for i, ln in enumerate(lines) if is_mrz_line(ln)]
-    mrz_pair = any((j + 1 in mrz_idx) for j in mrz_idx)  # consecutive pair
-
-    if mrz_pair or (filename_passport_hint and _contains_any(t.lower(), PASSPORT_KEYWORDS) >= 1):
-        return "passport"
-
-    # Resume vs certificate signals
-    cert_score = _contains_any(t.lower(), CERT_KEYWORDS)
-    resume_score = _contains_any(t.lower(), RESUME_KEYWORDS)
-    bullet_count = sum(1 for ln in lines if BULLET_RE.match(ln))
-    year_hits = len(re.findall(r"\b(19|20)\d{2}\b", t))
-    low_quality = is_low_quality_text(t, min_length=250)
-
-    # Strong cert
-    if cert_score >= 3 and resume_score <= 1 and bullet_count <= 1:
+def classify_document(text: str) -> str:
+    """Return 'resume', 'id_doc', 'certificate', or 'other'."""
+    if not text or is_low_quality_text(text):
+        # still try to catch MRZ & certs
+        pass
+    lines = [l.strip() for l in (text or "").splitlines() if l.strip()]
+    # MRZ-like lines often 2–3 lines of long < chars
+    mrz_hits = sum(1 for l in lines if MRZ_RE.fullmatch(l.replace(" ", "")))
+    if mrz_hits >= 2 or PASSPORT_HINTS.search(text or ""):
+        return "id_doc"
+    if CERT_HINTS.search(text or ""):
         return "certificate"
-    # Strong resume
-    if resume_score >= 2 or bullet_count >= 3 or year_hits >= 4:
+    # Heuristics for resume: presence of headings / years + role words
+    headings = sum(1 for l in lines if is_heading(l))
+    years = len(re.findall(r"(19|20)\d{2}", text or ""))
+    if headings >= 1 and years >= 2:
         return "resume"
-    # Low-quality but certificate-ish
-    if low_quality and cert_score >= 2 and resume_score == 0:
-        return "certificate"
-
-    # Default bias: try to parse as resume
-    return "resume"
+    # fallback by density of sentences & emails/phones
+    if EMAIL_RE.search(text or "") or PHONE_CAND_RE.search(text or ""):
+        return "resume"
+    return "other"
 
 # ----------------------------
 # Chunking & merge
@@ -559,98 +528,6 @@ def _contains_any(text: str, words: list) -> int:
     t = text.lower()
     return sum(1 for w in words if w in t)
 
-# ----------------------------
-# ID / Passport extraction (deterministic)
-# ----------------------------
-MRZ_LINE_RE = re.compile(r"^[A-Z0-9<]{30,50}$")
-DOB_RE      = re.compile(r"\b(?:date of birth|dob)\s*[:\- ]\s*([0-9]{1,2}[\/\.\-][0-9]{1,2}[\/\.\-][0-9]{2,4})", re.I)
-DOE_RE      = re.compile(r"\b(?:date of expiry|expiry|expires)\s*[:\- ]\s*([0-9]{1,2}[\/\.\-][0-9]{1,2}[\/\.\-][0-9]{2,4})", re.I)
-DOCNO_RE    = re.compile(r"\b(passport|document)\s*(no|number)?\s*[:\- ]\s*([A-Z0-9]{6,15})", re.I)
-NAT_RE      = re.compile(r"\b(nationality)\s*[:\- ]\s*([A-Za-z ]{2,})", re.I)
-NAME_RE     = re.compile(r"\b(surname|last name|family name|name)\s*[:\- ]\s*([A-Za-z ,.'\-]{2,})", re.I)
-GIVEN_RE    = re.compile(r"\b(given names?|first name)\s*[:\- ]\s*([A-Za-z ,.'\-]{2,})", re.I)
-
-def _safe_dt(s: str) -> str:
-    try:
-        dt = dateparser.parse(s, dayfirst=True) or dateparser.parse(s, dayfirst=False)
-        return dt.strftime("%Y-%m-%d") if dt else ""
-    except Exception:
-        return ""
-
-def _parse_mrz(lines: list) -> dict:
-    """
-    Basic TD3 two-line MRZ parser:
-    P<ISSUERNAME<<GIVEN<NAMES<<<<<<<<<<<<<<<<<<<
-    NNNNNNNNNNISSUERYYMMDDMYYMMDD<<<<<<<<<<<<<NN
-    We’ll grab: document_number, issuing_state, nationality?, surname, given_names, dob, sex, expiry
-    """
-    mrz = [ln.strip() for ln in lines if MRZ_LINE_RE.match(ln)]
-    if len(mrz) < 2:
-        return {}
-
-    l1, l2 = mrz[0], mrz[1]
-    out = {}
-
-    # Line 1: P<XXXNAME<<GIVEN<NAMES
-    # First char is 'P', then '<', then issuing_state (3 letters)
-    if len(l1) >= 5 and l1[0] in ("P", "A", "C"):  # passport types
-        issuing = l1[2:5].replace("<", "").strip()
-        out["issuing_state"] = issuing or ""
-
-        # Name field after position 5: SURNAME<<GIVEN<NAMES
-        name_field = l1[5:].strip("<")
-        parts = name_field.split("<<", 1)
-        surname = parts[0].replace("<", " ").strip() if parts else ""
-        given   = parts[1].replace("<", " ").strip() if len(parts) > 1 else ""
-        out["surname"] = surname
-        out["given_names"] = given
-
-    # Line 2: document number (9 chars) + nationality (3) + dob (6) + sex (1) + expiry (6)
-    if len(l2) >= 30:
-        docno = l2[0:9].replace("<", "").strip()
-        nat   = l2[10:13].replace("<", "").strip()
-        dob   = l2[13:19]
-        sex   = l2[20:21]
-        doe   = l2[21:27]
-        # Normalize dates (YYMMDD)
-        def yymmdd(x):
-            if not re.fullmatch(r"\d{6}", x or ""): return ""
-            yy, mm, dd = x[0:2], x[2:4], x[4:6]
-            # naive century heuristic: 00-24 -> 2000s, else 1900s
-            century = "20" if int(yy) <= 24 else "19"
-            return f"{century}{yy}-{mm}-{dd}"
-        out.update({
-            "document_number": docno,
-            "nationality": nat,
-            "date_of_birth": yymmdd(dob),
-            "sex": {"M":"M","F":"F"}.get(sex, ""),
-            "date_of_expiry": yymmdd(doe),
-        })
-    return {k:v for k,v in out.items() if v}
-
-def extract_id_document_fields(text: str) -> dict:
-    """Try MRZ first; fall back to loose regex for common fields."""
-    lines = [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
-    mrz = _parse_mrz(lines)
-    if mrz:
-        return {"source": "mrz", **mrz}
-
-    t = text or ""
-    d = {}
-    m = DOCNO_RE.search(t);      d["document_number"] = (m.group(3) if m else "") or d.get("document_number","")
-    m = DOB_RE.search(t);        d["date_of_birth"]   = _safe_dt(m.group(1)) if m else d.get("date_of_birth","")
-    m = DOE_RE.search(t);        d["date_of_expiry"]  = _safe_dt(m.group(1)) if m else d.get("date_of_expiry","")
-    m = NAT_RE.search(t);        d["nationality"]     = (m.group(2).strip() if m else "") or d.get("nationality","")
-    m = NAME_RE.search(t);       d["surname"]         = (m.group(2).strip() if m else "") or d.get("surname","")
-    m = GIVEN_RE.search(t);      d["given_names"]     = (m.group(2).strip() if m else "") or d.get("given_names","")
-    d["source"] = d.get("source","regex")
-    # drop empties
-    return {k:v for k,v in d.items() if v}
-
-
-
-
-
 def classify_document(text: str, filename: str = "") -> str:
     """Heuristic doc classifier. Fail-safe: prefer 'resume' unless strong signals suggest otherwise."""
     t = (text or "").strip()
@@ -863,9 +740,9 @@ def extract_structured_in_chunks(full_text: str, filename: str, build_messages_f
 def main():
     print("=== Rovari Local Resume Structurer v2 ===")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir", type=str, help="Process a directory (recursive). If omitted, opens file picker.")
+    parser.add_argument("--dir", type=str, help="Process all resumes in this directory (recursive).")
     parser.add_argument("--force-type", type=str, choices=["resume","certificate","passport","other"],
-                        help="Override document classification.")
+                        help="Force document type classification.")
     args = parser.parse_args()
     print("argv:", " ".join(os.sys.argv), flush=True)
 
@@ -874,131 +751,74 @@ def main():
         print(f"Batch mode: scanning {root}", flush=True)
         paths = list(iter_supported_files(root))
         print(f"Found {len(paths)} files:", flush=True)
-        for fp in paths: print(" -", fp, flush=True)
+        for fp in paths:
+            print(" -", fp, flush=True)
         if not paths:
             print("No supported files found. Exiting.", flush=True)
             return
     else:
         fp = pick_file()
         if not fp:
-            print("No file selected. Exiting."); return
+            print("No file selected. Exiting.")
+            return
         paths = [fp]
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
     for file_path in paths:
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        base = Path(file_path).stem
-        txt_out = OUTPUT_DIR / f"{base}.{ts}.txt"
-        json_out = OUTPUT_DIR / f"{base}.{ts}.json"
-        err_out = OUTPUT_DIR / f"{base}.{ts}.error.txt"
-
         try:
             print(f"\n=== Processing: {file_path}", flush=True)
-            # 1) Extract + normalize
             text = process_file(file_path)
             text = normalize_text_generic(text)
             segments = segment_by_shape(text)
             contacts = extract_contacts(text)
             lang = detect_language(text)
 
-            # 2) Save raw text
+            ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+            base = Path(file_path).stem
+            txt_out = OUTPUT_DIR / f"{base}.{ts}.txt"
+            json_out = OUTPUT_DIR / f"{base}.{ts}.json"
             txt_out.write_text(text, encoding="utf-8")
             print(f"✔ Saved extracted text → {txt_out}", flush=True)
 
-            # 3) Classify
+            # --- Classification gate ---
             doc_type = args.force_type or classify_document(text, os.path.basename(file_path))
             print(f"• Classified as '{doc_type}'", flush=True)
 
-            # 4) Build result dict (always define d)
-            d = {
-                "full_name": "", "job_title": "",
-                "contact": contacts, "summary": "",
-                "keywords": [],
-                "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
-                "experience": [], "education": [], "projects": [],
-                "certifications": [], "languages": [], "publications": [],
-                "volunteering": [], "awards": [], "links": [],
-                "clearances": [], "preferences": {}, "availability": "",
-                "meta": {
-                    "language": lang,
-                    "source_file": os.path.basename(file_path),
-                    "generated_at": datetime.utcnow().isoformat() + "Z",
-                    "model": MODEL_NAME,
-                    "doc_type": doc_type,
-                }
-            }
-
-            # 5) Parse path depending on type
             if doc_type == "resume":
-                try:
-                    d2 = extract_structured_in_chunks(text, os.path.basename(file_path), build_messages)
-                    d2 = postprocess_structured(d2, contacts, lang)
-                    d = merge_structured_json(d, d2)
-                except Exception as e:
-                    err = f"Resume parsing failed, wrote minimal JSON. Error: {e}"
-                    print(f"ℹ️  {err}", flush=True)
-                    err_out.write_text(err, encoding="utf-8")
+                # Prefer chunked extraction if available
+                d = extract_structured_in_chunks(text, os.path.basename(file_path), build_messages)
+                d = postprocess_structured(d, contacts, lang)
             else:
-                # Deterministic ID-doc fields + optional LLM
-                try:
-                    id_doc = extract_id_document_fields(text)
-                    if id_doc:
-                        d["meta"]["id_document"] = id_doc
-                except Exception as e:
-                    print(f"ℹ️  ID extraction skipped: {e}", flush=True)
+                # Minimal JSON for non-resume docs
+                d = {
+                    "full_name": "", "job_title": "", "contact": contacts, "summary": "",
+                    "keywords": [], "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
+                    "experience": [], "education": [], "projects": [], "certifications": [],
+                    "languages": [], "publications": [], "volunteering": [], "awards": [],
+                    "links": [], "clearances": [], "preferences": {}, "availability": "",
+                    "meta": {
+                        "language": lang, "source_file": os.path.basename(file_path),
+                        "generated_at": datetime.utcnow().isoformat() + "Z",
+                        "model": MODEL_NAME, "doc_type": doc_type
+                    }
+                }
+                print(f"ℹ️  Non-resume '{doc_type}'. Skipped LLM.", flush=True)
 
-                if TRY_LLM_ON_NONRESUME:
-                    try:
-                        msgs = build_messages(text, os.path.basename(file_path), {"_all": text, "_doc_type": doc_type})
-                        raw = call_llm(msgs)
-                        part = parse_llm_json(raw)
-                        part_d = part.model_dump() if hasattr(part, "model_dump") else part.dict()
-                        d = merge_structured_json(d, part_d)
-                    except Exception as e:
-                        msg = f"LLM on non-resume failed softly: {e}"
-                        print(f"ℹ️  {msg}", flush=True)
-                        err_out.write_text(msg, encoding="utf-8")
-
-            # 6) Save JSON (always)
+            # Ensure meta fields
             d.setdefault("meta", {})
             d["meta"].update({
                 "source_file": os.path.basename(file_path),
                 "generated_at": datetime.utcnow().isoformat() + "Z",
                 "model": MODEL_NAME,
-                "doc_type": d["meta"].get("doc_type", doc_type),
+                "doc_type": doc_type,
             })
-            json_out.write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
+
+            OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+            Path(json_out).write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
             print(f"✔ Saved structured JSON → {json_out}", flush=True)
 
         except Exception as e:
-            # last-resort minimal JSON with error recorded
-            err_text = f"Fatal error on {file_path}: {e}"
-            print(f"✖ {err_text}", flush=True)
-            try: err_out.write_text(err_text, encoding="utf-8")
-            except Exception: pass
-            minimal = {
-                "full_name": "", "job_title": "",
-                "contact": {"emails": [], "phones": [], "address": ""},
-                "summary": "", "keywords": [],
-                "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
-                "experience": [], "education": [], "projects": [],
-                "certifications": [], "languages": [], "publications": [],
-                "volunteering": [], "awards": [], "links": [],
-                "clearances": [], "preferences": {}, "availability": "",
-                "meta": {
-                    "error": err_text,
-                    "source_file": os.path.basename(file_path),
-                    "generated_at": datetime.utcnow().isoformat() + "Z",
-                    "model": MODEL_NAME,
-                    "doc_type": "other",
-                }
-            }
-            try:
-                json_out.write_text(json.dumps(minimal, indent=2, ensure_ascii=False), encoding="utf-8")
-                print(f"✔ Wrote minimal JSON with error → {json_out}", flush=True)
-            except Exception:
-                print("✖ Could not write minimal JSON file.", flush=True)
+            print(f"✖ Error on {file_path}: {e}", flush=True)
+
 
 if __name__ == "__main__":
     main()

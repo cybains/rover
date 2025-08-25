@@ -1,0 +1,76 @@
+{
+  "full_name": "Jaspreet Singh",
+  "job_title": "Bus Driver",
+  "contact": {
+    "emails": [
+      "jaspreetsinghparhar@gmail.com"
+    ],
+    "phones": [
+      "+97431314828"
+    ],
+    "email": "",
+    "address": "Ras Laffan Industrial City, Qatar"
+  },
+  "summary": "Experienced Bus Driver with a focus on safety and customer satisfaction.",
+  "keywords": [
+    "Customer Service",
+    "Safety",
+    "Transportation"
+  ],
+  "skills": {
+    "hard": [
+      "Driving",
+      "Safety Procedures",
+      "Vehicle Maintenance"
+    ],
+    "soft": [
+      "Communication",
+      "Interpersonal Skills",
+      "Problem-Solving"
+    ],
+    "tools": [],
+    "domains": []
+  },
+  "experience": [
+    {
+      "company": "",
+      "title": "",
+      "start": "",
+      "end": "",
+      "location": "",
+      "bullets": []
+    },
+    {
+      "company": "",
+      "title": "",
+      "start": "present",
+      "end": "",
+      "location": "",
+      "bullets": []
+    }
+  ],
+  "education": [],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "language": "en",
+    "source_file": "Jaspreet Singh.pdf",
+    "generated_at": "2025-08-25T01:04:41.916641Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s",
+    "doc_type": "resume"
+  }
+}
