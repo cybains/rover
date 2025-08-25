@@ -15,62 +15,46 @@ def iter_supported_files(root: str):
 def pf(msg): print(msg, flush=True)
 
 def run_one(file_path: str):
-    print(f"\n=== Processing: {file_path}", flush=True)
+    pf(f"\n=== Processing: {file_path}")
+   text = rs.process_file(file_path)
+try:
+    text = rs.normalize_text_generic(text)
+    segments = rs.segment_by_shape(text)
+    contacts = rs.extract_contacts(text)   # for merge later
+    lang = rs.detect_language(text)
+except Exception:
+    segments, contacts, lang = {"_all": text}, {}, "unknown"
 
-    # 1) Extract raw text
-    text = rs.process_file(file_path)
+    segments, contacts, lang = {"_all": text}, {}, "unknown"
 
-    # 2) Optional normalize/segment + contacts/lang (works only if you added helpers)
-    try:
-        text = rs.normalize_text_generic(text)
-        segments = rs.segment_by_shape(text)
-        contacts = rs.extract_contacts(text)
-        lang = rs.detect_language(text)
-    except Exception:
-        segments = {"_all": text}
-        contacts, lang = {}, "unknown"
+    # if you added normalizers/segmenters, use them; otherwise keep raw text
+    segments = {"_all": text}
 
-    # 3) Save extracted text
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     base = Path(file_path).stem
     txt_out = rs.OUTPUT_DIR / f"{base}.{ts}.txt"
     json_out = rs.OUTPUT_DIR / f"{base}.{ts}.json"
     txt_out.write_text(text, encoding="utf-8")
-    print(f"✔ Saved extracted text → {txt_out}", flush=True)
+    pf(f"✔ Saved extracted text → {txt_out}")
 
-    # 4) Build messages (fallback if your build_messages doesn't accept segments)
+    # build messages (support both signatures)
     try:
         messages = rs.build_messages(text, os.path.basename(file_path), segments)
     except TypeError:
         messages = rs.build_messages(text, os.path.basename(file_path))
 
-    # 5) Get structured JSON dict `d`
-    # Prefer chunked extraction if available; otherwise single-shot
-    if hasattr(rs, "extract_structured_in_chunks"):
-        print("[CHUNK 1/…] → LLM (chunked extraction)", flush=True)
-        d = rs.extract_structured_in_chunks(text, os.path.basename(file_path), rs.build_messages)
-    else:
-        print("→ Calling local LLM…", flush=True)
-        raw = rs.call_llm(messages)
-        structured = rs.parse_llm_json(raw)
-        d = structured.model_dump() if hasattr(structured, "model_dump") else structured.dict()
-
-    # 6) Post-process (only if helper exists) — this is where `d` MUST exist already
-    try:
-        d = rs.postprocess_structured(d, contacts, lang)
-    except Exception:
-        pass
-
-    # 7) Add meta and save
-    d.setdefault("meta", {})
-    d["meta"].update({
+    pf("→ Calling local LLM…")
+    t0 = time.time()
+    
+    d = rs.extract_structured_in_chunks(text, os.path.basename(file_path), rs.build_messages)
+    d["meta"] = {
+        **d.get("meta", {}),
         "source_file": os.path.basename(file_path),
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "model": rs.MODEL_NAME,
-    })
+    }
     json_out.write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"✔ Saved structured JSON → {json_out}", flush=True)
-
+    pf(f"✔ Saved structured JSON → {json_out}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

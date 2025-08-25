@@ -1,0 +1,46 @@
+{
+  "full_name": "",
+  "job_title": "",
+  "contact": {
+    "emails": [],
+    "phones": [
+      "0706550",
+      "089121",
+      "146000",
+      "20965925"
+    ],
+    "address": ""
+  },
+  "summary": "",
+  "keywords": [],
+  "skills": {
+    "hard": [],
+    "soft": [],
+    "tools": [],
+    "domains": []
+  },
+  "experience": [],
+  "education": [],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "language": "en",
+    "source_file": "Passport.pdf",
+    "generated_at": "2025-08-24T23:57:40.151871Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "full_name": "Jaspreet Singh",
+  "job_title": "",
+  "contact": {
+    "emails": [],
+    "phones": [
+      "0075020963",
+      "107918",
+      "144059",
+      "350816",
+      "7070635091"
+    ],
+    "address": ""
+  },
+  "summary": "",
+  "keywords": [],
+  "skills": {
+    "hard": [],
+    "soft": [],
+    "tools": [],
+    "domains": []
+  },
+  "experience": [],
+  "education": [],
+  "projects": [],
+  "certifications": [],
+  "languages": [],
+  "publications": [],
+  "volunteering": [],
+  "awards": [],
+  "links": [],
+  "clearances": [],
+  "preferences": {
+    "relocation": "",
+    "remote": "",
+    "travel": "",
+    "salary": "",
+    "locations": []
+  },
+  "availability": "",
+  "meta": {
+    "language": "en",
+    "source_file": "Jaspreet Singh.pdf",
+    "generated_at": "2025-08-24T23:56:52.811973Z",
+    "model": "phi-3.5-mini-instruct-q5_k_s"
+  }
+}

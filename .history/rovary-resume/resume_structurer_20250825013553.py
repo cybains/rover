@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 # add near top
 import argparse
-
+from dateutil import parser as dateparser
 
 # --- Generic pre-clean/segment & contacts ---
 import unicodedata, re

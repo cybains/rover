@@ -22,111 +22,6 @@ from pathlib import Path
 import argparse
 
 
-# --- Generic pre-clean/segment & contacts ---
-import unicodedata, re
-from dateutil import parser as dateparser
-import phonenumbers
-try:
-    from langdetect import detect as _ld_detect
-except Exception:
-    _ld_detect = lambda _: "unknown"
-
-def normalize_text_generic(text: str) -> str:
-    t = unicodedata.normalize("NFKC", text).replace("\u00ad", "")  # soft hyphen
-    # collapse weird inner-spacing like "A M A N" -> "AMAN" (common in headers)
-    t = re.sub(r"(?:\b[A-Z]\s)+(?:[A-Z]\b)", lambda m: m.group(0).replace(" ", ""), t)
-    # collapse spaces, join wrapped lines where prev ends with word/comma and next starts lowercase
-    t = re.sub(r"[ \t]+", " ", t)
-    lines, out = [l.rstrip() for l in t.splitlines()], []
-    for i, l in enumerate(lines):
-        if out:
-            prev = out[-1]
-            if re.search(r"[A-Za-z0-9,]$", prev) and (l[:1].islower()):
-                out[-1] = prev + " " + l.lstrip(); continue
-        out.append(l)
-    t = "\n".join(out)
-    # compress blank lines
-    return re.sub(r"\n{3,}", "\n\n", t).strip()
-
-def is_heading(line: str) -> bool:
-    s = line.strip()
-    if not s: return False
-    # short, title-like, often caps or trailing colon
-    if len(s.split()) <= 8 and s.endswith(":"): return True
-    letters = re.findall(r"[A-Za-z]", s)
-    if letters:
-        caps = sum(1 for ch in letters if ch.isupper())
-        if caps / len(letters) >= 0.65 and len(s.split()) <= 8:
-            return True
-    return False
-
-def map_to_canonical(label: str) -> str:
-    # fuzzy-but-tiny hints across languages; unknown -> "other"
-    label = label.lower().strip(" :")
-    H = {
-        "experience": ["experience","work","employment","career","beruf","erfahrung","praxis"],
-        "education": ["education","academic","studies","ausbildung","bildung","studium","school"],
-        "skills": ["skills","kenntnisse","fähigkeiten","competencies","it","computer"],
-        "languages": ["languages","sprachen","idiomas","langues"],
-        "projects": ["projects","projekt"],
-        "certifications": ["certifications","certificates","zertifikat","zertifikate"],
-        "profile": ["profile","summary","objective","about","über mich"],
-        "awards": ["awards","honors","preise"],
-        "publications": ["publications","publikationen"],
-        "volunteering": ["volunteer","ehrenamt","community"],
-        "references": ["references","referenzen","referees"],
-    }
-    best, bestscore = "other", 0
-    for canon, hints in H.items():
-        for h in hints+[canon]:
-            # quick partial match
-            score = len(set(label.split()) & set(h.split()))*50
-            if label==h: score = 100
-            if h in label or label in h: score = max(score, 80)
-            if score > bestscore: bestscore, best = score, canon
-    return best if bestscore >= 70 else "other"
-
-def segment_by_shape(text: str) -> dict:
-    segs, current = {}, "profile"
-    segs[current] = []
-    for line in text.splitlines():
-        if is_heading(line):
-            current = map_to_canonical(re.sub(r":\s*$","",line.strip()))
-            segs.setdefault(current, [])
-            continue
-        segs[current].append(line)
-    return {k: "\n".join(v).strip() for k,v in segs.items() if any(s.strip() for s in v)}
-
-EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
-PHONE_RE = re.compile(r"(?:\+?\d[\d\s().\-]{6,}\d)")
-def extract_contacts(text: str, default_region="AT") -> dict:
-    emails = sorted(set(EMAIL_RE.findall(text)))
-    phones = []
-    for m in PHONE_RE.findall(text):
-        try:
-            for pm in phonenumbers.PhoneNumberMatcher(m, default_region):
-                phones.append(phonenumbers.format_number(pm.number, phonenumbers.PhoneNumberFormat.E164))
-        except Exception:
-            pass
-    phones = sorted(set(phones))
-    return {"emails": emails, "phones": phones}
-
-def detect_language(text: str) -> str:
-    try: return _ld_detect(text)
-    except Exception: return "unknown"
-
-def normalize_date(s: str) -> str:
-    s = s.strip().replace("–","-").replace("—","-").replace(" to ", " - ")
-    if not s or s.lower().startswith("present") or s.lower() in {"present","current","now"}:
-        return "present"
-    try:
-        dt = dateparser.parse(s, default=None, dayfirst=False, yearfirst=False)
-        if not dt: return s
-        return dt.strftime("%Y-%m")
-    except Exception:
-        # try just year
-        m = re.search(r"(19|20)\d{2}", s)
-        return m.group(0) if m else s
 
 
 
@@ -567,8 +462,7 @@ You are a structured data extractor. Return ONLY valid JSON that conforms to the
 """
 
 COMPACT_SCHEMA = {
-  "full_name": "", "job_title": "",
-  "contact": {"emails": [], "phones": [], "address": ""},
+  "full_name": "", "job_title": "", "contact": {"emails": [], "phones": [], "address": ""},
   "summary": "", "keywords": [],
   "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
   "experience": [{"company": "", "title": "", "start": "", "end": "", "location": "", "bullets": []}],
@@ -581,27 +475,6 @@ COMPACT_SCHEMA = {
   "clearances": [], "preferences": {"relocation": "", "remote": "", "travel": "", "salary": "", "locations": []},
   "availability": "", "meta": {}
 }
-
-def build_messages(resume_text: str, filename: str, segments: dict = None):
-    seg_dump = json.dumps(segments or {"_all": resume_text}, ensure_ascii=False)
-    system = (
-        "You extract structured resume data.\n"
-        "- Return ONLY valid JSON (start with '{', end with '}').\n"
-        "- Fill as many fields as possible. If unknown, use empty strings or arrays.\n"
-        "- company = employer/organization name; title = role (never swap).\n"
-        "- Normalize dates to 'YYYY-MM' (or 'YYYY') and use 'present' for current roles.\n"
-        "- Use short bullet points.\n"
-    )
-    user = (
-        "SCHEMA:\n" + json.dumps(COMPACT_SCHEMA, ensure_ascii=False) +
-        "\n\nTEXT SEGMENTS:\n" + seg_dump +
-        "\n\nFILENAME: " + filename
-    )
-    return [
-        {"role":"system","content":system},
-        {"role":"user","content":user}
-    ]
-
 
 
 def build_messages(resume_text: str, filename: str, segments: dict = None):
@@ -946,43 +819,6 @@ def extract_structured_in_chunks(full_text: str, filename: str, build_messages_f
     return merged or {}
 
 
-def postprocess_structured(d: dict, contacts: dict, lang: str) -> dict:
-    # Merge deterministic contacts if model missed them
-    d.setdefault("contact", {})
-    if contacts.get("emails") and not (d["contact"].get("emails")):
-        d["contact"]["emails"] = contacts["emails"]
-    if contacts.get("phones") and not d["contact"].get("phones"):
-        d["contact"]["phones"] = contacts["phones"]
-
-    # Normalize exp/edu dates + fix obvious company/title swaps
-    JOB_WORDS = re.compile(r"(verkäufer|teacher|manager|developer|designer|mechanic|baker|courier|assistant|engineer|analyst|consultant)", re.I)
-    for rec in d.get("experience", []) or []:
-        if isinstance(rec.get("start"), str): rec["start"] = normalize_date(rec["start"])
-        if isinstance(rec.get("end"), str):   rec["end"]   = normalize_date(rec["end"])
-        comp = (rec.get("company") or "").strip()
-        title = (rec.get("title") or "").strip()
-        if comp and title and JOB_WORDS.search(comp) and not JOB_WORDS.search(title):
-            # Looks like role is in company; swap
-            rec["company"], rec["title"] = title, comp
-        # short cleanup
-        rec["company"] = rec.get("company","").strip(" |-")
-        rec["title"]   = rec.get("title","").strip(" |-")
-        rec["location"]= rec.get("location","").replace("|","").strip()
-
-    for rec in d.get("education", []) or []:
-        if isinstance(rec.get("start"), str): rec["start"] = normalize_date(rec["start"])
-        if isinstance(rec.get("end"), str):   rec["end"]   = normalize_date(rec["end"])
-
-    # De-dup keywords and skills buckets
-    d["keywords"] = sorted(set(d.get("keywords") or []))
-    for b in ["hard","soft","tools","domains"]:
-        if isinstance(d.get("skills",{}).get(b), list):
-            d["skills"][b] = sorted(set(d["skills"][b]))
-
-    # Set meta
-    d.setdefault("meta", {})
-    d["meta"]["language"] = lang
-    return d
 
 
 def main():

@@ -567,8 +567,7 @@ You are a structured data extractor. Return ONLY valid JSON that conforms to the
 """
 
 COMPACT_SCHEMA = {
-  "full_name": "", "job_title": "",
-  "contact": {"emails": [], "phones": [], "address": ""},
+  "full_name": "", "job_title": "", "contact": {"emails": [], "phones": [], "address": ""},
   "summary": "", "keywords": [],
   "skills": {"hard": [], "soft": [], "tools": [], "domains": []},
   "experience": [{"company": "", "title": "", "start": "", "end": "", "location": "", "bullets": []}],
@@ -581,27 +580,6 @@ COMPACT_SCHEMA = {
   "clearances": [], "preferences": {"relocation": "", "remote": "", "travel": "", "salary": "", "locations": []},
   "availability": "", "meta": {}
 }
-
-def build_messages(resume_text: str, filename: str, segments: dict = None):
-    seg_dump = json.dumps(segments or {"_all": resume_text}, ensure_ascii=False)
-    system = (
-        "You extract structured resume data.\n"
-        "- Return ONLY valid JSON (start with '{', end with '}').\n"
-        "- Fill as many fields as possible. If unknown, use empty strings or arrays.\n"
-        "- company = employer/organization name; title = role (never swap).\n"
-        "- Normalize dates to 'YYYY-MM' (or 'YYYY') and use 'present' for current roles.\n"
-        "- Use short bullet points.\n"
-    )
-    user = (
-        "SCHEMA:\n" + json.dumps(COMPACT_SCHEMA, ensure_ascii=False) +
-        "\n\nTEXT SEGMENTS:\n" + seg_dump +
-        "\n\nFILENAME: " + filename
-    )
-    return [
-        {"role":"system","content":system},
-        {"role":"user","content":user}
-    ]
-
 
 
 def build_messages(resume_text: str, filename: str, segments: dict = None):
@@ -946,43 +924,6 @@ def extract_structured_in_chunks(full_text: str, filename: str, build_messages_f
     return merged or {}
 
 
-def postprocess_structured(d: dict, contacts: dict, lang: str) -> dict:
-    # Merge deterministic contacts if model missed them
-    d.setdefault("contact", {})
-    if contacts.get("emails") and not (d["contact"].get("emails")):
-        d["contact"]["emails"] = contacts["emails"]
-    if contacts.get("phones") and not d["contact"].get("phones"):
-        d["contact"]["phones"] = contacts["phones"]
-
-    # Normalize exp/edu dates + fix obvious company/title swaps
-    JOB_WORDS = re.compile(r"(verkäufer|teacher|manager|developer|designer|mechanic|baker|courier|assistant|engineer|analyst|consultant)", re.I)
-    for rec in d.get("experience", []) or []:
-        if isinstance(rec.get("start"), str): rec["start"] = normalize_date(rec["start"])
-        if isinstance(rec.get("end"), str):   rec["end"]   = normalize_date(rec["end"])
-        comp = (rec.get("company") or "").strip()
-        title = (rec.get("title") or "").strip()
-        if comp and title and JOB_WORDS.search(comp) and not JOB_WORDS.search(title):
-            # Looks like role is in company; swap
-            rec["company"], rec["title"] = title, comp
-        # short cleanup
-        rec["company"] = rec.get("company","").strip(" |-")
-        rec["title"]   = rec.get("title","").strip(" |-")
-        rec["location"]= rec.get("location","").replace("|","").strip()
-
-    for rec in d.get("education", []) or []:
-        if isinstance(rec.get("start"), str): rec["start"] = normalize_date(rec["start"])
-        if isinstance(rec.get("end"), str):   rec["end"]   = normalize_date(rec["end"])
-
-    # De-dup keywords and skills buckets
-    d["keywords"] = sorted(set(d.get("keywords") or []))
-    for b in ["hard","soft","tools","domains"]:
-        if isinstance(d.get("skills",{}).get(b), list):
-            d["skills"][b] = sorted(set(d["skills"][b]))
-
-    # Set meta
-    d.setdefault("meta", {})
-    d["meta"]["language"] = lang
-    return d
 
 
 def main():
