@@ -1,0 +1,5 @@
+requests
+PyYAML
+pymongo
+python-dateutil
+python-dotenv

@@ -1,0 +1,165 @@
+# Provider catalog for free job-listing sources (initial set)
+# Notes:
+# - RPM values here are YOUR local throttles (conservative defaults), not official limits.
+# - "countries"/"locations" lists are iterated by your refresh code (so you can cover everything).
+# - Attribution/ToS details live in ATTRIBUTION.md — follow them.
+
+version: 1
+defaults:
+  throttle:
+    rpm: 30
+  timeout_ms: 20000
+  user_agent: "${APP_USER_AGENT:-sufoniq-jobs/1.0}"
+
+providers:
+  - name: remotive
+    enabled: true
+    base_url: "https://remotive.com/api/remote-jobs"
+    endpoints:
+      list:
+        method: GET
+        path: ""                         # base endpoint returns current jobs
+        query_defaults: {}
+    pagination:
+      type: none
+    incremental:
+      type: none
+    auth:
+      type: none
+    etiquette:
+      attribution_required: true
+      notes: "Must link back to Remotive; do not submit their jobs to other job boards/aggregators."
+
+  - name: arbeitnow
+    enabled: true
+    base_url: "https://www.arbeitnow.com/api/job-board-api"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults: {}
+    # Their feed also supports ?page=; set page depth cautiously if you want more than the first page.
+    pagination:
+      type: query_page
+      page_param: "page"
+      max_pages_per_run: 2               # adjust later if needed
+    incremental:
+      type: none
+    auth:
+      type: none
+    etiquette:
+      attribution_required: link_back
+      notes: "Provide a link back to Arbeitnow.com."
+
+  - name: jobicy
+    enabled: true
+    base_url: "https://jobicy.com/api/v2/remote-jobs"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults:
+          count: 100                     # you can override in code if needed
+          # geo: ""                      # optional; omit to get global
+          # tag: ""                      # optional keyword tag
+    pagination:
+      type: none
+    incremental:
+      type: none
+    # Not auth, but send headers to avoid WAF 403s.
+    auth:
+      type: headers
+      headers:
+        User-Agent: "${APP_USER_AGENT}"
+        Accept: "application/json"
+    etiquette:
+      attribution_required: recommended
+      notes: "Use polite polling; do not redistribute to other aggregators."
+
+  - name: usajobs
+    enabled: true
+    base_url: "https://data.usajobs.gov/api/search"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults:
+          ResultsPerPage: 500
+          Page: 1
+    pagination:
+      type: page_count_field
+      page_param: "Page"                 # how you advance pages
+      count_field: "NumberOfPages"       # field to read total pages from the response
+    incremental:
+      type: filter
+    auth:
+      type: headers
+      headers:
+        Host: "data.usajobs.gov"
+        User-Agent: "${USAJOBS_USER_AGENT}"      # your real email
+        Authorization-Key: "${USAJOBS_API_KEY}"  # your key
+    etiquette:
+      attribution_required: recommended
+      notes: "Use required headers; respect rate limiting."
+
+  - name: jooble
+    enabled: true
+    base_url: "https://jooble.org/api"
+    endpoints:
+      list:
+        method: POST
+        path: "/${JOOBLE_API_KEY}"      # POST /api/{api_key}
+        body_defaults:
+          keywords: ""                  # set per run
+          location: ""                  # set per run
+    pagination:
+      type: none
+    incremental:
+      type: filter
+    auth:
+      type: key_in_path
+      env: ["JOOBLE_API_KEY"]
+    # For broad coverage, iterate locations (countries/cities) in your code using this list:
+    locations:
+      - "Austria"
+      - "Germany"
+      - "Poland"
+      - "United Kingdom"
+      - "United States"
+      - "Canada"
+      - "France"
+      - "Spain"
+      - "Italy"
+      - "Netherlands"
+      # add more as needed
+    etiquette:
+      attribution_required: recommended
+      notes: "Requires free API key; provide a location per request for best results."
+
+  - name: adzuna
+    enabled: true
+    base_url: "https://api.adzuna.com/v1/api/jobs"
+    endpoints:
+      list:
+        method: GET
+        path: "/{country}/search/{page}"
+        query_defaults:
+          app_id: "${ADZUNA_APP_ID}"
+          app_key: "${ADZUNA_APP_KEY}"
+          results_per_page: 50
+          what: ""
+          where: ""
+    pagination:
+      type: page_param
+      page_param: "{page}"
+      max_pages_per_run: 5               # rotate deeper pages across runs if needed
+    incremental:
+      type: pagination_recent_first
+    # Iterate all supported countries for full coverage:
+    countries: ["gb","us","at","au","be","br","ca","ch","de","es","fr","in","it","mx","nl","nz","pl","sg","za"]
+    auth:
+      type: query
+      env: ["ADZUNA_APP_ID", "ADZUNA_APP_KEY"]
+    etiquette:
+      attribution_required: true
+      notes: "Show 'Jobs by Adzuna' with link/logo per ToS."

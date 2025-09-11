@@ -1,0 +1,42 @@
+version: 1
+
+selector:
+  rule: enriched_at_missing_or_stale   # enrich if enriched_at missing OR last_seen_at > enriched_at
+
+batch:
+  size: 50
+  max_concurrency: 2
+  max_jobs_total: 0    # 0 = no cap this run
+
+llm:
+  provider: LLAMACPP
+  base_url: http://127.0.0.1:8080
+  model: Phi-3.5-mini-instruct-Q5_K_S.gguf
+  max_input_chars: 8000
+  max_output_tokens:
+    title_seniority: 64
+    skills: 128
+    remote_mode: 16
+    salary_extract: 64
+    summary: 160
+    responsibilities: 256
+    requirements: 256
+
+prompts:
+  title_seniority: services/ingest/jobs/enrich/prompts/title_seniority.md
+  skills:          services/ingest/jobs/enrich/prompts/skills.md
+  remote_mode:     services/ingest/jobs/enrich/prompts/remote_mode.md
+  salary_extract:  services/ingest/jobs/enrich/prompts/salary_extract.md
+  summary:         services/ingest/jobs/enrich/prompts/summary.md
+  responsibilities: services/ingest/jobs/enrich/prompts/responsibilities.md
+  requirements:     services/ingest/jobs/enrich/prompts/requirements.md
+
+language:
+  detect: true
+  prefer: [en, de, fr]
+  translate_summaries_to: ""   # "" = keep original language
+
+guardrails:
+  require_json_only: true
+  skip_on_parse_error: true
+  conservative_salary: true

@@ -1,0 +1,50 @@
+version: 1
+
+# Selection of documents to enrich
+selector:
+  # enrich if "enriched_at" missing or older than "last_seen_at"
+  rule: "enriched_at_missing_or_stale"
+
+# Batch behavior
+batch:
+  size: 50            # number of jobs per processing batch
+  max_concurrency: 2  # concurrent batches; tune based on llama.cpp capacity
+  max_jobs_total: 0   # 0 = no hard cap; set to limit a single run
+
+# LLM provider settings (taken from .env)
+llm:
+  provider: "${LLM_PROVIDER:-LLAMACPP}"
+  base_url: "${LLAMA_BASE_URL:-http://127.0.0.1:8080}"
+  model:    "${LLAMA_MODEL:-Phi-3.5-mini-instruct-Q5_K_S.gguf}"
+  # token budgets—keep modest for speed; tweak after testing
+  max_input_chars: 8000
+  max_output_tokens:
+    title_seniority: 64
+    skills: 128
+    remote_mode: 16
+    salary_extract: 64
+    summary: 160
+    responsibilities: 256
+    requirements: 256
+
+# Prompts mapping (file paths relative to repo root)
+prompts:
+  title_seniority: "services/ingest/jobs/enrich/prompts/title_seniority.md"
+  skills:          "services/ingest/jobs/enrich/prompts/skills.md"
+  remote_mode:     "services/ingest/jobs/enrich/prompts/remote_mode.md"
+  salary_extract:  "services/ingest/jobs/enrich/prompts/salary_extract.md"
+  summary:         "services/ingest/jobs/enrich/prompts/summary.md"
+  responsibilities:"services/ingest/jobs/enrich/prompts/responsibilities.md"
+  requirements:    "services/ingest/jobs/enrich/prompts/requirements.md"
+
+# Language handling
+language:
+  detect: true
+  prefer: ["en","de","fr"]   # used if you later translate summaries
+  translate_summaries_to: "" # "" = keep original; set "en" if you want English summaries
+
+# Guardrails
+guardrails:
+  require_json_only: true
+  skip_on_parse_error: true
+  conservative_salary: true  # never invent salary; only parse explicit values

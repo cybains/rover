@@ -1,0 +1,142 @@
+# Provider catalog for free job-listing sources (initial set)
+# Notes:
+# - RPM values here are YOUR local throttles (conservative defaults), not official limits.
+# - Incremental strategy is how we'll keep data fresh during scheduled runs.
+# - Attribution/ToS details live in ATTRIBUTION.md — follow them.
+
+version: 1
+defaults:
+  throttle:
+    rpm: 30           # polite per-provider throttle
+  timeout_ms: 20000
+  user_agent: "${APP_USER_AGENT:-sufoniq-jobs/1.0}"
+
+providers:
+  - name: remotive
+    enabled: true
+    base_url: "https://remotive.com/api/remote-jobs"
+    endpoints:
+      list:
+        method: GET
+        path: ""      # base endpoint returns JSON of current jobs
+        query_defaults: {}   # filters exist but no 'since' param
+    pagination:
+      type: none
+    incremental:
+      type: none      # poll full feed / most-recent only
+    auth:
+      type: none
+    etiquette:
+      attribution_required: true
+      notes: "Must link back to Remotive; do not submit their jobs to other job boards/aggregators. See ATTRIBUTION.md."
+
+  - name: arbeitnow
+    enabled: true
+    base_url: "https://www.arbeitnow.com/api/job-board-api"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults:
+          # examples if you want to filter:
+          # visa_sponsorship: "true|false"
+          # remote: "true|false"
+          # page: "1"
+          {}
+    pagination:
+      type: none       # treat as feed; you can layer paging later if needed
+    incremental:
+      type: none
+    auth:
+      type: none
+    etiquette:
+      attribution_required: link_back
+      notes: "Terms request a link back to Arbeitnow.com. See ATTRIBUTION.md."
+
+  - name: jobicy
+    enabled: true
+    base_url: "https://jobicy.com/api/v2/remote-jobs"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults: {}   # supports optional query params; no auth
+    pagination:
+      type: none
+    incremental:
+      type: none
+    auth:
+      type: none
+    etiquette:
+      attribution_required: recommended
+      notes: "Public API/RSS/XML feeds; link back recommended. See ATTRIBUTION.md."
+
+  - name: usajobs
+    enabled: true
+    base_url: "https://data.usajobs.gov/api/search"
+    endpoints:
+      list:
+        method: GET
+        path: ""
+        query_defaults:
+          ResultsPerPage: 500   # API allows up to 500 per request per docs
+    pagination:
+      type: page_count_field   # respect 'NumberOfPages' in response
+    incremental:
+      type: filter             # filter by query params (e.g., agency, keywords, etc.)
+    auth:
+      type: headers
+      headers:
+        Host: "data.usajobs.gov"
+        User-Agent: "${USAJOBS_USER_AGENT}"      # your email per docs
+        Authorization-Key: "${USAJOBS_API_KEY}"  # free key
+    etiquette:
+      attribution_required: recommended
+      notes: "Use required headers; follow Rate Limiting & Terms. See ATTRIBUTION.md."
+
+  - name: jooble
+    enabled: true
+    base_url: "https://jooble.org/api"
+    endpoints:
+      list:
+        method: POST
+        path: "/${JOOBLE_API_KEY}"   # POST /api/{api_key}
+        body_defaults:
+          keywords: ""
+          location: ""
+    pagination:
+      type: none
+    incremental:
+      type: filter    # refine via keywords/location; poll recent
+    auth:
+      type: key_in_path
+      env: ["JOOBLE_API_KEY"]
+    etiquette:
+      attribution_required: recommended
+      notes: "Requires free API key; follow their Help Center documentation."
+
+  - name: adzuna
+    enabled: true
+    base_url: "https://api.adzuna.com/v1/api/jobs"
+    endpoints:
+      list:
+        method: GET
+        path: "/{country}/search/{page}"
+        query_defaults:
+          app_id: "${ADZUNA_APP_ID}"
+          app_key: "${ADZUNA_APP_KEY}"
+          results_per_page: 50
+          what: ""
+          where: ""
+    pagination:
+      type: page_param
+      page_param: "{page}"
+      max_pages_per_run: 5
+    incremental:
+      type: pagination_recent_first
+    auth:
+      type: query
+      env: ["ADZUNA_APP_ID", "ADZUNA_APP_KEY"]
+    etiquette:
+      attribution_required: true
+      notes: "Show 'Jobs by Adzuna' with link/logo per ToS. See ATTRIBUTION.md."
