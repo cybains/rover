@@ -25,10 +25,12 @@ def _default_loopback_mic() -> sc.Microphone | None:
     return sc.get_microphone(spk.name, include_loopback=True)
 
 
-def _recorder_with_blocksize(sr: int, frames_per_chunk: int, source: str):
+def _recorder(sr: int, source: str):
     """
-    Returns (recorder, is_stereo).
-    Sets blocksize == frames_per_chunk to stabilize WASAPI buffering.
+    Returns (recorder, is_stereo)
+    - mic: default microphone, mono
+    - loopback: loopback mic from default speaker, stereo (downmixed)
+    - auto: try mic first, fallback to loopback
     """
     mode = (source or "auto").lower()
 
@@ -38,7 +40,7 @@ def _recorder_with_blocksize(sr: int, frames_per_chunk: int, source: str):
             print("[agent] microphone not found (check privacy settings).", file=sys.stderr)
             return None, False
         print("[agent] using microphone")
-        return mic.recorder(samplerate=sr, channels=1, blocksize=frames_per_chunk), False
+        return mic.recorder(samplerate=sr, channels=1), False
 
     if mode == "loopback":
         lb = _default_loopback_mic()
@@ -46,18 +48,18 @@ def _recorder_with_blocksize(sr: int, frames_per_chunk: int, source: str):
             print("[agent] loopback not found (no default speaker).", file=sys.stderr)
             return None, True
         print("[agent] using loopback")
-        # some loopback devices insist on 2 channels
-        return lb.recorder(samplerate=sr, channels=2, blocksize=frames_per_chunk), True
+        return lb.recorder(samplerate=sr, channels=2), True
 
-    # auto: prefer mic
+    # auto
     mic = sc.default_microphone()
     if mic is not None:
         print("[agent] using microphone (auto)")
-        return mic.recorder(samplerate=sr, channels=1, blocksize=frames_per_chunk), False
+        return mic.recorder(samplerate=sr, channels=1), False
+
     lb = _default_loopback_mic()
     if lb is not None:
         print("[agent] using loopback (auto)")
-        return lb.recorder(samplerate=sr, channels=2, blocksize=frames_per_chunk), True
+        return lb.recorder(samplerate=sr, channels=2), True
 
     print("[agent] no audio devices found", file=sys.stderr)
     return None, False
@@ -66,7 +68,11 @@ def _recorder_with_blocksize(sr: int, frames_per_chunk: int, source: str):
 def _to_b64_pcm16(frames: np.ndarray, stereo: bool) -> str:
     """Convert float32 frames [-1, 1] to base64 PCM16 mono."""
     if frames.ndim == 2:
-        frames = frames.mean(axis=1) if stereo else frames[:, 0]
+        if stereo:
+            frames = frames.mean(axis=1)  # downmix
+        else:
+            frames = frames[:, 0]
+
     frames = np.asarray(frames, dtype=np.float32)
     np.clip(frames, -1.0, 1.0, out=frames)
     pcm16 = (frames * 32767.0).astype("<i2")  # int16 little-endian
@@ -88,14 +94,10 @@ def main() -> int:
         print("[agent] session id required via --session or SESSION_ID", file=sys.stderr)
         return 2
 
-    if args.chunk_ms <= 0:
-        print("[agent] chunk_ms must be > 0", file=sys.stderr)
-        return 2
-
     sr = int(args.sr)
     frames_per_chunk = int(sr * (args.chunk_ms / 1000.0))
 
-    rec, stereo = _recorder_with_blocksize(sr, frames_per_chunk, args.source)
+    rec, stereo = _recorder(sr, args.source)
     if rec is None:
         return 1
 
@@ -106,7 +108,6 @@ def main() -> int:
     try:
         with rec:
             while True:
-                # Capture ~chunk_ms of audio
                 frames = rec.record(numframes=frames_per_chunk)  # float32 in [-1, 1]
                 b16 = _to_b64_pcm16(frames, stereo=stereo)
 
@@ -114,12 +115,7 @@ def main() -> int:
                 try:
                     r = s.post(
                         f"{args.asr}/transcribe_chunk",
-                        json={
-                            "audio_b16": b16,
-                            "sample_rate": sr,
-                            "idx": idx,
-                            "chunk_ms": args.chunk_ms,  # align server timeline
-                        },
+                        json={"audio_b16": b16, "sample_rate": sr, "idx": idx},
                         timeout=10,
                     )
                     r.raise_for_status()
@@ -141,7 +137,7 @@ def main() -> int:
 
                 idx += 1
 
-                # watchdog: show if nothing ingested for a while
+                # watchdog
                 if time.time() - last_ok > 10:
                     print("[agent] no successful ingest for >10s", file=sys.stderr)
                     last_ok = time.time()

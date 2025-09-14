@@ -4,12 +4,13 @@ from __future__ import annotations
 import json
 import math
 import sys
+import os
 import asyncio
 import subprocess
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import List, Optional, Set, Dict
 
 import requests
 from bson import ObjectId
@@ -19,7 +20,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from .db import get_db
 from .glossary import load_glossary
 from .models import SessionCreate
-
 
 # ---------- helpers ----------
 
@@ -33,41 +33,34 @@ def to_jsonable(x):
         return {k: to_jsonable(v) for k, v in x.items()}
     return x
 
-
 # ---------- app & middleware ----------
 
 app = FastAPI()
 
-MT_URL = "http://localhost:4002"
-SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
-CAPTURE_PROC: dict[str, subprocess.Popen] = {}
-LAST_INGEST_AT: dict[str, datetime] = {}
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+MT_URL = os.getenv("MT_URL", "http://localhost:4002")
 
-# de-dup cache (avoid repeats)
-LAST_SEG_TEXT: Dict[str, str] = {}      # sessionId -> last textSrc
-LAST_SEG_TEND: Dict[str, float] = {}    # sessionId -> last tEnd
+SESSION_SOCKETS: Dict[str, Set[WebSocket]] = defaultdict(set)
+CAPTURE_PROC: Dict[str, subprocess.Popen] = {}
+LAST_INGEST_AT: Dict[str, datetime] = {}
 
-# CORS for local frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[FRONTEND_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 @app.on_event("startup")
 async def startup_event():
     await get_db()
-
 
 # ---------- health ----------
 
 @app.get("/health")
 async def health():
     return {"service": "backend", "status": "ok"}
-
 
 # ---------- debug/status ----------
 
@@ -83,7 +76,6 @@ async def capture_status(sessionId: str):
     pid = proc.pid if running else None
     last = LAST_INGEST_AT.get(sessionId)
     return {"sessionId": sessionId, "running": running, "pid": pid, "lastIngestTs": last.isoformat() if last else None}
-
 
 # ---------- capture ----------
 
@@ -108,10 +100,10 @@ async def _stop_capture(session_id: str):
 async def start_capture(payload: dict = Body(...)):
     session_id = (payload or {}).get("sessionId")
     source = (payload or {}).get("source", "auto")
+    chunk_ms = int((payload or {}).get("chunk_ms", 1500))  # better default chunks
     if not session_id:
         raise HTTPException(status_code=400, detail="sessionId required")
 
-    # already running?
     proc = CAPTURE_PROC.get(session_id)
     if proc and proc.poll() is None:
         return {"ok": True, "pid": proc.pid}
@@ -125,6 +117,7 @@ async def start_capture(payload: dict = Body(...)):
         "--asr", "http://localhost:4001",
         "--api", "http://localhost:4000",
         "--source", source,
+        "--chunk_ms", str(chunk_ms),
     ]
     proc = subprocess.Popen(cmd, cwd=str(repo_root))
     CAPTURE_PROC[session_id] = proc
@@ -137,7 +130,6 @@ async def stop_capture(payload: dict = Body(...)):
         raise HTTPException(status_code=400, detail="sessionId required")
     await _stop_capture(session_id)
     return {"ok": True}
-
 
 # ---------- sessions ----------
 
@@ -173,12 +165,12 @@ async def stop_session(payload: dict = Body(...)):
 
     db = await get_db()
     try:
-        oid = ObjectId(session_id)
+        session_oid = ObjectId(session_id)
     except Exception:
         raise HTTPException(status_code=400, detail="invalid sessionId")
 
     await db.sessions.update_one(
-        {"_id": oid},
+        {"_id": session_oid},
         {"$set": {"status": "stopped", "updatedAt": datetime.utcnow()}},
     )
     await _stop_capture(session_id)
@@ -227,13 +219,11 @@ async def get_session(session_id: str):
     session["segmentsCount"] = len(segments)
     return to_jsonable(session)
 
-
 # ---------- glossary ----------
 
 @app.get("/glossary")
 async def glossary():
     return to_jsonable(load_glossary())
-
 
 # ---------- exports ----------
 
@@ -308,16 +298,14 @@ async def get_export(session_id: str):
         "counts": {"segments": count},
     }
 
-
 # ---------- ingestion ----------
 
 @app.post("/ingest_segment")
 async def ingest_segment(payload: dict = Body(...)):
     """
     Ingest a single segment:
-      - normalize fields (lang, timestamps, text)
-      - translate DE->EN via Marian
-      - dedup near-identical repeats within 2s
+      - normalize fields
+      - translate DE->EN via Marian (if available)
       - persist, update session.updatedAt, and broadcast over WS
     """
     try:
@@ -334,7 +322,7 @@ async def ingest_segment(payload: dict = Body(...)):
         except Exception:
             raise HTTPException(status_code=400, detail="invalid sessionId")
 
-        # --- robust normalization ---
+        # normalize
         lang_raw = (payload.get("lang") or "").strip().lower()
 
         def _safe_time(x, default: float) -> float:
@@ -347,7 +335,7 @@ async def ingest_segment(payload: dict = Body(...)):
                 return default
 
         t_start = _safe_time(payload.get("tStart"), 0.0)
-        t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))  # min +1s
+        t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))
 
         text_src = str(payload.get("textSrc", "") or "").strip()
         speaker = str(payload.get("speaker", "") or "Speaker 1")
@@ -369,26 +357,9 @@ async def ingest_segment(payload: dict = Body(...)):
             "confidence": confidence,
         }
 
-        # --- de-dup within ~2s window
-        prev_txt = LAST_SEG_TEXT.get(session_id, "")
-        prev_end = LAST_SEG_TEND.get(session_id, -1.0)
-        if text_src and text_src == prev_txt and (t_start - prev_end) < 2.0:
-            # still send a small heartbeat so the UI can update latency
-            sockets = SESSION_SOCKETS.get(session_id)
-            if sockets:
-                dead = set()
-                for ws in list(sockets):
-                    try:
-                        await ws.send_json({"type": "noop"})
-                    except Exception:
-                        dead.add(ws)
-                for ws in dead:
-                    SESSION_SOCKETS[session_id].discard(ws)
-            return {"ok": True, "dedup": True}
-
-        # --- translation (tolerant) ---
+        # translation
         try:
-            if lang_raw.startswith("de"):
+            if lang_raw.startswith("de"):  # "de", "deu", etc.
                 r = requests.post(
                     f"{MT_URL}/translate",
                     json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
@@ -410,10 +381,8 @@ async def ingest_segment(payload: dict = Body(...)):
         )
 
         LAST_INGEST_AT[session_id] = datetime.utcnow()
-        LAST_SEG_TEXT[session_id] = text_src
-        LAST_SEG_TEND[session_id] = t_end
 
-        # --- broadcast over WS ---
+        # broadcast over WS (send raw segment JSON — what the UI expects)
         sockets = SESSION_SOCKETS.get(session_id)
         if sockets:
             dead = set()
@@ -430,9 +399,7 @@ async def ingest_segment(payload: dict = Body(...)):
     except HTTPException:
         raise
     except Exception as e:
-        # Do not 500; surface payload for debugging
         return {"ok": False, "error": str(e), "payload": to_jsonable(payload)}
-
 
 # ---------- realtime ----------
 
@@ -446,9 +413,9 @@ async def realtime(ws: WebSocket):
 
     SESSION_SOCKETS[session_id].add(ws)
     try:
-        # periodic heartbeat keeps client latency gauge fresh
+        # lightweight keepalive so the frontend latency timer keeps resetting
         while True:
-            await asyncio.sleep(2)  # was larger; make it responsive
+            await asyncio.sleep(20)
             try:
                 await ws.send_json({"type": "heartbeat", "ts": datetime.utcnow().isoformat()})
             except Exception:
