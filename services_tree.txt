@@ -1,0 +1,135 @@
+Folder PATH listing for volume Acer
+Volume serial number is 268A-F651
+C:\USERS\ABAIN\ONEDRIVE\DOKUMENTE\GITHUB\ROVER\SERVICES
++---embed
+|       chunking.py
+|       embed_index.py
+|       README.md
+|       __init__.py
+|       
++---ingest
+|   |   facets.py
+|   |   README.md
+|   |   run_ingest.py
+|   |   schemas.py
+|   |   utils_hash.py
+|   |   utils_id.py
+|   |   __init__.py
+|   |   
+|   +---connectors
+|   |   |   base.py
+|   |   |   build_europe_broad.py
+|   |   |   check_core_counts.py
+|   |   |   cli_compare.py
+|   |   |   cli_country_profile.py
+|   |   |   country_views_materializer.py
+|   |   |   coverage_report_core.py
+|   |   |   evidence_bundle_materializer.py
+|   |   |   export_webapp_assets.py
+|   |   |   features_materializer.py
+|   |   |   narratives_generate.py
+|   |   |   overview.py
+|   |   |   pdf_intake_stub.py
+|   |   |   persona_scores_materializer.py
+|   |   |   preview_country_view.py
+|   |   |   preview_docs.py
+|   |   |   preview_evidence_aut.py
+|   |   |   preview_persona_aut.py
+|   |   |   progress.py
+|   |   |   rest_countries.py
+|   |   |   web_crawler_stub.py
+|   |   |   worldbank.py
+|   |   |   worldbank_core_loader.py
+|   |   |   worldbank_full_dump.py
+|   |   |   worldbank_ingest.py
+|   |   |   __init__.py
+|   |   |   
+|   |   +---adzuna
+|   |   |       README.md
+|   |   |       
+|   |   +---arbeitnow
+|   |   |       README.md
+|   |   |       
+|   |   +---jobicy
+|   |   |       README.md
+|   |   |       
+|   |   +---jooble
+|   |   |       README.md
+|   |   |       
+|   |   +---remotive
+|   |   |       README.md
+|   |   |       
+|   |   +---usajobs
+|   |   |       README.md
+|   |   |       
+|   |   \---__pycache__
+|   |           build_europe_broad.cpython-311.pyc
+|   |           check_core_counts.cpython-311.pyc
+|   |           cli_compare.cpython-311.pyc
+|   |           cli_country_profile.cpython-311.pyc
+|   |           country_views_materializer.cpython-311.pyc
+|   |           coverage_report_core.cpython-311.pyc
+|   |           evidence_bundle_materializer.cpython-311.pyc
+|   |           export_webapp_assets.cpython-311.pyc
+|   |           features_materializer.cpython-311.pyc
+|   |           narratives_generate.cpython-311.pyc
+|   |           pdf_intake_stub.cpython-311.pyc
+|   |           persona_scores_materializer.cpython-311.pyc
+|   |           preview_country_view.cpython-311.pyc
+|   |           preview_docs.cpython-311.pyc
+|   |           preview_evidence_aut.cpython-311.pyc
+|   |           preview_persona_aut.cpython-311.pyc
+|   |           rest_countries.cpython-311.pyc
+|   |           web_crawler_stub.cpython-311.pyc
+|   |           worldbank.cpython-311.pyc
+|   |           worldbank_core_loader.cpython-311.pyc
+|   |           worldbank_full_dump.cpython-311.pyc
+|   |           worldbank_ingest.cpython-311.pyc
+|   |           __init__.cpython-311.pyc
+|   |           
+|   +---jobs
+|   |   |   README.md
+|   |   |   
+|   |   +---dedupe
+|   |   |       README.md
+|   |   |       
+|   |   +---enrich
+|   |   |   |   fields.md
+|   |   |   |   README.md
+|   |   |   |   rubric.md
+|   |   |   |   
+|   |   |   \---prompts
+|   |   |           remote_mode.md
+|   |   |           requirements.md
+|   |   |           responsibilities.md
+|   |   |           salary_extract.md
+|   |   |           skills.md
+|   |   |           summary.md
+|   |   |           title_seniority.md
+|   |   |           
+|   |   +---normalize
+|   |   |       README.md
+|   |   |       
+|   |   +---observability
+|   |   |       README.md
+|   |   |       
+|   |   +---refresh
+|   |   |       README.md
+|   |   |       
+|   |   +---scheduler
+|   |   |       README.md
+|   |   |       
+|   |   \---storage
+|   |           README.md
+|   |           
+|   \---__pycache__
+|           facets.cpython-311.pyc
+|           run_ingest.cpython-311.pyc
+|           schemas.cpython-311.pyc
+|           utils_hash.cpython-311.pyc
+|           utils_id.cpython-311.pyc
+|           __init__.cpython-311.pyc
+|           
+\---__pycache__
+        __init__.cpython-311.pyc
+        

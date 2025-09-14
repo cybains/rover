@@ -1,0 +1,26 @@
+Folder PATH listing for volume Acer
+Volume serial number is 268A-F651
+C:\USERS\ABAIN\ONEDRIVE\DOKUMENTE\GITHUB\ROVER\BACKEND
+|   .env.example
+|   app.py
+|   app_stub.py
+|   rag_endpoint.py
+|   rag_retriever.py
+|   README.md
+|   requirements.txt
+|   
++---api
+|   |   main.py
+|   |   
+|   +---health
+|   |       README.md
+|   |       
+|   +---jobs
+|   |       README.md
+|   |       
+|   \---__pycache__
+|           main.cpython-311.pyc
+|           
+\---__pycache__
+        app.cpython-311.pyc
+        

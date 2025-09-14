@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JD v3 (43 JD-only fields)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "normalizedTitle": {"type": ["string","null"]},
+    "titleAliases": {"type": "array", "items": {"type": "string"}},
+    "roleCategory": {"type": ["string","null"]},
+    "roleSpecialty": {"type": ["string","null"]},
+    "seniorityLevel": {"type": ["string","null"], "enum": ["intern","junior","mid","senior","lead","manager","director","vp","cxo",null]},
+    "employmentType": {"type": ["string","null"], "enum": ["full_time","part_time","contract","internship","temporary",null]},
+    "workSchedule": {"type": ["string","null"]},
+    "workHoursWindow": {"type": ["string","null"]},
+    "remoteMode": {"type": ["string","null"], "enum": ["remote","hybrid","onsite",null]},
+    "remoteEligibilityRegions": {"type": "array", "items": {"type": "string"}},
+    "locationMentions": {"type": "array", "items": {"type": "string"}},
+    "relocationOffered": {"type": ["boolean","null"]},
+    "travelRequirementPct": {"type": ["number","null"]},
+    "visaSponsorshipStatement": {"type": ["string","null"]},
+    "workAuthorizationRequirements": {"type": "array", "items": {"type": "string"}},
+    "languageRequirements": {
+      "type": "array",
+      "items": {
+        "type":"object",
+        "properties":{
+          "lang":{"type":["string","null"]},
+          "level":{"type":["string","null"], "enum":["C2","C1","B2","B1","A2","A1",null]},
+          "source":{"type":["string","null"]},
+          "confidence":{"type":["number","null"]}
+        },
+        "required":["lang"],
+        "additionalProperties": false
+      }
+    },
+    "yearsExperienceRequired": {"type": ["integer","null"]},
+    "educationRequired": {
+      "type":"object",
+      "properties":{"level":{"type":["string","null"]},"required":{"type":["boolean","null"]},"preferred":{"type":["boolean","null"]}},
+      "required":["level"],
+      "additionalProperties": false
+    },
+    "certificationsRequired": {"type": "array", "items": {"type": "string"}},
+    "securityOrClearance": {"type": "array", "items": {"type": "string"}},
+    "responsibilitiesList": {"type": "array", "items": {"type": "string"}},
+    "outcomesKpis": {"type": "array", "items": {"type": "string"}},
+    "teamStructureSignals": {"type": "array", "items": {"type": "string"}},
+    "managementScope": {"type": ["string","null"]},
+    "toolsTechnologies": {"type": "array", "items": {"type": "string"}},
+    "methodsFrameworks": {"type": "array", "items": {"type": "string"}},
+    "industryDomain": {"type": "array", "items": {"type": "string"}},
+    "productArea": {"type": "array", "items": {"type": "string"}},
+    "dataSensitivity": {"type": "array", "items": {"type": "string"}},
+    "complianceRegulations": {"type": "array", "items": {"type": "string"}},
+    "benefitsRaw": {"type": "array", "items": {"type": "string"}},
+    "benefitsNormalized": {"type": "array", "items": {"type": "string"}},
+    "compensationText": {"type": "string"},
+    "compensationParsed": {
+      "type":"object",
+      "properties":{"min":{"type":["number","null"]},"max":{"type":["number","null"]},"currencySymbol":{"type":["string","null"]},"period":{"type":["string","null"],"enum":["year","month","hour",null]}},
+      "required":["min","max","currencySymbol","period"],
+      "additionalProperties": false
+    },
+    "perksExtras": {"type": "array", "items": {"type": "string"}},
+    "cultureSignals": {"type": "array", "items": {"type": "string"}},
+    "deiStatementPresence": {"type": ["boolean","null"]},
+    "equipmentOrAllowances": {"type": "array", "items": {"type": "string"}},
+    "applicationProcess": {"type": "array", "items": {"type": "string"}},
+    "startDateUrgency": {"type": ["string","null"]},
+    "contractDuration": {"type": ["string","null"]},
+    "workEnvironment": {"type": "array", "items": {"type": "string"}},
+    "keywordsTaxonomy": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": [
+    "normalizedTitle","titleAliases","roleCategory","roleSpecialty","seniorityLevel",
+    "employmentType","workSchedule","workHoursWindow","remoteMode","remoteEligibilityRegions",
+    "locationMentions","relocationOffered","travelRequirementPct","visaSponsorshipStatement",
+    "workAuthorizationRequirements","languageRequirements","yearsExperienceRequired","educationRequired",
+    "certificationsRequired","securityOrClearance","responsibilitiesList","outcomesKpis",
+    "teamStructureSignals","managementScope","toolsTechnologies","methodsFrameworks","industryDomain",
+    "productArea","dataSensitivity","complianceRegulations","benefitsRaw","benefitsNormalized",
+    "compensationText","compensationParsed","perksExtras","cultureSignals","deiStatementPresence",
+    "equipmentOrAllowances","applicationProcess","startDateUrgency","contractDuration","workEnvironment",
+    "keywordsTaxonomy"
+  ]
+}

@@ -1,0 +1,14 @@
+Extract ONLY the requested keys from the job text. 
+Rules:
+- Use EXACT wording from the text when possible.
+- If a field is not explicitly stated, return null (for scalars) or [] (for arrays).
+- Keep arrays concise (max 8 items for lists, 10 for outcomes).
+- Do not invent salaries, dates, or locations.
+- JSON only, no markdown.
+
+Key semantics:
+- responsibilitiesList: concrete actions the role performs (verbs).
+- requirements: qualifications/skills/experience needed to get hired.
+- workHoursWindow: any stated time-zone overlap or hours expectation, e.g., "4-hour CET overlap".
+- outcomesKpis: measurable results or success metrics if mentioned.
+- summary_tldr: one sentence (<= 240 chars) plain English role summary.

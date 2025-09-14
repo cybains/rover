@@ -1,5 +1,9 @@
-pymongo==4.8.0
-dnspython>=2.4.0
+requests
+PyYAML
+pymongo
+python-dateutil
+python-dotenv
+pymongo[srv]==4.8.0
 requests>=2.31.0
 PyYAML>=6.0.1
 beautifulsoup4>=4.12.3
