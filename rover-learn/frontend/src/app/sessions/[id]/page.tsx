@@ -9,6 +9,7 @@ import {
   unbookmarkSegment,
   renameSpeaker,
   getGlossary,
+  generate,
 } from '../../../lib/api';
 
 interface Paragraph {
@@ -34,6 +35,9 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
   const answerIdxsRef = useRef<Set<number>>(new Set());
   const [speakerMap, setSpeakerMap] = useState<Record<string, string>>({});
   const [glossary, setGlossary] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [gen, setGen] = useState<any | null>(null);
+  const [genType, setGenType] = useState<string>('');
 
   useEffect(() => {
     apiGet(`/sessions/${id}`).then((data) => {
@@ -75,6 +79,22 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
     else await bookmarkSegment(seg._id);
     const data = await apiGet(`/sessions/${id}`);
     setSession(data);
+  };
+
+  const toggleSelect = (sid: string) => {
+    setSelected((prev) => {
+      const s = new Set(prev);
+      if (s.has(sid)) s.delete(sid);
+      else s.add(sid);
+      return s;
+    });
+  };
+
+  const doGenerate = async (type: string) => {
+    const paraIds = Array.from(selected);
+    const res = await generate(type, id, paraIds.length ? paraIds : undefined);
+    setGen(res.output);
+    setGenType(type);
   };
 
   const doRecompute = async () => {
@@ -122,6 +142,28 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
           <Link href={`/sessions/${id}/highlights`} style={{ marginLeft: '0.5rem' }}>
             Highlights
           </Link>
+          <Link href={`/sessions/${id}/summaries`} style={{ marginLeft: '0.5rem' }}>
+            Summaries
+          </Link>
+          <Link href={`/sessions/${id}/flashcards`} style={{ marginLeft: '0.5rem' }}>
+            Flashcards
+          </Link>
+          <select
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v) {
+                doGenerate(v);
+                e.target.value = '';
+              }
+            }}
+            style={{ marginLeft: '0.5rem' }}
+          >
+            <option value="">Generate...</option>
+            <option value="summary">Summary</option>
+            <option value="flashcards">Flashcards</option>
+            <option value="quiz">Quiz</option>
+            <option value="explain">Explain</option>
+          </select>
         </div>
         {exportInfo && (
           <div style={{ background: '#e0ffe0', padding: '0.5rem', marginTop: '0.5rem' }}>
@@ -134,14 +176,27 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
           </div>
         )}
       </div>
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: gen ? '1fr 1fr 1fr' : '1fr 1fr',
+        }}
+      >
         <div style={{ overflowY: 'auto', padding: '1rem', borderRight: '1px solid #ccc' }}>
           {session.segments.map((s) => {
             const style: any = {};
             if (answerIdxsRef.current.has(s.idxStart)) style.background = '#e0ffe0';
             if (s.isQuestion) style.background = '#e0f0ff';
+            if (selected.has(s._id)) style.outline = '1px dashed #888';
             return (
               <p key={s._id} id={`seg-${s.idxStart}`} style={style}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(s._id)}
+                  onChange={() => toggleSelect(s._id)}
+                  style={{ marginRight: '0.25rem' }}
+                />
                 <span
                   style={{ cursor: 'pointer', marginRight: '0.25rem' }}
                   onClick={() => toggleBookmark(s)}
@@ -172,6 +227,7 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
             const style: any = {};
             if (answerIdxsRef.current.has(s.idxStart)) style.background = '#e0ffe0';
             if (s.isQuestion) style.background = '#e0f0ff';
+            if (selected.has(s._id)) style.outline = '1px dashed #888';
             return (
               <p key={s._id} id={`seg-en-${s.idxStart}`} style={style}>
                 <strong
@@ -185,6 +241,12 @@ export default function SessionDetail({ params }: { params: { id: string } }) {
             );
           })}
         </div>
+        {gen && (
+          <div style={{ overflowY: 'auto', padding: '1rem', borderLeft: '1px solid #ccc' }}>
+            <h3>{genType}</h3>
+            <pre>{JSON.stringify(gen, null, 2)}</pre>
+          </div>
+        )}
       </div>
     </div>
   );

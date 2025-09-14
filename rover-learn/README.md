@@ -169,3 +169,23 @@ Live uses 500 ms chunks with WebRTC VAD and ~0.6–0.8 s endpointing so typi
 - Rename speakers per session via `POST /sessions/{id}/speakers/rename { from, to }`.
 - English translations enforce glossary terms from `config/glossary.csv` and record hits.
 - UI shows speaker tags and underlines enforced terms; Glossary hits appear in Highlights.
+
+## Phase 10: Generators
+
+- Start a local llama-server (Phi-3.5 mini) on `http://127.0.0.1:8080`.
+- Endpoints:
+  - `POST /generate/summary`
+  - `POST /generate/flashcards`
+  - `POST /generate/quiz`
+  - `POST /generate/explain`
+  - `GET /sessions/{id}/generations?type=summary|flashcards|quiz|explain`
+- Select paragraphs and choose **Generate…** to open a right-side drawer with results.
+- Summaries and Flashcards persist under `/sessions/{id}/summaries` and `/sessions/{id}/flashcards`.
+
+### llama-server
+
+```
+llama-server --model phi-3.5
+```
+
+Requests use strict prompts and expect JSON-only responses.

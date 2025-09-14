@@ -77,3 +77,17 @@ export async function renameSpeaker(
     to: toName,
   });
 }
+
+export async function generate(
+  kind: string,
+  sessionId: string,
+  paraIds?: string[],
+  options?: any
+) {
+  return apiPost(`/generate/${kind}`, { sessionId, paraIds, options });
+}
+
+export async function getGenerations(sessionId: string, type: string) {
+  const q = type ? `?type=${type}` : "";
+  return apiGet(`/sessions/${sessionId}/generations${q}`);
+}

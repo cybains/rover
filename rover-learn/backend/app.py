@@ -19,9 +19,10 @@ from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import get_db
-from .glossary import load_glossary, apply_glossary
+from .utils.glossary import load_glossary, apply_glossary
 from .models import SessionCreate
 from .utils.qalink import recompute_qalinks
+from services.llm.client import generate_json
 
 
 # ---------- helpers ----------
@@ -454,6 +455,91 @@ async def session_highlights(session_id: str):
             "glossary": glossary,
         }
     )
+
+
+# ---------- generations ----------
+
+def _build_prompt(kind: str, text: str, options: dict) -> str:
+    if kind == "summary":
+        return (
+            "Summarize the following text and return JSON as {\"summary\": \"...\"}.\n"
+            + text
+        )
+    if kind == "flashcards":
+        return (
+            "Create flashcards from the text. Return JSON as {\"flashcards\": [{\"front\":\"\", \"back\":\"\"}]}\n"
+            + text
+        )
+    if kind == "quiz":
+        return (
+            "Create a quiz with questions and answers. Return JSON as {\"questions\": [{\"q\":\"\", \"a\":\"\"}]}\n"
+            + text
+        )
+    level = options.get("level", "simple")
+    return (
+        f"Explain the text at a {level} level. Return JSON as {{\"explanation\": \"...\"}}.\n"
+        + text
+    )
+
+
+async def _collect_text(session_id: str, para_ids: List[str] | None):
+    db = await get_db()
+    q = {"sessionId": session_id}
+    if para_ids:
+        oids = []
+        for pid in para_ids:
+            try:
+                oids.append(ObjectId(pid))
+            except Exception:
+                continue
+        if oids:
+            q["_id"] = {"$in": oids}
+    cursor = db.segments.find(q).sort("idxStart", 1)
+    segs = await cursor.to_list(None)
+    text = "\n".join(s.get("textEn", "") for s in segs)
+    return text, [str(s.get("_id")) for s in segs]
+
+
+@app.post("/generate/{kind}")
+async def generate(kind: str, payload: dict = Body(...)):
+    if kind not in {"summary", "flashcards", "quiz", "explain"}:
+        raise HTTPException(status_code=404)
+    session_id = payload.get("sessionId")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId required")
+    para_ids = payload.get("paraIds") or None
+    options = payload.get("options") or {}
+    text, used_ids = await _collect_text(session_id, para_ids)
+    prompt = _build_prompt(kind, text, options)
+    try:
+        output = await generate_json(prompt)
+    except Exception as e:
+        output = {"error": str(e)}
+    db = await get_db()
+    doc = {
+        "sessionId": session_id,
+        "type": kind,
+        "sourceRange": used_ids,
+        "output": output,
+        "createdAt": datetime.utcnow(),
+    }
+    ins = await db.generations.insert_one(doc)
+    doc["_id"] = str(ins.inserted_id)
+    return to_jsonable(doc)
+
+
+@app.get("/sessions/{session_id}/generations")
+async def list_generations(session_id: str, type: str | None = None):
+    db = await get_db()
+    q = {"sessionId": session_id}
+    if type:
+        q["type"] = type
+    cursor = db.generations.find(q).sort("createdAt", -1)
+    items = []
+    async for g in cursor:
+        g["_id"] = str(g["_id"])
+        items.append(g)
+    return to_jsonable(items)
 
 
 # ---------- ingestion ----------

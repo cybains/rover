@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import {
   apiPost,
@@ -10,6 +11,7 @@ import {
   unbookmarkSegment,
   getGlossary,
   renameSpeaker as apiRenameSpeaker,
+  generate,
 } from '../lib/api';
 
 export default function LivePage() {
@@ -28,6 +30,9 @@ export default function LivePage() {
   const [source, setSource] = useState<'auto' | 'mic' | 'loopback'>('auto');
   const [speakerMap, setSpeakerMap] = useState<Record<string, string>>({});
   const [glossary, setGlossary] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [gen, setGen] = useState<any | null>(null);
+  const [genType, setGenType] = useState<string>('');
 
   useEffect(() => {
     const el = leftRef.current;
@@ -151,6 +156,23 @@ export default function LivePage() {
     });
   };
 
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return s;
+    });
+  };
+
+  const doGenerate = async (type: string) => {
+    if (!session) return;
+    const paraIds = Array.from(selected);
+    const res = await generate(type, session._id, paraIds.length ? paraIds : undefined);
+    setGen(res.output);
+    setGenType(type);
+  };
+
   const renameSpeaker = async (name: string) => {
     if (!session) return;
     const to = prompt('Rename speaker', speakerMap[name] || name);
@@ -175,7 +197,9 @@ export default function LivePage() {
   };
 
   return (
-    <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+    <div
+      style={{ height: '100%', display: 'grid', gridTemplateColumns: gen ? '1fr 1fr 1fr' : '1fr 1fr' }}
+    >
       <div ref={leftRef} style={{ overflowY: 'auto', padding: '1rem', borderRight: '1px solid #ccc' }}>
         {order.map((id) => {
           const p = paras.get(id);
@@ -185,8 +209,16 @@ export default function LivePage() {
           const style: any = { fontStyle: partial ? 'italic' : 'normal' };
           if (answerIdxs.has(p.idx)) style.background = '#e0ffe0';
           if (p.isQuestion) style.background = '#e0f0ff';
+          if (selected.has(p._id)) style.outline = '1px dashed #888';
           return (
             <p key={id} id={id} style={style}>
+              <input
+                type="checkbox"
+                disabled={!p._id}
+                checked={p._id ? selected.has(p._id) : false}
+                onChange={() => p._id && toggleSelect(p._id)}
+                style={{ marginRight: '0.25rem' }}
+              />
               <span
                 style={{ cursor: 'pointer', marginRight: '0.25rem' }}
                 onClick={() => toggleBookmark(id, p)}
@@ -221,6 +253,7 @@ export default function LivePage() {
           const style: any = { fontStyle: partial ? 'italic' : 'normal' };
           if (answerIdxs.has(p.idx)) style.background = '#e0ffe0';
           if (p.isQuestion) style.background = '#e0f0ff';
+          if (selected.has(p._id)) style.outline = '1px dashed #888';
           return (
             <p key={id} id={`en-${id}`} style={style}>
               <strong
@@ -234,6 +267,12 @@ export default function LivePage() {
           );
         })}
       </div>
+      {gen && (
+        <div style={{ overflowY: 'auto', padding: '1rem', borderLeft: '1px solid #ccc' }}>
+          <h3>{genType}</h3>
+          <pre>{JSON.stringify(gen, null, 2)}</pre>
+        </div>
+      )}
         <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
         <div style={{ marginBottom: '0.5rem' }}>
           <input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -260,6 +299,38 @@ export default function LivePage() {
             <button onClick={jump} style={{ marginLeft: '1rem' }}>
               Jump to Live
             </button>
+          )}
+          {session && (
+            <>
+              <Link
+                href={`/sessions/${session._id}/summaries`}
+                style={{ marginLeft: '1rem' }}
+              >
+                Summaries
+              </Link>
+              <Link
+                href={`/sessions/${session._id}/flashcards`}
+                style={{ marginLeft: '0.5rem' }}
+              >
+                Flashcards
+              </Link>
+              <select
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v) {
+                    doGenerate(v);
+                    e.target.value = '';
+                  }
+                }}
+                style={{ marginLeft: '0.5rem' }}
+              >
+                <option value="">Generate...</option>
+                <option value="summary">Summary</option>
+                <option value="flashcards">Flashcards</option>
+                <option value="quiz">Quiz</option>
+                <option value="explain">Explain</option>
+              </select>
+            </>
           )}
           <span
             style={{
