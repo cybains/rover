@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { apiGet, exportSession } from '../../../lib/api';
 
-interface Segment {
+interface Paragraph {
   textSrc: string;
   textEn: string;
 }
@@ -10,7 +10,7 @@ interface Segment {
 export default function SessionDetail({ params }: { params: { id: string } }) {
   const { id } = params;
   const [session, setSession] = useState<
-    { title: string; segments: Segment[]; segmentsCount: number } | null
+    { title: string; segments: Paragraph[]; segmentsCount: number } | null
   >(null);
   const [exportInfo, setExportInfo] = useState<
     { exportDir: string; files: string[] } | null

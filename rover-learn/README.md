@@ -143,3 +143,13 @@ Expect latency ≤ 1s on typical speech; if consistently higher:
 - switch ASR_DEVICE=cpu (sometimes more stable than CUDA on 1650),
 - keep ASR_FORCE_LANG=de,
 - close background apps using the mic.
+
+## German-first & paragraphs
+
+German is recommended:
+
+```
+set ASR_FORCE_LANG=de
+```
+
+Live uses 500 ms chunks with WebRTC VAD and ~0.6–0.8 s endpointing so typical speech appears with English translation in under a second. Non‑German speech auto-routes to an NLLB-200 translator. The UI shows partial English immediately and finalizes into paragraphs after pauses.

@@ -16,3 +16,8 @@ faster-whisper==1.0.3
 ctranslate2==4.3.1
 numpy==1.26.4
 soundcard==0.4.3     # WASAPI loopback-friendly on Windows
+
+# streaming VAD / language detect / multilingual MT
+webrtcvad==2.0.10
+langdetect==1.0.9
+torch==2.3.1
