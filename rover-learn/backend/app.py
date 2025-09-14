@@ -1,10 +1,10 @@
 # rover-learn/backend/app.py
 
-import asyncio
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+from collections import defaultdict
 
 from bson import ObjectId
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body, HTTPException
@@ -34,15 +34,7 @@ def to_jsonable(x):
 app = FastAPI()
 
 MT_URL = "http://localhost:4002"
-ASR_URL = "http://localhost:4001"
-
-# simple mixed-language samples for the mock stream
-SAMPLE_TEXT = [
-    "Hallo und guten Morgen",
-    "This is an English sentence",
-    "Der schnelle Fuchs springt",
-    "Another English line",
-]
+SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
 
 # CORS for local frontend
 app.add_middleware(
@@ -261,96 +253,86 @@ async def get_export(session_id: str):
         "counts": {"segments": count},
     }
 
-# ---------- realtime (mock stream) ----------
+# ---------- ingestion ----------
+
+@app.post("/ingest_segment")
+async def ingest_segment(payload: dict = Body(...)):
+    session_id = (payload or {}).get("sessionId")
+    if not session_id:
+        return {"error": "sessionId required"}
+
+    db = await get_db()
+    try:
+        session_oid = ObjectId(session_id)
+    except Exception:
+        return {"error": "invalid sessionId"}
+
+    segment = {
+        "sessionId": session_id,
+        "idx": payload.get("idx", 0),
+        "tStart": payload.get("tStart", 0.0),
+        "tEnd": payload.get("tEnd", 0.0),
+        "lang": payload.get("lang", ""),
+        "speaker": payload.get("speaker", ""),
+        "textSrc": payload.get("textSrc", ""),
+        "partial": payload.get("partial", False),
+        "confidence": payload.get("confidence", 0.0),
+        "textEn": payload.get("textSrc", ""),
+    }
+
+    if segment["lang"] == "de":
+        try:
+            r = requests.post(
+                f"{MT_URL}/translate",
+                json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
+                timeout=10,
+            )
+            segment["textEn"] = r.json().get("translation", segment["textSrc"])
+        except Exception:
+            segment["textEn"] = segment["textSrc"]
+    else:
+        segment["textEn"] = f"[MT-MOCK] {segment['textSrc']}"
+
+    ins = await db.segments.insert_one(segment)
+    segment["_id"] = str(ins.inserted_id)
+
+    await db.sessions.update_one(
+        {"_id": session_oid},
+        {"$set": {"updatedAt": datetime.utcnow()}},
+    )
+
+    sockets = SESSION_SOCKETS.get(session_id)
+    if sockets:
+        dead = set()
+        for ws in list(sockets):
+            try:
+                await ws.send_json(to_jsonable(segment))
+            except Exception:
+                dead.add(ws)
+        for ws in dead:
+            sockets.discard(ws)
+
+    return {"ok": True}
+
+
+# ---------- realtime ----------
 
 @app.websocket("/realtime")
 async def realtime(ws: WebSocket):
-    """
-    Mock realtime stream:
-    - Requires ?sessionId=<id>
-    - Emits one segment per second with incremental idx
-    - Inserts segment into Mongo
-    - Bumps session.updatedAt each time
-    """
     await ws.accept()
     session_id = ws.query_params.get("sessionId")
     if not session_id:
         await ws.close()
         return
 
-    # Validate ObjectId for session updates; keep string in segments
-    try:
-        session_oid = ObjectId(session_id)
-    except Exception:
-        await ws.close()
-        return
-
-    db = await get_db()
-
-    # Start idx after existing segments (support both string and ObjectId-stored)
-    idx = await db.segments.count_documents({"sessionId": {"$in": [session_id, session_oid]}})
-
+    SESSION_SOCKETS[session_id].add(ws)
     try:
         while True:
-            # ensure session is still live
-            session = await db.sessions.find_one({"_id": session_oid})
-            if not session or session.get("status") != "live":
-                break
-
-            sample = SAMPLE_TEXT[idx % len(SAMPLE_TEXT)]
-            try:
-                r = requests.post(
-                    f"{ASR_URL}/transcribe",
-                    json={"text": sample, "idx": idx},
-                    timeout=10,
-                )
-                seg = r.json()
-            except Exception:
-                seg = {
-                    "idx": idx,
-                    "tStart": float(idx),
-                    "tEnd": float(idx) + 0.9,
-                    "lang": "en",
-                    "speaker": "Speaker 1",
-                    "textSrc": sample,
-                    "partial": False,
-                    "confidence": 0.0,
-                }
-
-            segment = {**seg, "sessionId": session_id, "textEn": seg["textSrc"]}
-
-            if segment["lang"] == "de":
-                try:
-                    r = requests.post(
-                        f"{MT_URL}/translate",
-                        json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
-                        timeout=10,
-                    )
-                    segment["textEn"] = r.json().get("translation", segment["textSrc"])
-                except Exception:
-                    segment["textEn"] = segment["textSrc"]
-
-            # insert & attach _id (as string) for completeness
-            ins = await db.segments.insert_one(segment)
-            segment["_id"] = str(ins.inserted_id)
-
-            # bump updatedAt on the session
-            await db.sessions.update_one(
-                {"_id": session_oid},
-                {"$set": {"updatedAt": datetime.utcnow()}},
-            )
-
-            # send JSON-safe payload
-            await ws.send_json(to_jsonable(segment))
-
-            idx += 1
-            await asyncio.sleep(1.0)
-
+            await ws.receive_text()
     except WebSocketDisconnect:
-        # client closed; just exit
         pass
     finally:
-        # make sure the socket is closed
+        SESSION_SOCKETS[session_id].discard(ws)
         try:
             await ws.close()
         except Exception:
