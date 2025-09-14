@@ -104,3 +104,20 @@ Notes:
 
 - No audio files are saved; only segments are stored.
 - If mic is not available, the agent will switch to loopback (system audio).
+
+## Phase 7: Integrated capture
+
+### New endpoints
+
+- `POST /capture/start` `{ sessionId, source }`
+- `POST /capture/stop` `{ sessionId }`
+
+### Dev run order reminder
+
+1. ASR (4001)
+2. MT (4002)
+3. Backend (4000)
+4. Frontend (3000)
+5. Click **Start** in the UI
+
+> Note: "Loopback" requires Windows WASAPI; behavior on other OSes may vary.

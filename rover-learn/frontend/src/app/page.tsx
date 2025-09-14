@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { apiPost, connectWs, startSession } from '../lib/api';
+import { apiPost, connectWs, startSession, startCapture, stopCapture } from '../lib/api';
 
 interface Segment {
   textSrc: string;
@@ -17,6 +17,7 @@ export default function LivePage() {
   const [title, setTitle] = useState('Untitled Session');
   const lastTsRef = useRef(Date.now());
   const [latency, setLatency] = useState(0);
+  const [source, setSource] = useState<'auto' | 'mic' | 'loopback'>('auto');
 
   useEffect(() => {
     const el = leftRef.current;
@@ -39,6 +40,7 @@ export default function LivePage() {
     const data = await startSession(title);
     setSession(data);
     setSegments([]);
+    await startCapture(data._id, source);
     lastTsRef.current = Date.now();
     const ws = connectWs(data._id);
     wsRef.current = ws;
@@ -53,6 +55,7 @@ export default function LivePage() {
     wsRef.current?.close();
     wsRef.current = null;
     if (session) {
+      await stopCapture(session._id);
       await apiPost('/sessions/stop', { sessionId: session._id });
       setSession({ ...session, status: 'stopped' });
     }
@@ -84,6 +87,13 @@ export default function LivePage() {
         <div style={{ marginBottom: '0.5rem' }}>
           <input value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <select value={source} onChange={(e) => setSource(e.target.value as any)}>
+            <option value="auto">Auto (Mic→Loopback)</option>
+            <option value="mic">Mic only</option>
+            <option value="loopback">Loopback only</option>
+          </select>
+        </div>
         <div>
           {session && (
             <span style={{ marginRight: '0.5rem', color: session.status === 'live' ? 'green' : 'gray' }}>
@@ -100,6 +110,18 @@ export default function LivePage() {
               Jump to Live
             </button>
           )}
+          <span
+            style={{
+              marginLeft: '1rem',
+              background: '#eee',
+              color: '#555',
+              padding: '0.1rem 0.4rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+            }}
+          >
+            Audio: {source === 'auto' ? 'Auto' : source === 'mic' ? 'Mic' : 'Loopback'}
+          </span>
           <span
             style={{
               marginLeft: '1rem',

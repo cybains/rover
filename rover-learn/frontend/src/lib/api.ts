@@ -27,6 +27,17 @@ export async function startSession(title?: string) {
   return apiPost("/sessions/start", { title: title || null });
 }
 
+export async function startCapture(
+  sessionId: string,
+  source: "auto" | "mic" | "loopback" = "auto"
+) {
+  return apiPost("/capture/start", { sessionId, source });
+}
+
+export async function stopCapture(sessionId: string) {
+  return apiPost("/capture/stop", { sessionId });
+}
+
 export async function exportSession(id: string) {
   return apiPost(`/export/${id}`);
 }
