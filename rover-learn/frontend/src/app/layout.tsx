@@ -15,6 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Link href="/">Live</Link>
             <Link href="/sessions">Sessions</Link>
             <Link href="/glossary">Glossary</Link>
+            <Link href="/settings">Settings</Link>
           </aside>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ height: '40px', background: '#ddd', padding: '0.5rem' }}>Status Bar</div>

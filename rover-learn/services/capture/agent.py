@@ -107,6 +107,8 @@ def main() -> int:
     start_t = time.monotonic()
     consec_err = 0
     last_ok = time.time()
+    hb_last = time.time()
+    dropped = 0
 
     try:
         with rec:
@@ -124,6 +126,7 @@ def main() -> int:
 
                 # --- Send to ASR ---
                 try:
+                    t0 = time.time()
                     r = s.post(
                         f"{args.asr}/transcribe_chunk",
                         json={
@@ -137,6 +140,9 @@ def main() -> int:
                     r.raise_for_status()
                     payload = r.json()
                     segments = payload.get("segments", [])
+                    asr_ms = (time.time() - t0) * 1000.0
+                    if not segments:
+                        dropped += 1
                     consec_err = 0
                 except Exception as e:
                     print(f"[agent] ASR error: {e}", file=sys.stderr)
@@ -148,6 +154,7 @@ def main() -> int:
                 # --- Forward to backend ---
                 for seg in segments:
                     seg["sessionId"] = session_id
+                    seg["asrMs"] = asr_ms
                     try:
                         br = s.post(f"{args.api}/ingest_segment", json=seg, timeout=10)
                         br.raise_for_status()
@@ -158,6 +165,19 @@ def main() -> int:
                         consec_err += 1
                         if consec_err >= 4:
                             time.sleep(0.2)
+
+                # heartbeat
+                if time.time() - hb_last > 5:
+                    try:
+                        s.post(
+                            f"{args.api}/heartbeat",
+                            json={"sessionId": session_id, "dropped": dropped},
+                            timeout=5,
+                        )
+                    except Exception:
+                        pass
+                    dropped = 0
+                    hb_last = time.time()
 
                 # watchdog: show if nothing ingested for a while
                 if time.time() - last_ok > 10:

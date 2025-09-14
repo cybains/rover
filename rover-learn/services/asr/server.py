@@ -34,6 +34,29 @@ _para_id: Optional[str] = None
 _para_start_t: float = 0.0
 _last_voiced_t: float = 0.0
 _para_counter: int = 0
+_para_speaker: str = "Speaker 1"
+
+_spk_energy = [None, None]
+
+
+def _assign_speaker(pcm16: np.ndarray) -> str:
+    energy = float(np.mean(np.abs(pcm16))) if pcm16.size else 0.0
+    if _spk_energy[0] is None:
+        _spk_energy[0] = energy
+        return "Speaker 1"
+    if _spk_energy[1] is None:
+        if abs(energy - _spk_energy[0]) > 100:
+            _spk_energy[1] = energy
+            return "Speaker 2"
+        _spk_energy[0] = (_spk_energy[0] * 0.9) + (energy * 0.1)
+        return "Speaker 1"
+    d0 = abs(energy - _spk_energy[0])
+    d1 = abs(energy - _spk_energy[1])
+    if d0 <= d1:
+        _spk_energy[0] = (_spk_energy[0] * 0.9) + (energy * 0.1)
+        return "Speaker 1"
+    _spk_energy[1] = (_spk_energy[1] * 0.9) + (energy * 0.1)
+    return "Speaker 2"
 
 
 def _init_model():
@@ -193,7 +216,7 @@ def transcribe_chunk(payload: ChunkIn):
                 "tStart": _para_start_t,
                 "tEnd": _last_voiced_t,
                 "lang": _curr_lang,
-                "speaker": "Speaker 1",
+                "speaker": _para_speaker,
                 "textSrc": _para_text.strip(),
                 "partial": False,
                 "confidence": 0.9,
@@ -205,6 +228,8 @@ def transcribe_chunk(payload: ChunkIn):
         return {"segments": out}
 
     _last_voiced_t = base_offset + chunk_len_s
+
+    speaker = _assign_speaker(pcm16)
 
     # append overlap tail and prepare audio
     pcm16_full = np.concatenate([_tail_pcm, pcm16]) if _tail_pcm.size else pcm16
@@ -243,6 +268,7 @@ def transcribe_chunk(payload: ChunkIn):
             _para_start_t = max(0.0, base_offset + max(0.0, seg_start - tail_shift))
             _para_id = f"{datetime.utcnow().isoformat()}#{_para_counter}"
             _para_text = ""
+            _para_speaker = speaker
         _para_text = (_para_text + " " + text).strip()
 
     if _para_text:
@@ -250,6 +276,7 @@ def transcribe_chunk(payload: ChunkIn):
             {
                 "kind": "partial",
                 "paraId": _para_id,
+                "speaker": _para_speaker,
                 "idx": int(payload.idx),
                 "lang": lang,
                 "textSrcPartial": _para_text,

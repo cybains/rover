@@ -45,3 +45,69 @@ export async function exportSession(id: string) {
 export async function getGlossary() {
   return apiGet(`/glossary`);
 }
+
+export async function recomputeQA(id: string) {
+  return apiPost(`/sessions/${id}/qa/recompute`);
+}
+
+export async function getHighlights(id: string) {
+  return apiGet(`/sessions/${id}/highlights`);
+}
+
+export async function bookmarkSegment(id: string) {
+  return apiPost(`/segments/${id}/bookmark`);
+}
+
+export async function unbookmarkSegment(id: string) {
+  const res = await fetch(`${BASE_URL}/segments/${id}/bookmark`, {
+    method: "DELETE",
+    mode: "cors",
+  });
+  if (!res.ok) throw new Error(`DELETE /segments/${id}/bookmark -> ${res.status}`);
+  return res.json();
+}
+
+export async function renameSpeaker(
+  sessionId: string,
+  fromName: string,
+  toName: string
+) {
+  return apiPost(`/sessions/${sessionId}/speakers/rename`, {
+    from: fromName,
+    to: toName,
+  });
+}
+
+export async function generate(
+  kind: string,
+  sessionId: string,
+  paraIds?: string[],
+  options?: any
+) {
+  return apiPost(`/generate/${kind}`, { sessionId, paraIds, options });
+}
+
+export async function getGenerations(sessionId: string, type: string) {
+  const q = type ? `?type=${type}` : "";
+  return apiGet(`/sessions/${sessionId}/generations${q}`);
+}
+
+export async function getSettings() {
+  return apiGet(`/settings`);
+}
+
+export async function updateSettings(data: any) {
+  return apiPost(`/settings`, data);
+}
+
+export async function getStorageStatus() {
+  return apiGet(`/storage/status`);
+}
+
+export async function purgeSessions(before: string) {
+  return apiPost(`/sessions/purge`, { before });
+}
+
+export async function getSessionStatus(id: string) {
+  return apiGet(`/status/${id}`);
+}
