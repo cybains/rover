@@ -42,7 +42,6 @@ app = FastAPI()
 MT_URL = "http://localhost:4002"
 SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
 CAPTURE_PROC: dict[str, subprocess.Popen] = {}
-LAST_INGEST_AT: dict[str, datetime] = {}
 
 # CORS for local frontend
 app.add_middleware(
@@ -56,6 +55,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    # Ensure DB connection (and any index creation you do in get_db)
     await get_db()
 
 
@@ -64,22 +64,6 @@ async def startup_event():
 @app.get("/health")
 async def health():
     return {"service": "backend", "status": "ok"}
-
-
-# ---------- debug/status ----------
-
-@app.get("/ws/status")
-async def ws_status(sessionId: str):
-    sockets = SESSION_SOCKETS.get(sessionId) or set()
-    return {"sessionId": sessionId, "clients": len(sockets)}
-
-@app.get("/capture/status")
-async def capture_status(sessionId: str):
-    proc = CAPTURE_PROC.get(sessionId)
-    running = bool(proc and proc.poll() is None)
-    pid = proc.pid if running else None
-    last = LAST_INGEST_AT.get(sessionId)
-    return {"sessionId": sessionId, "running": running, "pid": pid, "lastIngestTs": last.isoformat() if last else None}
 
 
 # ---------- capture ----------
@@ -101,37 +85,44 @@ async def _stop_capture(session_id: str):
 
     await asyncio.to_thread(_terminate, proc)
 
+
 @app.post("/capture/start")
 async def start_capture(payload: dict = Body(...)):
     session_id = (payload or {}).get("sessionId")
     source = (payload or {}).get("source", "auto")
     if not session_id:
-        raise HTTPException(status_code=400, detail="sessionId required")
+        return {"error": "sessionId required"}
 
     # already running?
     proc = CAPTURE_PROC.get(session_id)
     if proc and proc.poll() is None:
-        return {"ok": True, "pid": proc.pid}
+        raise HTTPException(status_code=409, detail="capture already running")
 
     repo_root = Path(__file__).resolve().parents[1]  # rover-learn/
     agent = repo_root / "services" / "capture" / "agent.py"
     cmd = [
         sys.executable,
         str(agent),
-        "--session", session_id,
-        "--asr", "http://localhost:4001",
-        "--api", "http://localhost:4000",
-        "--source", source,
+        "--session",
+        session_id,
+        "--asr",
+        "http://localhost:4001",
+        "--api",
+        "http://localhost:4000",
+        "--source",
+        source,
     ]
+    # Use repo root as CWD so relative imports/paths inside the agent work
     proc = subprocess.Popen(cmd, cwd=str(repo_root))
     CAPTURE_PROC[session_id] = proc
     return {"ok": True, "pid": proc.pid}
+
 
 @app.post("/capture/stop")
 async def stop_capture(payload: dict = Body(...)):
     session_id = (payload or {}).get("sessionId")
     if not session_id:
-        raise HTTPException(status_code=400, detail="sessionId required")
+        return {"error": "sessionId required"}
     await _stop_capture(session_id)
     return {"ok": True}
 
@@ -140,6 +131,10 @@ async def stop_capture(payload: dict = Body(...)):
 
 @app.post("/sessions/start")
 async def start_session(payload: SessionCreate = Body(...)):
+    """
+    Accepts: { "title": string | null }
+    Creates a live session and returns it with string _id and segmentsCount: 0
+    """
     db = await get_db()
     now = datetime.utcnow()
     title: Optional[str] = (payload.title or "").strip() if payload and payload.title else ""
@@ -162,17 +157,18 @@ async def start_session(payload: SessionCreate = Body(...)):
     }
     return to_jsonable(out)
 
+
 @app.post("/sessions/stop")
 async def stop_session(payload: dict = Body(...)):
     session_id = (payload or {}).get("sessionId")
     if not session_id:
-        raise HTTPException(status_code=400, detail="sessionId required")
+        return {"error": "sessionId required"}
 
     db = await get_db()
     try:
         oid = ObjectId(session_id)
     except Exception:
-        raise HTTPException(status_code=400, detail="invalid sessionId")
+        return {"error": "invalid sessionId"}
 
     await db.sessions.update_one(
         {"_id": oid},
@@ -181,13 +177,20 @@ async def stop_session(payload: dict = Body(...)):
     await _stop_capture(session_id)
     return {"status": "stopped", "sessionId": session_id}
 
+
 @app.get("/sessions")
 async def list_sessions():
+    """
+    Returns sessions sorted by createdAt desc, including a robust segmentsCount that
+    matches both string and ObjectId-stored sessionId (in case of historical data).
+    """
     db = await get_db()
     sessions: List[dict] = []
     cursor = db.sessions.find().sort("createdAt", -1)
+
     async for s in cursor:
         sid_str = str(s["_id"])
+        # robust count: match segments that stored sessionId as string OR ObjectId
         count = await db.segments.count_documents({"sessionId": {"$in": [sid_str, s["_id"]]}})
         sessions.append(
             {
@@ -201,8 +204,13 @@ async def list_sessions():
         )
     return to_jsonable(sessions)
 
+
 @app.get("/sessions/{session_id}")
 async def get_session(session_id: str):
+    """
+    Returns the session (with string _id) and its segments (sorted by idx asc),
+    plus segmentsCount.
+    """
     db = await get_db()
     try:
         oid = ObjectId(session_id)
@@ -215,6 +223,8 @@ async def get_session(session_id: str):
 
     session["_id"] = str(session["_id"])
     segments: List[dict] = []
+
+    # Prefer segments stored with string sessionId; also accept old ObjectId-stored
     cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idx", 1)
     async for seg in cursor:
         seg["_id"] = str(seg["_id"])
@@ -254,15 +264,21 @@ async def export_session(session_id: str):
 
     date_str = datetime.utcnow().strftime("%Y-%m-%d")
     export_dir = (
-        Path(__file__).resolve().parents[1] / "exports" / "sessions" / date_str / session_id
+        Path(__file__).resolve().parents[1]
+        / "exports"
+        / "sessions"
+        / date_str
+        / session_id
     )
     export_dir.mkdir(parents=True, exist_ok=True)
 
     (export_dir / "transcript_src.txt").write_text(
-        "\n".join(seg.get("textSrc", "") for seg in segments), encoding="utf-8"
+        "\n".join(seg.get("textSrc", "") for seg in segments),
+        encoding="utf-8",
     )
     (export_dir / "translation_en.txt").write_text(
-        "\n".join(seg.get("textEn", "") for seg in segments), encoding="utf-8"
+        "\n".join(seg.get("textEn", "") for seg in segments),
+        encoding="utf-8",
     )
     with (export_dir / "segments.jsonl").open("w", encoding="utf-8") as f:
         for seg in segments:
@@ -275,6 +291,7 @@ async def export_session(session_id: str):
         "counts": {"segments": len(segments)},
     }
     return out
+
 
 @app.get("/exports/{session_id}")
 async def get_export(session_id: str):
@@ -316,99 +333,89 @@ async def ingest_segment(payload: dict = Body(...)):
       - translate DE->EN via Marian (liberal match: 'de'/'deu'/etc.)
       - persist, update session.updatedAt, and broadcast over WS
     """
+    session_id = (payload or {}).get("sessionId")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId required")
+
+    db = await get_db()
     try:
-        if not isinstance(payload, dict):
-            raise HTTPException(status_code=400, detail="invalid body")
+        session_oid = ObjectId(session_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="invalid sessionId")
 
-        session_id = (payload or {}).get("sessionId")
-        if not session_id:
-            raise HTTPException(status_code=400, detail="sessionId required")
+    # --- robust normalization ---
+    lang_raw = (payload.get("lang") or "").strip().lower()
 
-        db = await get_db()
+    def _safe_time(x, default: float) -> float:
         try:
-            session_oid = ObjectId(session_id)
-        except Exception:
-            raise HTTPException(status_code=400, detail="invalid sessionId")
-
-        # --- robust normalization ---
-        lang_raw = (payload.get("lang") or "").strip().lower()
-
-        def _safe_time(x, default: float) -> float:
-            try:
-                xf = float(x)
-                if math.isnan(xf) or math.isinf(xf):
-                    return default
-                return xf
-            except Exception:
+            xf = float(x)
+            if math.isnan(xf) or math.isinf(xf):
                 return default
-
-        t_start = _safe_time(payload.get("tStart"), 0.0)
-        t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))  # min +1s
-
-        text_src = str(payload.get("textSrc", "") or "").strip()
-        speaker = str(payload.get("speaker", "") or "Speaker 1")
-        partial = bool(payload.get("partial", False))
-        try:
-            confidence = float(payload.get("confidence", 0.9))
+            return xf
         except Exception:
-            confidence = 0.9
+            return default
 
-        segment = {
-            "sessionId": session_id,
-            "idx": int(payload.get("idx", 0)),
-            "tStart": t_start,
-            "tEnd": t_end,
-            "lang": lang_raw,
-            "speaker": speaker,
-            "textSrc": text_src,
-            "partial": partial,
-            "confidence": confidence,
-        }
+    t_start = _safe_time(payload.get("tStart"), 0.0)
+    t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))  # at least +1s
 
-        # --- translation (tolerant) ---
-        try:
-            if lang_raw.startswith("de"):  # "de", "deu", "de-DE"
-                r = requests.post(
-                    f"{MT_URL}/translate",
-                    json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
-                    timeout=10,
-                )
-                r.raise_for_status()
-                segment["textEn"] = r.json().get("translation", segment["textSrc"])
-            else:
-                segment["textEn"] = f"[MT-MOCK] {segment['textSrc']}"
-        except Exception:
-            segment["textEn"] = segment["textSrc"]
+    text_src = str(payload.get("textSrc", "") or "").strip()
+    speaker = str(payload.get("speaker", "") or "Speaker 1")
+    partial = bool(payload.get("partial", False))
+    try:
+        confidence = float(payload.get("confidence", 0.9))
+    except Exception:
+        confidence = 0.9
 
-        ins = await db.segments.insert_one(segment)
-        segment["_id"] = str(ins.inserted_id)
+    segment = {
+        "sessionId": session_id,
+        "idx": int(payload.get("idx", 0)),
+        "tStart": t_start,
+        "tEnd": t_end,
+        "lang": lang_raw,
+        "speaker": speaker,
+        "textSrc": text_src,
+        "partial": partial,
+        "confidence": confidence,
+        # textEn filled below
+    }
 
-        await db.sessions.update_one(
-            {"_id": session_oid},
-            {"$set": {"updatedAt": datetime.utcnow()}},
-        )
+    # --- translation ---
+    try:
+        if lang_raw.startswith("de"):  # handles "de", "deu", "de-DE"
+            r = requests.post(
+                f"{MT_URL}/translate",
+                json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
+                timeout=10,
+            )
+            r.raise_for_status()
+            segment["textEn"] = r.json().get("translation", segment["textSrc"])
+        else:
+            segment["textEn"] = f"[MT-MOCK] {segment['textSrc']}"
+    except Exception:
+        # On any MT error, fall back to echo so ingestion never fails
+        segment["textEn"] = segment["textSrc"]
 
-        LAST_INGEST_AT[session_id] = datetime.utcnow()
+    ins = await db.segments.insert_one(segment)
+    segment["_id"] = str(ins.inserted_id)
 
-        # --- broadcast over WS ---
-        sockets = SESSION_SOCKETS.get(session_id)
-        if sockets:
-            dead = set()
-            for ws in list(sockets):
-                try:
-                    await ws.send_json(to_jsonable(segment))
-                except Exception:
-                    dead.add(ws)
-            for ws in dead:
-                SESSION_SOCKETS[session_id].discard(ws)
+    await db.sessions.update_one(
+        {"_id": session_oid},
+        {"$set": {"updatedAt": datetime.utcnow()}},
+    )
 
-        return {"ok": True}
+    # --- broadcast over WS ---
+    sockets = SESSION_SOCKETS.get(session_id)
+    if sockets:
+        dead = set()
+        for ws in list(sockets):
+            try:
+                await ws.send_json(to_jsonable(segment))
+            except Exception:
+                dead.add(ws)
+        for ws in dead:
+            sockets.discard(ws)
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        # Do not 500; surface the payload to help fix upstream formatting
-        return {"ok": False, "error": str(e), "payload": to_jsonable(payload)}
+    return {"ok": True}
 
 
 # ---------- realtime ----------
@@ -423,7 +430,7 @@ async def realtime(ws: WebSocket):
 
     SESSION_SOCKETS[session_id].add(ws)
     try:
-        # Keep alive; we don't expect messages from the client
+        # Keep connection open; we only push server->client
         while True:
             await asyncio.sleep(60)
     except WebSocketDisconnect:
