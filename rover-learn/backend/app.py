@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from collections import defaultdict
+import subprocess
+import asyncio
 
 from bson import ObjectId
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body, HTTPException
@@ -35,6 +37,7 @@ app = FastAPI()
 
 MT_URL = "http://localhost:4002"
 SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
+CAPTURE_PROC: dict[str, subprocess.Popen] = {}
 
 # CORS for local frontend
 app.add_middleware(
@@ -57,6 +60,23 @@ async def startup_event():
 @app.get("/health")
 async def health():
     return {"service": "backend", "status": "ok"}
+
+
+# ---------- capture ----------
+
+async def _stop_capture(session_id: str):
+    proc = CAPTURE_PROC.pop(session_id, None)
+    if not proc:
+        return
+
+    def _terminate(p: subprocess.Popen):
+        p.terminate()
+        try:
+            p.wait(timeout=3)
+        except Exception:
+            p.kill()
+
+    await asyncio.to_thread(_terminate, proc)
 
 
 # ---------- sessions ----------
@@ -106,7 +126,44 @@ async def stop_session(payload: dict = Body(...)):
         {"_id": oid},
         {"$set": {"status": "stopped", "updatedAt": datetime.utcnow()}},
     )
+    await _stop_capture(session_id)
     return {"status": "stopped", "sessionId": session_id}
+
+
+@app.post("/capture/start")
+async def start_capture(payload: dict = Body(...)):
+    session_id = (payload or {}).get("sessionId")
+    source = (payload or {}).get("source", "auto")
+    if not session_id:
+        return {"error": "sessionId required"}
+    proc = CAPTURE_PROC.get(session_id)
+    if proc and proc.poll() is None:
+        raise HTTPException(status_code=409)
+    repo_root = Path(__file__).resolve().parent.parent
+    cmd = [
+        "python",
+        "services/capture/agent.py",
+        "--session",
+        session_id,
+        "--asr",
+        "http://localhost:4001",
+        "--api",
+        "http://localhost:4000",
+        "--source",
+        source,
+    ]
+    proc = subprocess.Popen(cmd, cwd=repo_root)
+    CAPTURE_PROC[session_id] = proc
+    return {"ok": True, "pid": proc.pid}
+
+
+@app.post("/capture/stop")
+async def stop_capture(payload: dict = Body(...)):
+    session_id = (payload or {}).get("sessionId")
+    if not session_id:
+        return {"error": "sessionId required"}
+    await _stop_capture(session_id)
+    return {"ok": True}
 
 
 @app.get("/sessions")

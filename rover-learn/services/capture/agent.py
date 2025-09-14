@@ -9,14 +9,31 @@ import requests
 import soundcard as sc
 
 
-def _recorder(sr: int):
+def _recorder(sr: int, source: str):
+    if source == "mic":
+        mic = sc.default_microphone()
+        if mic is None:
+            print("microphone not found")
+            return None, False
+        print("using microphone")
+        return mic.recorder(samplerate=sr, channels=1), False
+    if source == "loopback":
+        spk = sc.default_speaker()
+        if spk is None:
+            print("loopback not found")
+            return None, False
+        print("using loopback")
+        return spk.recorder(samplerate=sr, channels=2), True
     mic = sc.default_microphone()
     if mic is not None:
         print("using microphone")
         return mic.recorder(samplerate=sr, channels=1), False
     spk = sc.default_speaker()
-    print("using loopback")
-    return spk.recorder(samplerate=sr, channels=2), True
+    if spk is not None:
+        print("using loopback")
+        return spk.recorder(samplerate=sr, channels=2), True
+    print("no audio devices found")
+    return None, False
 
 
 def main():
@@ -24,6 +41,7 @@ def main():
     p.add_argument("--session")
     p.add_argument("--asr", default="http://localhost:4001")
     p.add_argument("--api", default="http://localhost:4000")
+    p.add_argument("--source", choices=["auto", "mic", "loopback"], default="auto")
     args = p.parse_args()
 
     session_id = args.session or os.environ.get("SESSION_ID")
@@ -32,7 +50,9 @@ def main():
         return
 
     sr = 16000
-    rec, stereo = _recorder(sr)
+    rec, stereo = _recorder(sr, args.source)
+    if rec is None:
+        return 1
     idx = 0
     with rec as r:
         try:
@@ -67,5 +87,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
 
