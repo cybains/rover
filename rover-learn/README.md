@@ -47,3 +47,20 @@ From Session detail, click **Export** → files are written under
 ### Glossary
 
 View terms at `/glossary`. Source: `config/glossary.csv`.
+
+## Phase 4: Translator
+
+Phase 4 adds a local Marian de→en translator. Start it via:
+
+```
+uvicorn services.mt.server:app --host 0.0.0.0 --port 4002 --reload
+```
+
+On first run, the model will be downloaded to your HF cache.
+
+### Dev run order reminder
+
+1. llama-server (optional / unused this phase)
+2. `uvicorn services.mt.server:app --port 4002`
+3. `uvicorn backend.app:app --port 4000`
+4. `cd frontend && npm run dev`

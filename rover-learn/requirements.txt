@@ -5,3 +5,8 @@ python-dotenv==1.0.1
 PyYAML==6.0.2
 motor==3.6.0
 websockets==12.0
+
+# add for Marian MT
+transformers==4.44.2
+sentencepiece==0.2.0
+sacremoses==0.1.1
