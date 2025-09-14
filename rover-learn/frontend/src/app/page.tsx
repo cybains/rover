@@ -33,6 +33,7 @@ export default function LivePage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [gen, setGen] = useState<any | null>(null);
   const [genType, setGenType] = useState<string>('');
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const el = leftRef.current;
@@ -61,12 +62,33 @@ export default function LivePage() {
     });
   }, []);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        session && session.status === 'live' ? stop() : start();
+      } else if (e.altKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        paused ? resume() : pause();
+      } else if (e.altKey && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        bookmarkLast();
+      } else if (e.altKey && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        jump();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [session, paused, order, paras]);
+
   const start = async () => {
     const data = await startSession(title);
     setSession(data);
     setOrder([]);
     setParas(new Map());
     setSpeakerMap({});
+    setPaused(false);
     await startCapture(data._id, source);
     lastTsRef.current = Date.now();
     const ws = connectWs(data._id);
@@ -121,6 +143,21 @@ export default function LivePage() {
       await stopCapture(session._id);
       await apiPost('/sessions/stop', { sessionId: session._id });
       setSession({ ...session, status: 'stopped' });
+      setPaused(false);
+    }
+  };
+
+  const pause = async () => {
+    if (session && !paused) {
+      await stopCapture(session._id);
+      setPaused(true);
+    }
+  };
+
+  const resume = async () => {
+    if (session && paused) {
+      await startCapture(session._id, source);
+      setPaused(false);
     }
   };
 
@@ -154,6 +191,13 @@ export default function LivePage() {
       map.set(id, obj);
       return map;
     });
+  };
+
+  const bookmarkLast = () => {
+    const id = order[order.length - 1];
+    if (!id) return;
+    const p = paras.get(id);
+    if (p) toggleBookmark(id, p);
   };
 
   const toggleSelect = (id: string) => {
@@ -286,14 +330,30 @@ export default function LivePage() {
         </div>
         <div>
           {session && (
-            <span style={{ marginRight: '0.5rem', color: session.status === 'live' ? 'green' : 'gray' }}>
-              ● {session.status === 'live' ? 'Live' : 'Stopped'}
+            <span
+              style={{
+                marginRight: '0.5rem',
+                color:
+                  session.status === 'live'
+                    ? paused
+                      ? 'orange'
+                      : 'green'
+                    : 'gray',
+              }}
+            >
+              ●
+              {session.status === 'live' ? (paused ? 'Paused' : 'Live') : 'Stopped'}
             </span>
           )}
           {!session || session.status !== 'live' ? (
             <button onClick={start}>Start</button>
           ) : (
-            <button onClick={stop}>Stop</button>
+            <>
+              <button onClick={stop}>Stop</button>
+              <button onClick={paused ? resume : pause} style={{ marginLeft: '0.5rem' }}>
+                {paused ? 'Resume' : 'Pause'}
+              </button>
+            </>
           )}
           {scrolled && (
             <button onClick={jump} style={{ marginLeft: '1rem' }}>

@@ -189,3 +189,14 @@ llama-server --model phi-3.5
 ```
 
 Requests use strict prompts and expect JSON-only responses.
+
+## Phase 11: Hotkeys & Settings
+
+- Global hotkeys:
+  - **Alt+S** – Start/Stop capture
+  - **Alt+P** – Pause/Resume capture
+  - **Alt+B** – Bookmark last paragraph
+  - **Alt+L** – Jump to Live
+- Settings persisted in `config/runtime_settings.json` via `GET/POST /settings`.
+- Storage guardrail: `GET /storage/status` warns when exports + DB exceed 2 GB.
+- Bulk delete old sessions with `POST /sessions/purge { before: ISO timestamp }`.

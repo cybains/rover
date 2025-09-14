@@ -91,3 +91,19 @@ export async function getGenerations(sessionId: string, type: string) {
   const q = type ? `?type=${type}` : "";
   return apiGet(`/sessions/${sessionId}/generations${q}`);
 }
+
+export async function getSettings() {
+  return apiGet(`/settings`);
+}
+
+export async function updateSettings(data: any) {
+  return apiPost(`/settings`, data);
+}
+
+export async function getStorageStatus() {
+  return apiGet(`/storage/status`);
+}
+
+export async function purgeSessions(before: string) {
+  return apiPost(`/sessions/purge`, { before });
+}

@@ -6,6 +6,7 @@ import math
 import sys
 import asyncio
 import subprocess
+import shutil
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -56,6 +57,59 @@ DE_Q_START = re.compile(
     r"^(wer|was|wann|wo|warum|wieso|weshalb|welche|welcher|welches|wie)\b", re.I
 )
 
+SETTINGS_PATH = Path(__file__).resolve().parents[1] / "config" / "runtime_settings.json"
+DEFAULT_SETTINGS = {
+    "asrForceLang": "",
+    "chunkMs": 500,
+    "targetLang": "EN",
+    "exportDefaults": {},
+}
+
+STORAGE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
+STORAGE_STATUS: Dict[str, int | bool] = {}
+
+
+def load_settings() -> dict:
+    try:
+        return json.loads(SETTINGS_PATH.read_text())
+    except Exception:
+        return DEFAULT_SETTINGS.copy()
+
+
+def save_settings(data: dict):
+    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS_PATH.write_text(json.dumps(data))
+
+
+def _dir_size(p: Path) -> int:
+    if not p.exists():
+        return 0
+    return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+
+
+async def _compute_storage() -> dict:
+    exports_dir = Path(__file__).resolve().parents[1] / "exports"
+    exports_bytes = _dir_size(exports_dir)
+    db = await get_db()
+    try:
+        stats = await db.command("dbstats")
+        db_bytes = int(stats.get("storageSize", 0))
+    except Exception:
+        db_bytes = 0
+    total = exports_bytes + db_bytes
+    return {
+        "exportsBytes": exports_bytes,
+        "dbBytes": db_bytes,
+        "totalBytes": total,
+        "overLimit": total > STORAGE_THRESHOLD,
+    }
+
+
+async def _storage_monitor():
+    while True:
+        STORAGE_STATUS.update(await _compute_storage())
+        await asyncio.sleep(60)
+
 # CORS for local frontend
 app.add_middleware(
     CORSMiddleware,
@@ -70,6 +124,7 @@ app.add_middleware(
 async def startup_event():
     await get_db()
     load_glossary()
+    asyncio.create_task(_storage_monitor())
 
 
 @app.on_event("shutdown")
@@ -98,6 +153,62 @@ async def capture_status(sessionId: str):
     pid = proc.pid if running else None
     last = LAST_INGEST_AT.get(sessionId)
     return {"sessionId": sessionId, "running": running, "pid": pid, "lastIngestTs": last.isoformat() if last else None}
+
+
+# ---------- settings & storage ----------
+
+
+@app.get("/settings")
+async def get_settings_endpoint():
+    return load_settings()
+
+
+@app.post("/settings")
+async def post_settings_endpoint(payload: dict = Body(...)):
+    data = load_settings()
+    for k in DEFAULT_SETTINGS:
+        if k in payload:
+            data[k] = payload[k]
+    save_settings(data)
+    return data
+
+
+@app.get("/storage/status")
+async def storage_status():
+    if not STORAGE_STATUS:
+        STORAGE_STATUS.update(await _compute_storage())
+    return STORAGE_STATUS
+
+
+@app.post("/sessions/purge")
+async def purge_sessions(payload: dict = Body(...)):
+    before = (payload or {}).get("before")
+    if not before:
+        raise HTTPException(status_code=400, detail="before required")
+    try:
+        dt = datetime.fromisoformat(before)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid before")
+    db = await get_db()
+    cursor = db.sessions.find({"createdAt": {"$lt": dt}})
+    deleted = 0
+    async for s in cursor:
+        sid = s["_id"]
+        sid_str = str(sid)
+        await db.segments.delete_many({"sessionId": {"$in": [sid, sid_str]}})
+        await db.generations.delete_many({"sessionId": sid_str})
+        export_dir = (
+            Path(__file__).resolve().parents[1]
+            / "exports"
+            / "sessions"
+            / s["createdAt"].strftime("%Y-%m-%d")
+            / sid_str
+        )
+        await asyncio.to_thread(shutil.rmtree, export_dir, True)
+        await db.sessions.delete_one({"_id": sid})
+        deleted += 1
+    STORAGE_STATUS.update(await _compute_storage())
+    return {"deleted": deleted}
 
 
 # ---------- capture ----------
