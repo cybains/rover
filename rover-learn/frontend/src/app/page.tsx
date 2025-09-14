@@ -2,14 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiPost, connectWs, startSession, startCapture, stopCapture } from '../lib/api';
 
-interface Segment {
-  textSrc: string;
-  textEn: string;
-}
-
 export default function LivePage() {
   const [session, setSession] = useState<any | null>(null);
-  const [segments, setSegments] = useState<Segment[]>([]);
+  const [order, setOrder] = useState<string[]>([]);
+  const [paras, setParas] = useState<Map<string, any>>(new Map());
   const wsRef = useRef<WebSocket | null>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
@@ -39,15 +35,32 @@ export default function LivePage() {
   const start = async () => {
     const data = await startSession(title);
     setSession(data);
-    setSegments([]);
+    setOrder([]);
+    setParas(new Map());
     await startCapture(data._id, source);
     lastTsRef.current = Date.now();
     const ws = connectWs(data._id);
     wsRef.current = ws;
     ws.onmessage = (ev) => {
       const seg = JSON.parse(ev.data);
+      if (!seg || !seg.paraId) return;
       lastTsRef.current = Date.now();
-      setSegments((prev) => [...prev, seg]);
+      setParas((prev) => {
+        const map = new Map(prev);
+        const p = map.get(seg.paraId) || {};
+        if (seg.kind === 'partial') {
+          p.srcPartial = seg.textSrcPartial;
+          p.enPartial = seg.textEnPartial;
+        } else if (seg.kind === 'final') {
+          p.srcFinal = seg.textSrc;
+          p.enFinal = seg.textEn;
+          p.srcPartial = undefined;
+          p.enPartial = undefined;
+        }
+        map.set(seg.paraId, p);
+        return map;
+      });
+      setOrder((prev) => (prev.includes(seg.paraId) ? prev : [...prev, seg.paraId]));
     };
   };
 
@@ -64,7 +77,7 @@ export default function LivePage() {
   useEffect(() => {
     leftRef.current && (leftRef.current.scrollTop = leftRef.current.scrollHeight);
     rightRef.current && (rightRef.current.scrollTop = rightRef.current.scrollHeight);
-  }, [segments]);
+  }, [order, paras]);
 
   const jump = () => {
     leftRef.current && (leftRef.current.scrollTop = leftRef.current.scrollHeight);
@@ -74,14 +87,30 @@ export default function LivePage() {
   return (
     <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
       <div ref={leftRef} style={{ overflowY: 'auto', padding: '1rem', borderRight: '1px solid #ccc' }}>
-        {segments.map((s, i) => (
-          <p key={i}>{s.textSrc}</p>
-        ))}
+        {order.map((id) => {
+          const p = paras.get(id);
+          if (!p) return null;
+          const txt = p.srcFinal || p.srcPartial || '';
+          const partial = !p.srcFinal;
+          return (
+            <p key={id} style={{ fontStyle: partial ? 'italic' : 'normal' }}>
+              {txt}
+            </p>
+          );
+        })}
       </div>
       <div ref={rightRef} style={{ overflowY: 'auto', padding: '1rem' }}>
-        {segments.map((s, i) => (
-          <p key={i}>{s.textEn}</p>
-        ))}
+        {order.map((id) => {
+          const p = paras.get(id);
+          if (!p) return null;
+          const txt = p.enFinal || p.enPartial || '';
+          const partial = !p.enFinal;
+          return (
+            <p key={id} style={{ fontStyle: partial ? 'italic' : 'normal' }}>
+              {txt}
+            </p>
+          );
+        })}
       </div>
         <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
         <div style={{ marginBottom: '0.5rem' }}>

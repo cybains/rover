@@ -11,7 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict
 
-import requests
+import os
+import httpx
 from bson import ObjectId
 from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +39,8 @@ def to_jsonable(x):
 
 app = FastAPI()
 
-MT_URL = "http://localhost:4002"
+MT_URL = os.getenv("MT_URL", "http://localhost:4002")
+HTTP = httpx.AsyncClient(timeout=3.0)
 SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
 CAPTURE_PROC: dict[str, subprocess.Popen] = {}
 LAST_INGEST_AT: dict[str, datetime] = {}
@@ -60,6 +62,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await get_db()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await HTTP.aclose()
 
 
 # ---------- health ----------
@@ -218,7 +225,7 @@ async def get_session(session_id: str):
 
     session["_id"] = str(session["_id"])
     segments: List[dict] = []
-    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idx", 1)
+    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idxStart", 1)
     async for seg in cursor:
         seg["_id"] = str(seg["_id"])
         segments.append(seg)
@@ -250,7 +257,7 @@ async def export_session(session_id: str):
         raise HTTPException(status_code=404)
 
     segments: List[dict] = []
-    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idx", 1)
+    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idxStart", 1)
     async for seg in cursor:
         seg["_id"] = str(seg["_id"])
         segments.append(seg)
@@ -334,7 +341,50 @@ async def ingest_segment(payload: dict = Body(...)):
         except Exception:
             raise HTTPException(status_code=400, detail="invalid sessionId")
 
-        # --- robust normalization ---
+        kind = payload.get("kind", "final")
+        if kind == "partial":
+            para_id = payload.get("paraId")
+            lang_raw = (payload.get("lang") or "").strip().lower()
+            text_src = str(payload.get("textSrcPartial", "") or "").strip()
+            seg = {
+                "kind": "partial",
+                "paraId": para_id,
+                "lang": lang_raw,
+                "textSrcPartial": text_src,
+            }
+            try:
+                if lang_raw == "de" and text_src:
+                    r = await HTTP.post(
+                        f"{MT_URL}/translate_partial",
+                        json={"text": text_src, "src_lang": "de", "tgt_lang": "en"},
+                    )
+                    r.raise_for_status()
+                    seg["textEnPartial"] = r.json().get("translation", text_src)
+                elif text_src:
+                    r = await HTTP.post(
+                        f"{MT_URL}/translate_partial",
+                        json={"text": text_src, "src_lang": lang_raw, "tgt_lang": "en"},
+                    )
+                    r.raise_for_status()
+                    seg["textEnPartial"] = r.json().get("translation", text_src)
+                else:
+                    seg["textEnPartial"] = ""
+            except Exception:
+                seg["textEnPartial"] = "[MT-MOCK] " + text_src
+
+            sockets = SESSION_SOCKETS.get(session_id)
+            if sockets:
+                dead = set()
+                for ws in list(sockets):
+                    try:
+                        await ws.send_json(to_jsonable(seg))
+                    except Exception:
+                        dead.add(ws)
+                for ws in dead:
+                    SESSION_SOCKETS[session_id].discard(ws)
+            return {"ok": True, "partial": True}
+
+        # final segment
         lang_raw = (payload.get("lang") or "").strip().lower()
 
         def _safe_time(x, default: float) -> float:
@@ -347,11 +397,10 @@ async def ingest_segment(payload: dict = Body(...)):
                 return default
 
         t_start = _safe_time(payload.get("tStart"), 0.0)
-        t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))  # min +1s
+        t_end = _safe_time(payload.get("tEnd"), max(t_start, t_start + 1.0))
 
         text_src = str(payload.get("textSrc", "") or "").strip()
         speaker = str(payload.get("speaker", "") or "Speaker 1")
-        partial = bool(payload.get("partial", False))
         try:
             confidence = float(payload.get("confidence", 0.9))
         except Exception:
@@ -359,47 +408,30 @@ async def ingest_segment(payload: dict = Body(...)):
 
         segment = {
             "sessionId": session_id,
-            "idx": int(payload.get("idx", 0)),
+            "paraId": payload.get("paraId"),
+            "idxStart": int(payload.get("idx", 0)),
+            "idxEnd": int(payload.get("idx", 0)),
             "tStart": t_start,
             "tEnd": t_end,
             "lang": lang_raw,
             "speaker": speaker,
             "textSrc": text_src,
-            "partial": partial,
+            "partial": False,
             "confidence": confidence,
         }
 
-        # --- de-dup within ~2s window
-        prev_txt = LAST_SEG_TEXT.get(session_id, "")
-        prev_end = LAST_SEG_TEND.get(session_id, -1.0)
-        if text_src and text_src == prev_txt and (t_start - prev_end) < 2.0:
-            # still send a small heartbeat so the UI can update latency
-            sockets = SESSION_SOCKETS.get(session_id)
-            if sockets:
-                dead = set()
-                for ws in list(sockets):
-                    try:
-                        await ws.send_json({"type": "noop"})
-                    except Exception:
-                        dead.add(ws)
-                for ws in dead:
-                    SESSION_SOCKETS[session_id].discard(ws)
-            return {"ok": True, "dedup": True}
-
-        # --- translation (tolerant) ---
         try:
-            if lang_raw.startswith("de"):
-                r = requests.post(
-                    f"{MT_URL}/translate",
-                    json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
-                    timeout=10,
+            if text_src:
+                r = await HTTP.post(
+                    f"{MT_URL}/translate_final",
+                    json={"text": text_src, "src_lang": lang_raw or "de", "tgt_lang": "en"},
                 )
                 r.raise_for_status()
-                segment["textEn"] = r.json().get("translation", segment["textSrc"])
+                segment["textEn"] = r.json().get("translation", text_src)
             else:
-                segment["textEn"] = segment["textSrc"]
+                segment["textEn"] = ""
         except Exception:
-            segment["textEn"] = segment["textSrc"]
+            segment["textEn"] = "[MT-MOCK] " + text_src
 
         ins = await db.segments.insert_one(segment)
         segment["_id"] = str(ins.inserted_id)
@@ -410,10 +442,7 @@ async def ingest_segment(payload: dict = Body(...)):
         )
 
         LAST_INGEST_AT[session_id] = datetime.utcnow()
-        LAST_SEG_TEXT[session_id] = text_src
-        LAST_SEG_TEND[session_id] = t_end
 
-        # --- broadcast over WS ---
         sockets = SESSION_SOCKETS.get(session_id)
         if sockets:
             dead = set()
