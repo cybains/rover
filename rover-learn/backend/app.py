@@ -1,11 +1,13 @@
 # rover-learn/backend/app.py
 
 import asyncio
+import json
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from bson import ObjectId
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import get_db
@@ -166,6 +168,86 @@ async def get_session(session_id: str):
 async def glossary():
     return to_jsonable(load_glossary())
 
+
+# ---------- exports ----------
+
+@app.post("/export/{session_id}")
+async def export_session(session_id: str):
+    db = await get_db()
+    try:
+        oid = ObjectId(session_id)
+    except Exception:
+        raise HTTPException(status_code=404)
+
+    session = await db.sessions.find_one({"_id": oid})
+    if not session:
+        raise HTTPException(status_code=404)
+
+    segments: List[dict] = []
+    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idx", 1)
+    async for seg in cursor:
+        seg["_id"] = str(seg["_id"])
+        segments.append(seg)
+
+    date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    export_dir = (
+        Path(__file__).resolve().parent.parent
+        / "exports"
+        / "sessions"
+        / date_str
+        / session_id
+    )
+    export_dir.mkdir(parents=True, exist_ok=True)
+
+    (export_dir / "transcript_src.txt").write_text(
+        "\n".join(seg.get("textSrc", "") for seg in segments),
+        encoding="utf-8",
+    )
+    (export_dir / "translation_en.txt").write_text(
+        "\n".join(seg.get("textEn", "") for seg in segments),
+        encoding="utf-8",
+    )
+    with (export_dir / "segments.jsonl").open("w", encoding="utf-8") as f:
+        for seg in segments:
+            f.write(json.dumps(to_jsonable(seg), ensure_ascii=False) + "\n")
+
+    out = {
+        "sessionId": session_id,
+        "exportDir": str(export_dir).replace("\\", "/") + "/",
+        "files": ["transcript_src.txt", "translation_en.txt", "segments.jsonl"],
+        "counts": {"segments": len(segments)},
+    }
+    return out
+
+
+@app.get("/exports/{session_id}")
+async def get_export(session_id: str):
+    base = Path(__file__).resolve().parent.parent / "exports" / "sessions"
+    if not base.exists():
+        raise HTTPException(status_code=404)
+
+    export_dir = None
+    for date_dir in base.iterdir():
+        candidate = date_dir / session_id
+        if candidate.exists():
+            export_dir = candidate
+            break
+    if not export_dir:
+        raise HTTPException(status_code=404)
+
+    seg_file = export_dir / "segments.jsonl"
+    count = 0
+    if seg_file.exists():
+        with seg_file.open(encoding="utf-8") as f:
+            for _ in f:
+                count += 1
+
+    return {
+        "sessionId": session_id,
+        "exportDir": str(export_dir).replace("\\", "/") + "/",
+        "files": ["transcript_src.txt", "translation_en.txt", "segments.jsonl"],
+        "counts": {"segments": count},
+    }
 
 # ---------- realtime (mock stream) ----------
 
