@@ -34,6 +34,15 @@ def to_jsonable(x):
 app = FastAPI()
 
 MT_URL = "http://localhost:4002"
+ASR_URL = "http://localhost:4001"
+
+# simple mixed-language samples for the mock stream
+SAMPLE_TEXT = [
+    "Hallo und guten Morgen",
+    "This is an English sentence",
+    "Der schnelle Fuchs springt",
+    "Another English line",
+]
 
 # CORS for local frontend
 app.add_middleware(
@@ -288,19 +297,27 @@ async def realtime(ws: WebSocket):
             if not session or session.get("status") != "live":
                 break
 
-            # build mock segment
-            segment = {
-                "sessionId": session_id,   # keep as STRING for the UI
-                "idx": idx,
-                "tStart": float(idx),      # simple increasing times for the mock
-                "tEnd": float(idx) + 1.0,
-                "lang": "de",
-                "speaker": "Speaker 1",
-                "textSrc": f"Guten Tag {idx}",
-                "textEn": "",
-                "partial": False,
-                "confidence": 0.92,
-            }
+            sample = SAMPLE_TEXT[idx % len(SAMPLE_TEXT)]
+            try:
+                r = requests.post(
+                    f"{ASR_URL}/transcribe",
+                    json={"text": sample, "idx": idx},
+                    timeout=10,
+                )
+                seg = r.json()
+            except Exception:
+                seg = {
+                    "idx": idx,
+                    "tStart": float(idx),
+                    "tEnd": float(idx) + 0.9,
+                    "lang": "en",
+                    "speaker": "Speaker 1",
+                    "textSrc": sample,
+                    "partial": False,
+                    "confidence": 0.0,
+                }
+
+            segment = {**seg, "sessionId": session_id, "textEn": seg["textSrc"]}
 
             if segment["lang"] == "de":
                 try:
@@ -312,8 +329,6 @@ async def realtime(ws: WebSocket):
                     segment["textEn"] = r.json().get("translation", segment["textSrc"])
                 except Exception:
                     segment["textEn"] = segment["textSrc"]
-            else:
-                segment["textEn"] = f"[MT-MOCK] {segment['textSrc']}"
 
             # insert & attach _id (as string) for completeness
             ins = await db.segments.insert_one(segment)
