@@ -1,5 +1,15 @@
 # Rover Learn
 
+## Quickstart
+
+```bash
+scripts/dev_all.sh   # macOS/Linux
+# or
+scripts/dev_all.ps1  # Windows
+```
+
+Runs preflight checks and launches ASR → MT → Backend → Frontend, then opens <http://localhost:3000>.
+
 ## Phase 1: Run
 
 ### Terminal 1 (backend)
@@ -207,3 +217,8 @@ Requests use strict prompts and expect JSON-only responses.
 - Watchdog restarts capture if no ingest for 30 s.
 - `GET /status/{sessionId}` reports capture state, last ingest age, sockets, and metrics (`asr_ms`, `mt_ms`, `dropped`).
 - Live view shows capture status, last ingest seconds, and latency (ASR+MT ms).
+
+## Phase 13: Packaging & Dev Convenience
+
+- `scripts/preflight.py` verifies environment, MongoDB, and free ports.
+- `scripts/dev_all.sh` / `scripts/dev_all.ps1` run the whole stack and open the UI.
