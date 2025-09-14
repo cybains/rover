@@ -7,6 +7,9 @@ interface SessionInfo {
   _id: string;
   title: string;
   createdAt: string;
+  updatedAt?: string;
+  status: string;
+  segmentsCount: number;
 }
 
 export default function SessionsPage() {
@@ -19,15 +22,30 @@ export default function SessionsPage() {
   return (
     <div style={{ padding: '1rem' }}>
       <h1>Sessions</h1>
-      <ul>
-        {sessions.map((s) => (
-          <li key={s._id}>
-            <Link href={`/sessions/${s._id}`}>
-              {s.title} - {new Date(s.createdAt).toLocaleString()}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Segments</th>
+            <th>Created</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sessions.map((s) => (
+            <tr key={s._id}>
+              <td>
+                <Link href={`/sessions/${s._id}`}>{s.title}</Link>
+              </td>
+              <td>{s.status}</td>
+              <td>{s.segmentsCount}</td>
+              <td>{new Date(s.createdAt).toLocaleString()}</td>
+              <td>{s.updatedAt ? new Date(s.updatedAt).toLocaleString() : '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

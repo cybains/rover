@@ -22,3 +22,7 @@ export function connectWs(sessionId: string) {
   const wsBase = (BASE_URL.startsWith("https://") ? "wss://" : "ws://") + "localhost:4000";
   return new WebSocket(`${wsBase}/realtime?sessionId=${sessionId}`);
 }
+
+export async function startSession(title?: string) {
+  return apiPost("/sessions/start", { title: title || null });
+}
