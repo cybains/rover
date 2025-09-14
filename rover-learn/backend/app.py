@@ -9,6 +9,7 @@ from typing import List, Optional
 from bson import ObjectId
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 from .db import get_db
 from .glossary import load_glossary
@@ -31,6 +32,8 @@ def to_jsonable(x):
 # ---------- app & middleware ----------
 
 app = FastAPI()
+
+MT_URL = "http://localhost:4002"
 
 # CORS for local frontend
 app.add_middleware(
@@ -294,10 +297,23 @@ async def realtime(ws: WebSocket):
                 "lang": "de",
                 "speaker": "Speaker 1",
                 "textSrc": f"Guten Tag {idx}",
-                "textEn": f"[MT-MOCK] Guten Tag {idx}",
+                "textEn": "",
                 "partial": False,
                 "confidence": 0.92,
             }
+
+            if segment["lang"] == "de":
+                try:
+                    r = requests.post(
+                        f"{MT_URL}/translate",
+                        json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
+                        timeout=10,
+                    )
+                    segment["textEn"] = r.json().get("translation", segment["textSrc"])
+                except Exception:
+                    segment["textEn"] = segment["textSrc"]
+            else:
+                segment["textEn"] = f"[MT-MOCK] {segment['textSrc']}"
 
             # insert & attach _id (as string) for completeness
             ins = await db.segments.insert_one(segment)

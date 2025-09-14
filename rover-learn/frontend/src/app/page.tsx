@@ -100,6 +100,18 @@ export default function LivePage() {
               Jump to Live
             </button>
           )}
+          <span
+            style={{
+              marginLeft: '1rem',
+              background: '#eee',
+              color: '#555',
+              padding: '0.1rem 0.4rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.75rem',
+            }}
+          >
+            MT: Marian (local)
+          </span>
         </div>
       </div>
       <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', color: latency > 2000 ? 'orange' : 'inherit' }}>
