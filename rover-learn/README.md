@@ -64,3 +64,18 @@ On first run, the model will be downloaded to your HF cache.
 2. `uvicorn services.mt.server:app --port 4002`
 3. `uvicorn backend.app:app --port 4000`
 4. `cd frontend && npm run dev`
+
+## Phase 5: ASR stub
+
+Start a tiny ASR service:
+
+```
+uvicorn services.asr.server:app --host 0.0.0.0 --port 4001 --reload
+```
+
+### Dev run order reminder
+
+1. `uvicorn services.asr.server:app --port 4001`
+2. `uvicorn services.mt.server:app --port 4002`
+3. `uvicorn backend.app:app --port 4000`
+4. `cd frontend && npm run dev`
