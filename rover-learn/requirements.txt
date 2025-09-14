@@ -21,3 +21,5 @@ soundcard==0.4.3     # WASAPI loopback-friendly on Windows
 webrtcvad==2.0.10
 langdetect==1.0.9
 torch==2.3.1
+scikit-learn==1.5.1
+pyannote.audio==3.1.1
