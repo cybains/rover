@@ -32,3 +32,18 @@ Open <http://localhost:3000>
 ```
 { _id, title, createdAt, updatedAt, status, segmentsCount }
 ```
+
+## Phase 3: Exports & Glossary
+
+### Exports
+
+From Session detail, click **Export** → files are written under
+`exports/sessions/<date>/<id>/`.
+
+- `transcript_src.txt` – concatenated `textSrc`
+- `translation_en.txt` – concatenated `textEn`
+- `segments.jsonl` – one JSON segment per line
+
+### Glossary
+
+View terms at `/glossary`. Source: `config/glossary.csv`.

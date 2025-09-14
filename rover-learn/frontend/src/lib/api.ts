@@ -7,12 +7,12 @@ export async function apiGet(path: string) {
   return res.json();
 }
 
-export async function apiPost(path: string, data: any) {
+export async function apiPost(path: string, data?: any) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     mode: "cors",
-    body: JSON.stringify(data),
+    body: data !== undefined ? JSON.stringify(data) : undefined,
   });
   if (!res.ok) throw new Error(`POST ${path} -> ${res.status}`);
   return res.json();
@@ -25,4 +25,12 @@ export function connectWs(sessionId: string) {
 
 export async function startSession(title?: string) {
   return apiPost("/sessions/start", { title: title || null });
+}
+
+export async function exportSession(id: string) {
+  return apiPost(`/export/${id}`);
+}
+
+export async function getGlossary() {
+  return apiGet(`/glossary`);
 }
