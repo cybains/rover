@@ -79,3 +79,28 @@ uvicorn services.asr.server:app --host 0.0.0.0 --port 4001 --reload
 2. `uvicorn services.mt.server:app --port 4002`
 3. `uvicorn backend.app:app --port 4000`
 4. `cd frontend && npm run dev`
+
+## Phase 6: Live audio → ASR → Backend
+
+```
+# Terminal A: ASR (real)
+uvicorn services.asr.server:app --host 0.0.0.0 --port 4001 --reload
+
+# Terminal B: MT
+uvicorn services.mt.server:app --host 0.0.0.0 --port 4002 --reload
+
+# Terminal C: Backend
+uvicorn backend.app:app --host 0.0.0.0 --port 4000 --reload
+
+# Terminal D: Frontend
+cd frontend && npm run dev
+
+# Start a session in the UI (note the returned sessionId)
+# Terminal E: Capture agent (Mic -> fallback Loopback)
+python services/capture/agent.py --session <SESSION_ID>
+```
+
+Notes:
+
+- No audio files are saved; only segments are stored.
+- If mic is not available, the agent will switch to loopback (system audio).
