@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import os
+import time
 from typing import Optional
 
 import numpy as np
@@ -23,24 +24,28 @@ _tail_pcm = np.zeros(0, dtype=np.int16)
 _prev_text: str = ""          # (unused when conditioning disabled, kept for future)
 
 
-def _init_model() -> WhisperModel:
+def _init_model():
     """
     Model/device are set from env to allow CUDA:
       ASR_MODEL      (default: "small")
       ASR_DEVICE     (default: "cpu")      -> set "cuda" to use your GTX 1650
       ASR_COMPUTE    (default: "int8")     -> set "float16" on CUDA
       ASR_FORCE_LANG (optional: "de")      -> skip lang detection
+    Returns (model, model_id, device, compute_type, load_ms)
     """
     model_id = os.getenv("ASR_MODEL", "small")
     device = os.getenv("ASR_DEVICE", "cpu")
     compute_type = os.getenv("ASR_COMPUTE", "int8")
 
-    return WhisperModel(
+    t0 = time.time()
+    model = WhisperModel(
         model_id,
         device=device,
         compute_type=compute_type,
         cpu_threads=max(4, os.cpu_count() or 8),
     )
+    load_ms = (time.time() - t0) * 1000.0
+    return model, model_id, device, compute_type, load_ms
 
 
 # ---------- DTOs ----------
@@ -76,10 +81,9 @@ def _offset_seconds_for_idx(idx: int, chunk_ms: int | None, fallback_chunk_len_s
 @app.on_event("startup")
 def _load_model():
     global _MODEL
-    _MODEL = _init_model()
+    _MODEL, model_id, device, compute_type, load_ms = _init_model()
     print(
-        f"[ASR] Model initialized ({type(_MODEL).__name__}); "
-        f"env: device={os.getenv('ASR_DEVICE')} compute={os.getenv('ASR_COMPUTE')}"
+        f"[ASR] model={model_id} loaded in {load_ms:.0f} ms (device={device} compute={compute_type})"
     )
 
 
