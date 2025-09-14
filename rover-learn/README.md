@@ -153,3 +153,19 @@ set ASR_FORCE_LANG=de
 ```
 
 Live uses 500 ms chunks with WebRTC VAD and ~0.6–0.8 s endpointing so typical speech appears with English translation in under a second. Non‑German speech auto-routes to an NLLB-200 translator. The UI shows partial English immediately and finalizes into paragraphs after pauses.
+
+## Phase 8: Q↔A & Highlights
+
+- Final segments flag questions (German heuristics) and link to top answers via TF-IDF.
+- Bookmark any paragraph from Live or Session detail.
+- `/sessions/{id}/qa/recompute` rebuilds Q/A links.
+- `/sessions/{id}/highlights` lists questions, answers, and bookmarks.
+- `/segments/{segmentId}/bookmark` toggles bookmarks.
+- Exports now include `captions_src.vtt` and `captions_en.vtt`.
+
+## Phase 9: Diarization & Glossary Enforcement
+
+- ASR adds lightweight diarization, tagging segments as `Speaker 1`, `Speaker 2`, etc.
+- Rename speakers per session via `POST /sessions/{id}/speakers/rename { from, to }`.
+- English translations enforce glossary terms from `config/glossary.csv` and record hits.
+- UI shows speaker tags and underlines enforced terms; Glossary hits appear in Highlights.

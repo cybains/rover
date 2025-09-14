@@ -45,3 +45,35 @@ export async function exportSession(id: string) {
 export async function getGlossary() {
   return apiGet(`/glossary`);
 }
+
+export async function recomputeQA(id: string) {
+  return apiPost(`/sessions/${id}/qa/recompute`);
+}
+
+export async function getHighlights(id: string) {
+  return apiGet(`/sessions/${id}/highlights`);
+}
+
+export async function bookmarkSegment(id: string) {
+  return apiPost(`/segments/${id}/bookmark`);
+}
+
+export async function unbookmarkSegment(id: string) {
+  const res = await fetch(`${BASE_URL}/segments/${id}/bookmark`, {
+    method: "DELETE",
+    mode: "cors",
+  });
+  if (!res.ok) throw new Error(`DELETE /segments/${id}/bookmark -> ${res.status}`);
+  return res.json();
+}
+
+export async function renameSpeaker(
+  sessionId: string,
+  fromName: string,
+  toName: string
+) {
+  return apiPost(`/sessions/${sessionId}/speakers/rename`, {
+    from: fromName,
+    to: toName,
+  });
+}

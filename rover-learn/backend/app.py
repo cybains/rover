@@ -10,6 +10,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict
+import re
 
 import os
 import httpx
@@ -18,8 +19,9 @@ from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import get_db
-from .glossary import load_glossary
+from .glossary import load_glossary, apply_glossary
 from .models import SessionCreate
+from .utils.qalink import recompute_qalinks
 
 
 # ---------- helpers ----------
@@ -49,6 +51,10 @@ LAST_INGEST_AT: dict[str, datetime] = {}
 LAST_SEG_TEXT: Dict[str, str] = {}      # sessionId -> last textSrc
 LAST_SEG_TEND: Dict[str, float] = {}    # sessionId -> last tEnd
 
+DE_Q_START = re.compile(
+    r"^(wer|was|wann|wo|warum|wieso|weshalb|welche|welcher|welches|wie)\b", re.I
+)
+
 # CORS for local frontend
 app.add_middleware(
     CORSMiddleware,
@@ -62,6 +68,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await get_db()
+    load_glossary()
 
 
 @app.on_event("shutdown")
@@ -159,6 +166,7 @@ async def start_session(payload: SessionCreate = Body(...)):
         "createdAt": now,
         "updatedAt": now,
         "status": "live",
+        "speakerMap": {},
     }
     res = await db.sessions.insert_one(doc)
 
@@ -168,6 +176,7 @@ async def start_session(payload: SessionCreate = Body(...)):
         "createdAt": doc["createdAt"],
         "updatedAt": doc["updatedAt"],
         "status": doc["status"],
+        "speakerMap": {},
         "segmentsCount": 0,
     }
     return to_jsonable(out)
@@ -224,6 +233,7 @@ async def get_session(session_id: str):
         raise HTTPException(status_code=404)
 
     session["_id"] = str(session["_id"])
+    session["speakerMap"] = session.get("speakerMap", {})
     segments: List[dict] = []
     cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idxStart", 1)
     async for seg in cursor:
@@ -278,10 +288,37 @@ async def export_session(session_id: str):
         for seg in segments:
             f.write(json.dumps(to_jsonable(seg), ensure_ascii=False) + "\n")
 
+    def _fmt_ts(t: float) -> str:
+        h = int(t // 3600)
+        m = int((t % 3600) // 60)
+        s = t % 60
+        return f"{h:02d}:{m:02d}:{s:06.3f}"
+
+    lines_src = ["WEBVTT", ""]
+    lines_en = ["WEBVTT", ""]
+    for seg in segments:
+        start = _fmt_ts(seg.get("tStart", 0.0))
+        end = _fmt_ts(seg.get("tEnd", 0.0))
+        lines_src.append(f"{start} --> {end}")
+        lines_src.append(seg.get("textSrc", ""))
+        lines_src.append("")
+        lines_en.append(f"{start} --> {end}")
+        lines_en.append(seg.get("textEn", ""))
+        lines_en.append("")
+
+    (export_dir / "captions_src.vtt").write_text("\n".join(lines_src), encoding="utf-8")
+    (export_dir / "captions_en.vtt").write_text("\n".join(lines_en), encoding="utf-8")
+
     out = {
         "sessionId": session_id,
         "exportDir": str(export_dir).replace("\\", "/") + "/",
-        "files": ["transcript_src.txt", "translation_en.txt", "segments.jsonl"],
+        "files": [
+            "transcript_src.txt",
+            "translation_en.txt",
+            "segments.jsonl",
+            "captions_src.vtt",
+            "captions_en.vtt",
+        ],
         "counts": {"segments": len(segments)},
     }
     return out
@@ -311,9 +348,112 @@ async def get_export(session_id: str):
     return {
         "sessionId": session_id,
         "exportDir": str(export_dir).replace("\\", "/") + "/",
-        "files": ["transcript_src.txt", "translation_en.txt", "segments.jsonl"],
+        "files": [
+            "transcript_src.txt",
+            "translation_en.txt",
+            "segments.jsonl",
+            "captions_src.vtt",
+            "captions_en.vtt",
+        ],
         "counts": {"segments": count},
     }
+
+
+# ---------- qa / bookmarks ----------
+
+@app.post("/sessions/{session_id}/qa/recompute")
+async def qa_recompute(session_id: str):
+    db = await get_db()
+    await recompute_qalinks(db, session_id)
+    return {"ok": True}
+
+
+@app.post("/sessions/{session_id}/speakers/rename")
+async def rename_speaker(session_id: str, payload: dict = Body(...)):
+    from_name = (payload or {}).get("from")
+    to_name = (payload or {}).get("to")
+    if not from_name or not to_name:
+        raise HTTPException(status_code=400, detail="from/to required")
+    db = await get_db()
+    try:
+        oid = ObjectId(session_id)
+    except Exception:
+        raise HTTPException(status_code=404)
+    await db.sessions.update_one(
+        {"_id": oid},
+        {"$set": {f"speakerMap.{from_name}": to_name, "updatedAt": datetime.utcnow()}},
+    )
+    sockets = SESSION_SOCKETS.get(session_id)
+    if sockets:
+        msg = {"type": "speakerRename", "from": from_name, "to": to_name}
+        dead = set()
+        for ws in list(sockets):
+            try:
+                await ws.send_json(msg)
+            except Exception:
+                dead.add(ws)
+        for ws in dead:
+            SESSION_SOCKETS[session_id].discard(ws)
+    return {"ok": True}
+
+
+@app.post("/segments/{segment_id}/bookmark")
+async def bookmark_segment(segment_id: str):
+    db = await get_db()
+    try:
+        oid = ObjectId(segment_id)
+    except Exception:
+        raise HTTPException(status_code=404)
+    await db.segments.update_one({"_id": oid}, {"$set": {"bookmark": True}})
+    return {"ok": True}
+
+
+@app.delete("/segments/{segment_id}/bookmark")
+async def unbookmark_segment(segment_id: str):
+    db = await get_db()
+    try:
+        oid = ObjectId(segment_id)
+    except Exception:
+        raise HTTPException(status_code=404)
+    await db.segments.update_one({"_id": oid}, {"$set": {"bookmark": False}})
+    return {"ok": True}
+
+
+@app.get("/sessions/{session_id}/highlights")
+async def session_highlights(session_id: str):
+    db = await get_db()
+    try:
+        oid = ObjectId(session_id)
+    except Exception:
+        raise HTTPException(status_code=404)
+    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idxStart", 1)
+    questions: List[dict] = []
+    bookmarks: List[dict] = []
+    glossary: List[dict] = []
+    by_idx: Dict[int, dict] = {}
+    answer_idxs = set()
+    async for seg in cursor:
+        seg["_id"] = str(seg["_id"])
+        by_idx[seg["idxStart"]] = seg
+        if seg.get("bookmark"):
+            bookmarks.append(seg)
+        if seg.get("isQuestion"):
+            questions.append(seg)
+            qa = seg.get("qa") or {}
+            best = qa.get("bestAnswerIdx")
+            if isinstance(best, int):
+                answer_idxs.add(best)
+        if seg.get("glossaryHits"):
+            glossary.append(seg)
+    answers = [by_idx[i] for i in answer_idxs if i in by_idx]
+    return to_jsonable(
+        {
+            "questions": questions,
+            "answers": answers,
+            "bookmarks": bookmarks,
+            "glossary": glossary,
+        }
+    )
 
 
 # ---------- ingestion ----------
@@ -346,11 +486,13 @@ async def ingest_segment(payload: dict = Body(...)):
             para_id = payload.get("paraId")
             lang_raw = (payload.get("lang") or "").strip().lower()
             text_src = str(payload.get("textSrcPartial", "") or "").strip()
+            speaker = str(payload.get("speaker", "") or "")
             seg = {
                 "kind": "partial",
                 "paraId": para_id,
                 "lang": lang_raw,
                 "textSrcPartial": text_src,
+                "speaker": speaker,
             }
             try:
                 if lang_raw == "de" and text_src:
@@ -420,6 +562,9 @@ async def ingest_segment(payload: dict = Body(...)):
             "confidence": confidence,
         }
 
+        ts_clean = text_src.strip()
+        segment["isQuestion"] = bool(ts_clean.endswith("?") or DE_Q_START.match(ts_clean))
+
         try:
             if text_src:
                 r = await HTTP.post(
@@ -432,6 +577,10 @@ async def ingest_segment(payload: dict = Body(...)):
                 segment["textEn"] = ""
         except Exception:
             segment["textEn"] = "[MT-MOCK] " + text_src
+
+        segment["textEn"], hits = apply_glossary(segment["textEn"])
+        if hits:
+            segment["glossaryHits"] = hits
 
         ins = await db.segments.insert_one(segment)
         segment["_id"] = str(ins.inserted_id)
