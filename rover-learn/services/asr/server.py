@@ -137,6 +137,11 @@ def transcribe_chunk(payload: ChunkIn):
     if pcm16.ndim != 1:
         pcm16 = pcm16.reshape(-1)
 
+    if len(pcm16) < int(0.15 * sr):
+        return {"segments": []}
+    if np.max(np.abs(pcm16)) < 200:
+        return {"segments": []}
+
     # append overlap tail
     pcm16_full = np.concatenate([_tail_pcm, pcm16]) if _tail_pcm.size else pcm16
 

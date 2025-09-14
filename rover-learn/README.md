@@ -121,3 +121,25 @@ Notes:
 5. Click **Start** in the UI
 
 > Note: "Loopback" requires Windows WASAPI; behavior on other OSes may vary.
+
+## Latency tips
+
+Set ASR env for German seminars:
+
+```
+set ASR_DEVICE=cuda          # if CUDA works on your 1650; else leave cpu
+set ASR_COMPUTE=int8
+set ASR_FORCE_LANG=de
+```
+
+Smaller chunks = lower latency: 500 ms default.
+
+Silence gate saves CPU & RTT; overlap tail keeps readability.
+
+Order to start is unchanged (ASR→MT→Backend→Frontend).
+
+Expect latency ≤ 1s on typical speech; if consistently higher:
+
+- switch ASR_DEVICE=cpu (sometimes more stable than CUDA on 1650),
+- keep ASR_FORCE_LANG=de,
+- close background apps using the mic.

@@ -11,7 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict
 
-import requests
+import os
+import httpx
 from bson import ObjectId
 from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +39,8 @@ def to_jsonable(x):
 
 app = FastAPI()
 
-MT_URL = "http://localhost:4002"
+MT_URL = os.getenv("MT_URL", "http://localhost:4002")
+HTTP = httpx.AsyncClient(timeout=3.0)
 SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
 CAPTURE_PROC: dict[str, subprocess.Popen] = {}
 LAST_INGEST_AT: dict[str, datetime] = {}
@@ -60,6 +62,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await get_db()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await HTTP.aclose()
 
 
 # ---------- health ----------
@@ -388,18 +395,17 @@ async def ingest_segment(payload: dict = Body(...)):
 
         # --- translation (tolerant) ---
         try:
-            if lang_raw.startswith("de"):
-                r = requests.post(
+            if lang_raw == "de" and text_src:
+                r = await HTTP.post(
                     f"{MT_URL}/translate",
-                    json={"text": segment["textSrc"], "src_lang": "de", "tgt_lang": "en"},
-                    timeout=10,
+                    json={"text": text_src, "src_lang": "de", "tgt_lang": "en"},
                 )
                 r.raise_for_status()
-                segment["textEn"] = r.json().get("translation", segment["textSrc"])
+                segment["textEn"] = r.json().get("translation", text_src)
             else:
-                segment["textEn"] = segment["textSrc"]
+                segment["textEn"] = "[MT-MOCK] " + text_src
         except Exception:
-            segment["textEn"] = segment["textSrc"]
+            segment["textEn"] = "[MT-MOCK] " + text_src
 
         ins = await db.segments.insert_one(segment)
         segment["_id"] = str(ins.inserted_id)

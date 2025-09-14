@@ -80,7 +80,7 @@ def main() -> int:
     ap.add_argument("--api", default="http://localhost:4000", help="Backend base URL")
     ap.add_argument("--source", choices=["auto", "mic", "loopback"], default="auto", help="Audio source")
     ap.add_argument("--sr", type=int, default=16000, help="Sample rate (Hz)")
-    ap.add_argument("--chunk_ms", type=int, default=1000, help="Chunk size in ms")
+    ap.add_argument("--chunk_ms", type=int, default=500, help="Chunk size in ms")
     args = ap.parse_args()
 
     session_id = args.session or os.environ.get("SESSION_ID")
@@ -99,8 +99,13 @@ def main() -> int:
     if rec is None:
         return 1
 
+    print(
+        f"[agent] device: {getattr(rec, 'microphone', None) and rec.microphone.name or 'unknown'}"
+    )
+
     s = requests.Session()
-    idx = 0
+    start_t = time.monotonic()
+    consec_err = 0
     last_ok = time.time()
 
     try:
@@ -108,6 +113,13 @@ def main() -> int:
             while True:
                 # Capture ~chunk_ms of audio
                 frames = rec.record(numframes=frames_per_chunk)  # float32 in [-1, 1]
+                elapsed_ms = (time.monotonic() - start_t) * 1000.0
+                idx = int(round(elapsed_ms / args.chunk_ms))
+
+                if np.max(np.abs(frames)) < 1e-3:
+                    idx = max(idx, 0)
+                    continue
+
                 b16 = _to_b64_pcm16(frames, stereo=stereo)
 
                 # --- Send to ASR ---
@@ -125,9 +137,13 @@ def main() -> int:
                     r.raise_for_status()
                     payload = r.json()
                     segments = payload.get("segments", [])
+                    consec_err = 0
                 except Exception as e:
                     print(f"[agent] ASR error: {e}", file=sys.stderr)
-                    segments = []
+                    consec_err += 1
+                    if consec_err >= 4:
+                        time.sleep(0.2)
+                    continue
 
                 # --- Forward to backend ---
                 for seg in segments:
@@ -136,10 +152,12 @@ def main() -> int:
                         br = s.post(f"{args.api}/ingest_segment", json=seg, timeout=10)
                         br.raise_for_status()
                         last_ok = time.time()
+                        consec_err = 0
                     except Exception as e:
                         print(f"[agent] backend ingest error: {e}", file=sys.stderr)
-
-                idx += 1
+                        consec_err += 1
+                        if consec_err >= 4:
+                            time.sleep(0.2)
 
                 # watchdog: show if nothing ingested for a while
                 if time.time() - last_ok > 10:
