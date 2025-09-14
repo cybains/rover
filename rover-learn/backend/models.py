@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 
 class SessionCreate(BaseModel):
-    title: str = "Untitled Session"
+    title: Optional[str] = None
 
 
 class Segment(BaseModel):

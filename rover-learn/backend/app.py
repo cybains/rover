@@ -36,13 +36,16 @@ async def health():
 @app.post("/sessions/start")
 async def start_session(payload: SessionCreate):
     db = await get_db()
+    now = datetime.utcnow()
     data = {
         "title": payload.title or "Untitled Session",
-        "createdAt": datetime.utcnow(),
+        "createdAt": now,
+        "updatedAt": now,
         "status": "live",
     }
     res = await db.sessions.insert_one(data)
     data["_id"] = str(res.inserted_id)
+    data["segmentsCount"] = 0
     return data
 
 
@@ -66,8 +69,17 @@ async def list_sessions():
     sessions: List[dict] = []
     cursor = db.sessions.find().sort("createdAt", -1)
     async for s in cursor:
-        s["_id"] = str(s["_id"])
-        sessions.append(s)
+        count = await db.segments.count_documents({"sessionId": str(s["_id"])})
+        sessions.append(
+            {
+                "_id": str(s["_id"]),
+                "title": s.get("title"),
+                "createdAt": s.get("createdAt"),
+                "updatedAt": s.get("updatedAt"),
+                "status": s.get("status"),
+                "segmentsCount": count,
+            }
+        )
     return sessions
 
 
@@ -84,6 +96,7 @@ async def get_session(session_id: str):
         seg["_id"] = str(seg["_id"])
         segments.append(seg)
     session["segments"] = segments
+    session["segmentsCount"] = len(segments)
     return session
 
 
@@ -120,6 +133,10 @@ async def realtime(ws: WebSocket):
                 "confidence": 0.92,
             }
             await db.segments.insert_one(segment)
+            await db.sessions.update_one(
+                {"_id": ObjectId(session_id)},
+                {"$set": {"updatedAt": datetime.utcnow()}},
+            )
             await ws.send_json(segment)
             idx += 1
             await asyncio.sleep(1)

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { apiPost, connectWs } from '../lib/api';
+import { apiPost, connectWs, startSession } from '../lib/api';
 
 interface Segment {
   textSrc: string;
@@ -8,12 +8,15 @@ interface Segment {
 }
 
 export default function LivePage() {
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [title, setTitle] = useState('Untitled Session');
+  const lastTsRef = useRef(Date.now());
+  const [latency, setLatency] = useState(0);
 
   useEffect(() => {
     const el = leftRef.current;
@@ -25,14 +28,23 @@ export default function LivePage() {
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLatency(Date.now() - lastTsRef.current);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const start = async () => {
-    const data = await apiPost('/sessions/start', {});
-    setSessionId(data._id);
+    const data = await startSession(title);
+    setSession(data);
     setSegments([]);
+    lastTsRef.current = Date.now();
     const ws = connectWs(data._id);
     wsRef.current = ws;
     ws.onmessage = (ev) => {
       const seg = JSON.parse(ev.data);
+      lastTsRef.current = Date.now();
       setSegments((prev) => [...prev, seg]);
     };
   };
@@ -40,10 +52,10 @@ export default function LivePage() {
   const stop = async () => {
     wsRef.current?.close();
     wsRef.current = null;
-    if (sessionId) {
-      await apiPost('/sessions/stop', { sessionId });
+    if (session) {
+      await apiPost('/sessions/stop', { sessionId: session._id });
+      setSession({ ...session, status: 'stopped' });
     }
-    setSessionId(null);
   };
 
   useEffect(() => {
@@ -68,17 +80,30 @@ export default function LivePage() {
           <p key={i}>{s.textEn}</p>
         ))}
       </div>
-      <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)' }}>
-        {!sessionId ? (
-          <button onClick={start}>Start</button>
-        ) : (
-          <button onClick={stop}>Stop</button>
-        )}
-        {scrolled && (
-          <button onClick={jump} style={{ marginLeft: '1rem' }}>
-            Jump to Live
-          </button>
-        )}
+        <div style={{ position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div>
+          {session && (
+            <span style={{ marginRight: '0.5rem', color: session.status === 'live' ? 'green' : 'gray' }}>
+              ● {session.status === 'live' ? 'Live' : 'Stopped'}
+            </span>
+          )}
+          {!session || session.status !== 'live' ? (
+            <button onClick={start}>Start</button>
+          ) : (
+            <button onClick={stop}>Stop</button>
+          )}
+          {scrolled && (
+            <button onClick={jump} style={{ marginLeft: '1rem' }}>
+              Jump to Live
+            </button>
+          )}
+        </div>
+      </div>
+      <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', color: latency > 2000 ? 'orange' : 'inherit' }}>
+        {latency}ms
       </div>
     </div>
   );
