@@ -188,6 +188,11 @@ Live uses 500 ms chunks with WebRTC VAD and ~0.6–0.8 s endpointing so typi
 llama-server --model phi-3.5
 ```
 
+The backend looks for the binary either in your `PATH` or under
+`llama/llama-server(.exe)` at the project root. On Windows keep the
+executable as `llama-server.exe` in that folder if it's not globally
+available.
+
 Requests use strict prompts and expect JSON-only responses.
 
 ## Phase 11: Hotkeys & Settings
