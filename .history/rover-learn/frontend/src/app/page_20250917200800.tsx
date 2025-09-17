@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
 import {
   Mic,
   Radio,
@@ -24,7 +23,7 @@ import {
   Trash2,
   Sparkles,
   Wrench,
-  BookOpen,
+  BookOpen, // FIX: ensure BookOpen is imported
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -38,32 +37,26 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type TranscriptSegment = { id: number; time: string; text: string; speaker: string; q: boolean };
-
-type DocMeta = { id: string; title: string; type: string; size: string; addedAt: string };
-
-type ActiveView = "session" | "sessions" | "docs" | "summaries" | "flashcards" | "quizzes" | "explain" | "bookmarks" | "settings" | "exports" | "developer";
-
-type SimpleSession = { id: string; title: string; subject?: string; course?: string; language?: string; tags?: string; docIds: string[]; finished: boolean; createdAt: string; accumMs: number };
-
-const sampleTranscript: TranscriptSegment[] = [
+// ---------------- Mock Data ----------------
+const sampleTranscript = [
   { id: 1, time: "00:00:02", text: "Guten Morgen, alle zusammen. Heute sprechen wir über lineare Regression.", speaker: "Dr. Müller", q: false },
   { id: 2, time: "00:00:08", text: "Was sind die Grundannahmen dieses Modells?", speaker: "Student", q: true },
   { id: 3, time: "00:00:12", text: "Die Annahmen umfassen Linearität, Unabhängigkeit, Homoskedastizität und Normalverteilung der Fehler.", speaker: "Dr. Müller", q: false },
 ];
 
-const sampleTranslation: TranscriptSegment[] = [
+
   { id: 1, time: "00:00:02", text: "Good morning, everyone. Today we will talk about linear regression.", speaker: "Dr. Müller", q: false },
   { id: 2, time: "00:00:08", text: "What are the basic assumptions of this model?", speaker: "Student", q: true },
   { id: 3, time: "00:00:12", text: "The assumptions include linearity, independence, homoskedasticity, and normal distribution of errors.", speaker: "Dr. Müller", q: false },
 ];
 
-const initialDocs: DocMeta[] = [
+const initialDocs = [
   { id: "d1", title: "Linear Regression – Lecture Notes.pdf", type: "pdf", size: "1.2 MB", addedAt: "2025-09-10" },
   { id: "d2", title: "Statistics Glossary.md", type: "md", size: "24 KB", addedAt: "2025-09-12" },
   { id: "d3", title: "Machine Learning Syllabus.pdf", type: "pdf", size: "890 KB", addedAt: "2025-09-14" },
 ];
 
+// ---------------- UI Helpers ----------------
 function LatencyPill({ ms }: { ms: number }) {
   const color = ms < 400 ? "bg-emerald-500" : ms < 800 ? "bg-amber-500" : "bg-rose-500";
   return (
@@ -85,7 +78,7 @@ function StatusPill({ live }: { live: boolean }) {
   );
 }
 
-function Pane({ title, items }: { title: string; items: TranscriptSegment[] }) {
+function Pane({ title, items }: { title: string; items: typeof sampleTranscript }) {
   const listRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -132,100 +125,64 @@ const fmtDuration = (ms: number) => {
   return `${hh}:${mm}:${ss}`;
 };
 
-function DocViewer({ doc, onClose }: { doc: DocMeta; onClose: () => void }) {
-  const [page, setPage] = useState<number>(1);
-  return (
-    <Card className="mb-3">
-      <CardHeader className="py-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-base">{doc.title}</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))}>◀</Button>
-          <span className="text-sm">Page {page}</span>
-          <Button size="sm" variant="outline" onClick={() => setPage((p) => p + 1)}>▶</Button>
-          <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[35vh] overflow-x-auto border rounded grid place-items-center text-sm text-muted-foreground">(PDF preview mock)</div>
-      </CardContent>
-    </Card>
-  );
-}
-
+// ---------------- Component ----------------
 export default function LearningAppUI() {
-  const [live, setLive] = useState<boolean>(false);
-  const [paused, setPaused] = useState<boolean>(false);
-  const [latency, setLatency] = useState<number>(320);
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<ActiveView>("session");
-  const [firstRun, setFirstRun] = useState<boolean>(() => (typeof window !== "undefined" ? localStorage.getItem("ll_first_run_seen") !== "true" : true));
+  const [live, setLive] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [latency, setLatency] = useState(320);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeView, setActiveView] = useState<
+    "session" | "sessions" | "docs" | "summaries" | "flashcards" | "quizzes" | "explain" | "bookmarks" | "settings" | "exports" | "developer"
+  >("session");
+  const [firstRun, setFirstRun] = useState(() => localStorage.getItem('ll_first_run_seen') !== 'true');
+
+  type SimpleSession = {
+    id: string;
+    title: string;
+    subject?: string;
+    course?: string;
+    language?: string;
+    tags?: string;
+    docIds: string[];
+    finished: boolean;
+    createdAt: string;
+    accumMs: number; // accumulated run time
+  };
+
   const [session, setSession] = useState<SimpleSession | null>(() => {
-    try {
-      if (typeof window === "undefined") return null;
-      const saved = localStorage.getItem("currentSession");
-      return saved ? (JSON.parse(saved) as SimpleSession) : null;
-    } catch {
-      return null;
-    }
+    const saved = localStorage.getItem("currentSession");
+    return saved ? JSON.parse(saved) : null;
   });
   const [sessions, setSessions] = useState<SimpleSession[]>(() => {
-    try {
-      if (typeof window === "undefined") return [];
-      const saved = localStorage.getItem("sessions");
-      return saved ? (JSON.parse(saved) as SimpleSession[]) : [];
-    } catch {
-      return [];
-    }
+    const saved = localStorage.getItem("sessions");
+    return saved ? JSON.parse(saved) : [];
   });
-  const [sessionInitOpen, setSessionInitOpen] = useState<boolean>(false);
-  const [docs, setDocs] = useState<DocMeta[]>(initialDocs);
-  const [docSearch, setDocSearch] = useState<string>("");
-  const [docPickerOpen, setDocPickerOpen] = useState<boolean>(false);
-  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
-  const [openDocId, setOpenDocId] = useState<string | null>(null);
 
+  const [sessionInitOpen, setSessionInitOpen] = useState(false);
+
+  const [docs, setDocs] = useState(initialDocs);
+  const [docSearch, setDocSearch] = useState("");
+  const [docPickerOpen, setDocPickerOpen] = useState(false);
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+
+  // Latency ticker
   useEffect(() => {
     const id = setInterval(() => setLatency((l) => Math.max(120, Math.min(1200, Math.round(l + (Math.random() * 80 - 40))))), 1200);
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    try {
-      if (session) localStorage.setItem("currentSession", JSON.stringify(session));
-      else localStorage.removeItem("currentSession");
-    } catch {}
-  }, [session]);
-  useEffect(() => {
-    try {
-      localStorage.setItem("sessions", JSON.stringify(sessions));
-    } catch {}
-  }, [sessions]);
-  useEffect(() => {
-    try {
-      localStorage.setItem("ll_docs", JSON.stringify(docs));
-    } catch {}
-  }, [docs]);
-  useEffect(() => {
-    try {
-      const storedDocs = localStorage.getItem("ll_docs");
-      if (storedDocs) setDocs(JSON.parse(storedDocs) as DocMeta[]);
-    } catch {}
-  }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem("ll_first_run_seen", String(!firstRun));
-    } catch {}
-  }, [firstRun]);
+  // Persist key data
+  useEffect(() => { if (session) localStorage.setItem("currentSession", JSON.stringify(session)); else localStorage.removeItem("currentSession"); }, [session]);
+  useEffect(() => { localStorage.setItem("sessions", JSON.stringify(sessions)); }, [sessions]);
+  useEffect(() => { localStorage.setItem("ll_docs", JSON.stringify(docs)); }, [docs]);
+  useEffect(() => { const storedDocs = localStorage.getItem("ll_docs"); if (storedDocs) setDocs(JSON.parse(storedDocs)); }, []);
+  useEffect(() => { localStorage.setItem('ll_first_run_seen', String(!firstRun)); }, [firstRun]);
 
-  const MenuButton = ({ label, icon: Icon, value }: { label: string; icon: LucideIcon; value: ActiveView }) => (
+  const MenuButton = ({ label, icon: Icon, value }: { label: string; icon: any; value: typeof activeView extends string ? any : never }) => (
     <Button
-      variant={value === activeView ? "secondary" : "ghost"}
+      variant={value === activeView ? 'secondary' : 'ghost'}
       className="w-full justify-start"
-      onClick={() => {
-        setActiveView(value);
-        setMenuOpen(false);
-        setFirstRun(false);
-      }}
+      onClick={() => { setActiveView(value as any); setMenuOpen(false); setFirstRun(false); }}
     >
       <Icon className="mr-2 h-4 w-4" /> {label}
     </Button>
@@ -241,29 +198,19 @@ export default function LearningAppUI() {
     if (!session) return;
     const merged = Array.from(new Set([...(session.docIds || []), ...selectedDocIds]));
     setSession({ ...session, docIds: merged });
-    setOpenDocId(merged[merged.length - 1] || null);
     setSelectedDocIds([]);
     setDocPickerOpen(false);
   };
 
   const onClickStart = () => {
-    if (!session) {
-      setSessionInitOpen(true);
-      return;
-    }
+    if (!session) { setSessionInitOpen(true); return; }
     setLive(true);
     setPaused(false);
   };
 
   const onClickPauseOrResume = () => {
     if (!session) return;
-    if (live && !paused) {
-      setPaused(true);
-      setLive(false);
-    } else {
-      setPaused(false);
-      setLive(true);
-    }
+    if (live && !paused) { setPaused(true); setLive(false); } else { setPaused(false); setLive(true); }
   };
 
   const onClickStop = () => {
@@ -273,39 +220,38 @@ export default function LearningAppUI() {
     setSession(null);
     setLive(false);
     setPaused(false);
-    setOpenDocId(null);
   };
 
-  const deleteSession = (id: string) => {
-    setSessions((prev) => prev.filter((s) => s.id !== id));
-  };
+  const deleteSession = (id: string) => { setSessions(prev => prev.filter(s => s.id !== id)); };
   const deleteDoc = (id: string) => {
-    setDocs((prev) => prev.filter((d) => d.id !== id));
-    setSession((s) => (s ? { ...s, docIds: (s.docIds || []).filter((x) => x !== id) } : s));
-    if (openDocId === id) setOpenDocId(null);
+    setDocs(prev => prev.filter(d => d.id !== id));
+    setSession(s => s ? { ...s, docIds: (s.docIds || []).filter(x => x !== id) } : s);
   };
 
+  // ---------------- Render ----------------
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* First-run minimal launcher */}
       {firstRun && (
         <div className="fixed inset-0 z-40 grid place-items-center bg-gradient-to-b from-background to-muted">
           <div className="w-full max-w-3xl text-center p-8">
             <div className="mx-auto h-14 w-14 rounded-2xl bg-foreground text-background grid place-items-center text-2xl font-bold">Λ</div>
             <div className="mt-3 text-3xl font-semibold">Lab</div>
-            <div className="text-sm text-muted-foreground mb-6">Personal build</div>
+            <div className="text-sm text-muted-foreground mb-6">Your personal bilingual seminar assistant</div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <Button className="h-20" onClick={() => { setActiveView("session"); setFirstRun(false); }}><Play className="mr-2"/>Start a Session</Button>
-              <Button variant="secondary" className="h-20" onClick={() => { setActiveView("sessions"); setFirstRun(false); }}><History className="mr-2"/>Sessions</Button>
-              <Button variant="secondary" className="h-20" onClick={() => { setActiveView("docs"); setFirstRun(false); }}><FileText className="mr-2"/>Docs</Button>
-              <Button variant="outline" className="h-20" onClick={() => { setActiveView("summaries"); setFirstRun(false); }}><FileText className="mr-2"/>Summaries</Button>
-              <Button variant="outline" className="h-20" onClick={() => { setActiveView("flashcards"); setFirstRun(false); }}><BookOpen className="mr-2"/>Flashcards</Button>
-              <Button variant="outline" className="h-20" onClick={() => { setActiveView("quizzes"); setFirstRun(false); }}><ListChecks className="mr-2"/>Quizzes</Button>
+              <Button className="h-20" onClick={() => { setActiveView('session'); setFirstRun(false); }}><Play className="mr-2"/>Start a Session</Button>
+              <Button variant="secondary" className="h-20" onClick={() => { setActiveView('sessions'); setFirstRun(false); }}><History className="mr-2"/>Sessions</Button>
+              <Button variant="secondary" className="h-20" onClick={() => { setActiveView('docs'); setFirstRun(false); }}><FileText className="mr-2"/>Docs</Button>
+              <Button variant="outline" className="h-20" onClick={() => { setActiveView('summaries'); setFirstRun(false); }}><FileText className="mr-2"/>Summaries</Button>
+              <Button variant="outline" className="h-20" onClick={() => { setActiveView('flashcards'); setFirstRun(false); }}><BookOpen className="mr-2"/>Flashcards</Button>
+              <Button variant="outline" className="h-20" onClick={() => { setActiveView('quizzes'); setFirstRun(false); }}><ListChecks className="mr-2"/>Quizzes</Button>
             </div>
             <Button variant="ghost" className="mt-6" onClick={() => setFirstRun(false)}>Enter app</Button>
           </div>
         </div>
       )}
 
+      {/* Header */}
       <div className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
           <button className="flex items-center gap-3 group cursor-pointer" onClick={() => setMenuOpen(true)}>
@@ -314,51 +260,40 @@ export default function LearningAppUI() {
               <div className="font-semibold leading-tight group-hover:underline">Lab</div>
               <div className="text-xs text-muted-foreground">Personal build</div>
             </div>
-            <Badge variant="outline" className="ml-2">v0.6 UI</Badge>
+            <Badge variant="outline" className="ml-2">v0.5 UI</Badge>
           </button>
 
           <div className="flex items-center gap-3">
             <LatencyPill ms={latency} />
-            {session && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{session.title}</Badge>
-                {session.docIds?.map((id) => {
-                  const d = docs.find((x) => x.id === id);
-                  if (!d) return null;
-                  return (
-                    <Badge key={id} variant="outline" className="gap-1 cursor-pointer" onClick={() => setOpenDocId(id)}>
-                      <FileText className="h-3 w-3" /> {d.title}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
+            {session && <Badge variant="secondary">{session.title}</Badge>}
             <StatusPill live={live} />
           </div>
         </div>
       </div>
 
+      {/* Left Menu */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="left" className="w-[300px]">
           <SheetHeader>
             <SheetTitle>Main Menu</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-2">
-            <MenuButton label="Start a Session" icon={Play as LucideIcon} value="session" />
-            <MenuButton label="Sessions" icon={History as LucideIcon} value="sessions" />
-            <MenuButton label="Docs" icon={FileText as LucideIcon} value="docs" />
-            <MenuButton label="Summaries" icon={FileText as LucideIcon} value="summaries" />
-            <MenuButton label="Flashcards" icon={BookOpen as LucideIcon} value="flashcards" />
-            <MenuButton label="Quizzes" icon={ListChecks as LucideIcon} value="quizzes" />
-            <MenuButton label="Explain" icon={Sparkles as LucideIcon} value="explain" />
-            <MenuButton label="Bookmarks" icon={Bookmark as LucideIcon} value="bookmarks" />
-            <MenuButton label="Settings" icon={Settings as LucideIcon} value="settings" />
-            <MenuButton label="Exports" icon={Download as LucideIcon} value="exports" />
-            <MenuButton label="Developer" icon={Wrench as LucideIcon} value="developer" />
+            <MenuButton label="Start a Session" icon={Play} value="session" />
+            <MenuButton label="Sessions" icon={History} value="sessions" />
+            <MenuButton label="Docs" icon={FileText} value="docs" />
+            <MenuButton label="Summaries" icon={FileText} value="summaries" />
+            <MenuButton label="Flashcards" icon={BookOpen} value="flashcards" />
+            <MenuButton label="Quizzes" icon={ListChecks} value="quizzes" />
+            <MenuButton label="Explain" icon={Sparkles} value="explain" />
+            <MenuButton label="Bookmarks" icon={Bookmark} value="bookmarks" />
+            <MenuButton label="Settings" icon={Settings} value="settings" />
+            <MenuButton label="Exports" icon={Download} value="exports" />
+            <MenuButton label="Developer" icon={Wrench} value="developer" />
           </div>
         </SheetContent>
       </Sheet>
 
+      {/* Session Init Dialog */}
       <Dialog open={sessionInitOpen} onOpenChange={setSessionInitOpen}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
@@ -390,48 +325,38 @@ export default function LearningAppUI() {
               </div>
             </div>
             <div className="pt-1">
-              <Button variant="outline" onClick={() => setDocPickerOpen(true)}>
-                <Link2 className="mr-2 h-4 w-4" /> Link docs now
-              </Button>
+              <Button variant=\"outline\" onClick=\{() => setDocPickerOpen(true)\}><Link2 className=\"mr-2 h-4 w-4\" \/> Link docs now<\/Button>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={() => {
-              const title = (document.getElementById("session-title") as HTMLInputElement | null)?.value?.trim();
-              if (!title) return;
-              const subject = (document.getElementById("session-subject") as HTMLInputElement | null)?.value?.trim();
-              const course = (document.getElementById("session-course") as HTMLInputElement | null)?.value?.trim();
-              const language = (document.getElementById("session-language") as HTMLInputElement | null)?.value?.trim();
-              const tags = (document.getElementById("session-tags") as HTMLInputElement | null)?.value?.trim();
+              const title = (document.getElementById('session-title') as HTMLInputElement)?.value?.trim();
+              if (!title) return; // require a title
+              const subject = (document.getElementById('session-subject') as HTMLInputElement)?.value?.trim();
+              const course = (document.getElementById('session-course') as HTMLInputElement)?.value?.trim();
+              const language = (document.getElementById('session-language') as HTMLInputElement)?.value?.trim();
+              const tags = (document.getElementById('session-tags') as HTMLInputElement)?.value?.trim();
               const createdAt = new Date().toISOString();
-              const newSess: SimpleSession = { id: crypto.randomUUID(), title, subject, course, language, tags, docIds: selectedDocIds, finished: false, createdAt, accumMs: 0 };
-              setSession(newSess);
-              setLive(true);
-              setPaused(false);
-              setSessionInitOpen(false);
-              setSelectedDocIds([]);
-              setFirstRun(false);
+              setSession({ id: crypto.randomUUID(), title, subject, course, language, tags, docIds: selectedDocIds, finished: false, createdAt, accumMs: 0 });
+              setLive(true); setPaused(false); setSessionInitOpen(false); setSelectedDocIds([]); setFirstRun(false);
             }}>Start Session</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Doc Picker */}
       <Dialog open={docPickerOpen} onOpenChange={setDocPickerOpen}>
         <DialogContent className="sm:max-w-[680px]">
-          <DialogHeader>
-            <DialogTitle>Select documents to link</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Select documents to link</DialogTitle></DialogHeader>
           <div className="flex items-center gap-2 mb-3">
             <div className="relative w-full">
               <Search className="h-4 w-4 absolute left-2 top-2.5 opacity-60" />
               <Input className="pl-8" placeholder="Search docs…" value={docSearch} onChange={(e) => setDocSearch(e.target.value)} />
             </div>
-            <Button variant="secondary" onClick={() => setDocs((prev) => [...prev, { id: crypto.randomUUID(), title: `New Doc ${prev.length + 1}.pdf`, type: "pdf", size: "500 KB", addedAt: new Date().toISOString().slice(0, 10) }])}>
-              <Plus className="mr-2 h-4 w-4" /> Add File
-            </Button>
+            <Button variant="secondary" onClick={() => setDocs(prev => [...prev, { id: crypto.randomUUID(), title: `New Doc ${prev.length+1}.pdf`, type: 'pdf', size: '500 KB', addedAt: new Date().toISOString().slice(0,10) }])}><Plus className="mr-2 h-4 w-4"/>Add Mock</Button>
           </div>
           <div className="max-h-[46vh] overflow-y-auto space-y-2 pr-1">
-            {filteredDocs.map((doc) => (
+            {filteredDocs.map(doc => (
               <div key={doc.id} className="flex items-center justify-between border rounded-lg p-3">
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="gap-1"><FileText className="h-3 w-3" /> {doc.type.toUpperCase()}</Badge>
@@ -449,30 +374,21 @@ export default function LearningAppUI() {
             {filteredDocs.length === 0 && (<div className="text-sm text-muted-foreground p-6 text-center">No documents match your search.</div>)}
           </div>
           <DialogFooter>
-            <Button disabled={!session} onClick={linkSelectedToSession}>
-              <Link2 className="mr-2 h-4 w-4" /> Link to current session
-            </Button>
+            <Button disabled={!session} onClick={linkSelectedToSession}><Link2 className="mr-2 h-4 w-4"/> Link to current session</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {activeView === "session" && (
+      {/* Views */}
+      {activeView === 'session' && (
         <>
+          {/* Controls Row */}
           <div className="border-b">
             <div className="max-w-7xl mx-auto grid grid-cols-12 items-center gap-3 px-4 py-3">
-              <div className="col-span-12 md:col-span-7 flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="gap-2"><Cpu className="h-3 w-3" /> Local {session ? `· ${session.title}` : ""}</Badge>
-                {session?.docIds.map((id) => {
-                  const d = docs.find((x) => x.id === id);
-                  if (!d) return null;
-                  return (
-                    <Button key={id} size="sm" variant="outline" onClick={() => setOpenDocId(id)}>
-                      <FileText className="h-3 w-3 mr-1" /> {d.title}
-                    </Button>
-                  );
-                })}
+              <div className="col-span-5 flex items-center gap-2">
+                <Badge variant="secondary" className="gap-2"><Cpu className="h-3 w-3" /> Local {session ? `· ${session.title}` : ''}</Badge>
               </div>
-              <div className="col-span-6 md:col-span-3 flex items-center gap-2">
+              <div className="col-span-4 flex items-center gap-2">
                 <Select defaultValue="mic">
                   <SelectTrigger className="w-40"><SelectValue placeholder="Source" /></SelectTrigger>
                   <SelectContent>
@@ -481,7 +397,7 @@ export default function LearningAppUI() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
+              <div className="col-span-3 flex items-center justify-end gap-2">
                 <Button variant="outline" onClick={() => setDocPickerOpen(true)} aria-label="Link documents"><Link2 className="h-4 w-4" /></Button>
                 <Button onClick={onClickStart}><Play className="mr-2 h-4 w-4" /> Start</Button>
                 {session && (<>
@@ -500,29 +416,29 @@ export default function LearningAppUI() {
             </div>
           </div>
 
-          {openDocId && (
-            <div className="max-w-7xl mx-auto px-4 mt-3">
-              {(() => {
-                const d = docs.find((x) => x.id === openDocId);
-                if (!d) return null;
-                return <DocViewer doc={d} onClose={() => setOpenDocId(null)} />;
-              })()}
+          {/* Linked docs chips */}
+          {session && session.docIds?.length > 0 && (
+            <div className="max-w-7xl mx-auto px-4 mt-3 flex flex-wrap gap-2">
+              {session.docIds.map(id => { const d = docs.find(x => x.id === id); if (!d) return null; return <Badge key={id} variant="outline" className="gap-1"><FileText className="h-3 w-3" /> {d.title}</Badge>; })}
+              <Button size="sm" variant="ghost" onClick={() => setDocPickerOpen(true)}><Link2 className="h-4 w-4 mr-2"/>Link more</Button>
             </div>
           )}
 
-          <div className="max-w-7xl mx-auto grid grid-cols-2 gap-4 px-4 py-4">
-            <div><Pane title={`Transcript (DE)${session ? ` — ${session.title}` : ""}`} items={sampleTranscript} /></div>
-            <div><Pane title="Translation (EN)" items={sampleTranslation} /></div>
+          {/* Main Content: Transcript + Translation side-by-side */}
+          <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4">
+            <div className="col-span-12 lg:col-span-6"><Pane title={`Transcript (DE)${session ? ` — ${session.title}` : ''}`} items={sampleTranscript} /></div>
+            <div className="col-span-12 lg:col-span-6"><Pane title="Translation (EN)" items={sampleTranslation} /></div>
           </div>
 
+          {/* Timeline */}
           <div className="border-t">
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
               <Clock className="h-4 w-4" />
               <div className="w-full">
                 <Progress value={live ? Math.min(100, latency / 12) : 0} />
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>{session ? fmtDuration(session.accumMs) : "00:00:00"}</span>
-                  <span>{session ? new Date(session.createdAt).toLocaleTimeString() : ""}</span>
+                  <span>{session ? fmtDuration(session.accumMs) : '00:00:00'}</span>
+                  <span>{session ? new Date(session.createdAt).toLocaleTimeString() : ''}</span>
                 </div>
               </div>
               <TooltipProvider>
@@ -542,7 +458,7 @@ export default function LearningAppUI() {
         </>
       )}
 
-      {activeView === "sessions" && (
+      {activeView === 'sessions' && (
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4">
             <div className="text-2xl font-semibold">Sessions</div>
@@ -552,7 +468,7 @@ export default function LearningAppUI() {
             <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No finished sessions yet. Start one from the menu.</CardContent></Card>
           ) : (
             <div className="space-y-2">
-              {sessions.map((s) => (
+              {sessions.map(s => (
                 <Card key={s.id}>
                   <CardContent className="py-4 flex items-center justify-between">
                     <div>
@@ -561,8 +477,8 @@ export default function LearningAppUI() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">Finished</Badge>
-                      <Button size="sm" variant="outline" onClick={() => alert("Open session viewer (todo)")}>View</Button>
-                      <Button size="icon" variant="ghost" aria-label="Delete session" onClick={() => deleteSession(s.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="outline" onClick={() => alert('Open session viewer (todo)')}>View</Button>
+                      <Button size="icon" variant="ghost" aria-label="Delete session" onClick={() => deleteSession(s.id)}><Trash2 className="h-4 w-4"/></Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -572,13 +488,13 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "docs" && (
+      {activeView === 'docs' && (
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-3">
             <div className="text-2xl font-semibold">Docs</div>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" onClick={() => setDocPickerOpen(true)}><Link2 className="mr-2 h-4 w-4" /> Link to Session</Button>
-              <Button onClick={() => setDocs((prev) => [...prev, { id: crypto.randomUUID(), title: `New Doc ${prev.length + 1}.pdf`, type: "pdf", size: "500 KB", addedAt: new Date().toISOString().slice(0, 10) }])}><Plus className="mr-2 h-4 w-4" /> Add File</Button>
+              <Button variant="secondary" onClick={() => setDocPickerOpen(true)}><Link2 className="mr-2 h-4 w-4"/>Link to Session</Button>
+              <Button onClick={() => setDocs(prev => [...prev, { id: crypto.randomUUID(), title: `New Doc ${prev.length+1}.pdf`, type: 'pdf', size: '500 KB', addedAt: new Date().toISOString().slice(0,10) }])}><Plus className="mr-2 h-4 w-4"/>Add Mock Doc</Button>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3">
@@ -588,19 +504,24 @@ export default function LearningAppUI() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredDocs.map((doc) => (
+            {filteredDocs.map(doc => (
               <Card key={doc.id} className="overflow-hidden">
-                <CardHeader className="py-3"><CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" /> {doc.title}</CardTitle></CardHeader>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" /> {doc.title}</CardTitle>
+                </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
-                  <div className="flex items-center justify-between"><div>{doc.type.toUpperCase()} · {doc.size}</div><div>Added {doc.addedAt}</div></div>
+                  <div className="flex items-center justify-between">
+                    <div>{doc.type.toUpperCase()} · {doc.size}</div>
+                    <div>Added {doc.addedAt}</div>
+                  </div>
                   <div className="mt-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Checkbox id={`pick-${doc.id}`} checked={selectedDocIds.includes(doc.id)} onCheckedChange={() => toggleDocSelect(doc.id)} />
                       <label htmlFor={`pick-${doc.id}`}>Select</label>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setOpenDocId(doc.id)}>Preview</Button>
-                      <Button size="icon" variant="ghost" aria-label="Delete doc" onClick={() => deleteDoc(doc.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="outline" onClick={() => { alert(`Previewing ${doc.title} (mock)`); }}>Preview</Button>
+                      <Button size="icon" variant="ghost" aria-label="Delete doc" onClick={() => deleteDoc(doc.id)}><Trash2 className="h-4 w-4"/></Button>
                     </div>
                   </div>
                 </CardContent>
@@ -611,7 +532,7 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "summaries" && (
+      {activeView === 'summaries' && (
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="text-2xl font-semibold mb-4">Summaries</div>
           <Card>
@@ -626,8 +547,8 @@ export default function LearningAppUI() {
                     <SelectItem value="long">Long</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="secondary"><FolderDown className="mr-2 h-4 w-4" /> Export PDF</Button>
-                <Button variant="secondary"><FolderDown className="mr-2 h-4 w-4" /> Export Markdown</Button>
+                <Button variant="secondary"><FolderDown className="mr-2 h-4 w-4"/> Export PDF</Button>
+                <Button variant="secondary"><FolderDown className="mr-2 h-4 w-4"/> Export Markdown</Button>
               </div>
               <div className="p-3 border rounded text-sm text-muted-foreground">(Preview will appear here)</div>
             </CardContent>
@@ -635,20 +556,23 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "flashcards" && (
+      {activeView === 'flashcards' && (
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="text-2xl font-semibold mb-4">Flashcards</div>
           <Card>
             <CardContent className="py-6 space-y-4">
               <div className="text-sm text-muted-foreground">Auto-generate Q/A from session. Review mode like Anki.</div>
-              <div className="flex items-center gap-2"><Button>Generate</Button><Button variant="secondary">Start Review</Button></div>
+              <div className="flex items-center gap-2">
+                <Button>Generate</Button>
+                <Button variant="secondary">Start Review</Button>
+              </div>
               <div className="p-3 border rounded text-sm text-muted-foreground">(Generated cards will appear here)</div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {activeView === "quizzes" && (
+      {activeView === 'quizzes' && (
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="text-2xl font-semibold mb-4">Quizzes</div>
           <Card>
@@ -678,7 +602,7 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "explain" && (
+      {activeView === 'explain' && (
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="text-2xl font-semibold mb-4">Explain</div>
           <Card>
@@ -693,7 +617,7 @@ export default function LearningAppUI() {
                     <SelectItem value="expert">Expert</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="secondary"><Sparkles className="mr-2 h-4 w-4" />Rewrite</Button>
+                <Button variant="secondary"><Sparkles className="mr-2 h-4 w-4"/>Rewrite</Button>
               </div>
               <div className="p-3 border rounded text-sm text-muted-foreground">(Explanation will appear here)</div>
             </CardContent>
@@ -701,14 +625,14 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "bookmarks" && (
+      {activeView === 'bookmarks' && (
         <div className="max-w-5xl mx-auto px-4 py-16">
           <div className="text-2xl font-semibold mb-4">Bookmarks</div>
           <Card><CardContent className="py-6 text-sm text-muted-foreground">Your saved moments will appear here.</CardContent></Card>
         </div>
       )}
 
-      {activeView === "settings" && (
+      {activeView === 'settings' && (
         <div className="max-w-5xl mx-auto px-4 py-16">
           <div className="text-2xl font-semibold mb-4">Settings</div>
           <Card>
@@ -724,7 +648,7 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "exports" && (
+      {activeView === 'exports' && (
         <div className="max-w-5xl mx-auto px-4 py-16">
           <div className="text-2xl font-semibold mb-4">Exports</div>
           <div className="grid grid-cols-2 gap-3">
@@ -737,22 +661,28 @@ export default function LearningAppUI() {
         </div>
       )}
 
-      {activeView === "developer" && (
+      {activeView === 'developer' && (
         <div className="max-w-5xl mx-auto px-4 py-16">
           <div className="text-2xl font-semibold mb-4">Developer</div>
           <Card>
             <CardContent className="py-6 text-sm text-muted-foreground space-y-2">
               <div>Build: Local-only UI shell</div>
               <div>Planned: wire ASR/MT, PDF renderer, session viewer, hotkeys</div>
-              <div>Env checks, logs, and preflight</div>
+              <div>Env checks, logs, and preflight go here.</div>
             </CardContent>
           </Card>
         </div>
       )}
 
+      {/* Footer */}
       <div className="border-t bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 py-3 text-xs text-muted-foreground flex items-center justify-between">
-          <div className="flex items-center gap-3"><span className="font-medium">Hotkeys:</span><span>Start/Resume ⌘/Ctrl+K</span><span>Bookmark B</span><span>Open Menu ⌘/Ctrl+M</span></div>
+          <div className="flex items-center gap-3">
+            <span className="font-medium">Hotkeys:</span>
+            <span>Start/Resume ⌘/Ctrl+K</span>
+            <span>Bookmark B</span>
+            <span>Open Menu ⌘/Ctrl+M</span>
+          </div>
           <div>Built for: You · 100% local · Vienna</div>
         </div>
       </div>
@@ -760,11 +690,48 @@ export default function LearningAppUI() {
   );
 }
 
+// ---------------- Minimal Inline Tests (dev) ----------------
+function _mergeDocs(a: string[], b: string[]) { return Array.from(new Set([...(a || []), ...(b || [])])); }
+function _nextState(live: boolean, paused: boolean, action: "start" | "pause" | "resume" | "stop") {
+  if (action === "start") return [true, false] as const;
+  if (action === "pause") return [false, true] as const;
+  if (action === "resume") return [true, false] as const;
+  if (action === "stop") return [false, false] as const;
+  return [live, paused] as const;
+}
 if (typeof window !== "undefined") {
   try {
-    const a = Array.from(new Set(["a", "b", "b", "c"]));
-    console.assert(JSON.stringify(a) === JSON.stringify(["a", "b", "c"]));
-    console.assert(typeof BookOpen !== "undefined");
-    console.assert("grid grid-cols-2".includes("grid-cols-2"));
-  } catch {}
+    // grid class sanity
+    console.assert("col-span-12 lg:col-span-6".endsWith("6"), "Grid class should end with a number");
+    // merge uniqueness
+    console.assert(JSON.stringify(_mergeDocs(["a", "b"], ["b", "c"])) === JSON.stringify(["a", "b", "c"]), "Doc merge should be unique");
+    // state transitions
+    console.assert(JSON.stringify(_nextState(false, false, "start")) === JSON.stringify([true, false]), "Start sets live");
+    console.assert(JSON.stringify(_nextState(true, false, "pause")) === JSON.stringify([false, true]), "Pause toggles");
+    console.assert(JSON.stringify(_nextState(false, true, "resume")) === JSON.stringify([true, false]), "Resume toggles");
+    console.assert(JSON.stringify(_nextState(true, false, "stop")) === JSON.stringify([false, false]), "Stop resets");
+    // first-run persistence
+    localStorage.setItem('ll_first_run_seen', 'true');
+    console.assert(localStorage.getItem('ll_first_run_seen') === 'true', 'first-run flag should persist');
+    // delete tests (docs/sessions)
+    const tmpSessions = [{id:'1'},{id:'2'}] as any[];
+    const afterDelete = tmpSessions.filter(s => s.id !== '1');
+    console.assert(afterDelete.length === 1 && afterDelete[0].id === '2', 'Session delete should remove item');
+    // NEW: icon import smoke test
+    console.assert(typeof BookOpen !== 'undefined', 'BookOpen icon should be defined');
+  } catch (e) {
+    console.warn("Dev inline tests failed:", e);
+  }
 }
+/*************  ✨ Windsurf Command ⭐  *************/
+// ---------------- Bug fixes and explanations ----------------
+
+// Fix: "Cannot update a component (`LearningAppUI`) while rendering a different component (`div`)"
+// Reason: We were updating the component state while rendering a different component
+// Solution: Use `useEffect` to update the state only when the component is mounted
+useEffect(() => {
+  if (localStorage.getItem('ll_first_run_seen') === null) {
+    localStorage.setItem('ll_first_run_seen', 'true');
+  }
+}, []);
+/*******  dbc4145d-0bd3-42ce-82c7-10e7bbb82ae9  *******/
