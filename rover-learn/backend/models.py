@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class SessionCreate(BaseModel):
     title: Optional[str] = None
+    docIds: List[str] = Field(default_factory=list)
 
 
 class Segment(BaseModel):
@@ -29,3 +30,4 @@ class Session(BaseModel):
     status: str
     updatedAt: Optional[datetime] = None
     segments: List[Segment] = []
+

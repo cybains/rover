@@ -1,14 +1,16 @@
 # rover-learn/backend/app.py
 from __future__ import annotations
 
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 import json
 import math
+import copy
 import sys
 import asyncio
 import subprocess
 import shutil
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Dict
 import re
@@ -16,8 +18,9 @@ import re
 import os
 import httpx
 from bson import ObjectId
-from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from .db import get_db
 from .utils.glossary import load_glossary, apply_glossary
@@ -65,6 +68,11 @@ DEFAULT_SETTINGS = {
     "exportDefaults": {},
 }
 
+DOCUMENTS_BUCKET = "documents"
+TRASH_RETENTION = timedelta(hours=int(os.getenv("TRASH_RETENTION_HOURS", "24")))
+TRASH_SWEEP_SECONDS = int(os.getenv("TRASH_SWEEP_SECONDS", "3600"))
+BACKGROUND_TASKS: list[asyncio.Task] = []
+
 STORAGE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
 STORAGE_STATUS: Dict[str, int | bool] = {}
 
@@ -86,6 +94,86 @@ def _dir_size(p: Path) -> int:
         return 0
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
+
+def _doc_to_public(doc: dict) -> dict:
+    payload = dict(doc)
+    payload["_id"] = str(payload["_id"])
+    payload["linkedSessions"] = [str(s) for s in payload.get("linkedSessions", [])]
+    return payload
+
+
+def _ensure_object_id(value: str) -> ObjectId:
+    try:
+        return ObjectId(value)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="invalid object id") from exc
+
+
+def _parse_form_list(raw: str | None) -> list[str]:
+    if not raw:
+        return []
+    raw = raw.strip()
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+        if isinstance(data, list):
+            return [str(x).strip() for x in data if str(x).strip()]
+    except Exception:
+        pass
+    return [segment.strip() for segment in raw.split(",") if segment.strip()]
+
+
+async def _push_to_trash(db, *, resource_type: str, resource_id: ObjectId, payload: dict, related: dict | list | None = None):
+    doc_copy = copy.deepcopy(payload)
+    related_copy = copy.deepcopy(related) if related is not None else None
+    now = datetime.utcnow()
+    entry = {
+        "resourceType": resource_type,
+        "resourceId": resource_id,
+        "payload": doc_copy,
+        "related": related_copy,
+        "expiresAt": now + TRASH_RETENTION,
+        "createdAt": now,
+    }
+    await db.trash.insert_one(entry)
+    return entry
+
+
+async def _purge_trash_item(db, item: dict) -> None:
+    resource_type = item.get("resourceType")
+    resource_id = item.get("resourceId")
+    if isinstance(resource_id, str):
+        try:
+            resource_id = ObjectId(resource_id)
+        except Exception:
+            resource_id = None
+    if resource_type == "document" and resource_id is not None:
+        bucket = AsyncIOMotorGridFSBucket(db, bucket_name=DOCUMENTS_BUCKET)
+        try:
+            await bucket.delete(resource_id)
+        except Exception:
+            pass
+    await db.trash.delete_one({"_id": item["_id"]})
+
+
+async def _purge_expired_trash():
+    db = await get_db()
+    now = datetime.utcnow()
+    cursor = db.trash.find({"expiresAt": {"$lte": now}})
+    async for item in cursor:
+        await _purge_trash_item(db, item)
+
+
+async def _trash_janitor():
+    while True:
+        try:
+            await asyncio.sleep(TRASH_SWEEP_SECONDS)
+            await _purge_expired_trash()
+        except asyncio.CancelledError:
+            break
+        except Exception:
+            print("[trash] sweep error", file=sys.stderr)
 
 async def _compute_storage() -> dict:
     exports_dir = Path(__file__).resolve().parents[1] / "exports"
@@ -124,12 +212,18 @@ app.add_middleware(
 async def startup_event():
     await get_db()
     load_glossary()
-    asyncio.create_task(_storage_monitor())
+    BACKGROUND_TASKS.append(asyncio.create_task(_storage_monitor()))
+    BACKGROUND_TASKS.append(asyncio.create_task(_trash_janitor()))
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     await HTTP.aclose()
+    for task in BACKGROUND_TASKS:
+        task.cancel()
+    if BACKGROUND_TASKS:
+        await asyncio.gather(*BACKGROUND_TASKS, return_exceptions=True)
+    BACKGROUND_TASKS.clear()
 
 
 # ---------- health ----------
@@ -273,23 +367,43 @@ async def start_session(payload: SessionCreate = Body(...)):
     now = datetime.utcnow()
     title: Optional[str] = (payload.title or "").strip() if payload and payload.title else ""
 
-    doc = {
+    doc_ids: List[ObjectId] = []
+    if payload and payload.docIds:
+        for value in payload.docIds:
+            doc_ids.append(_ensure_object_id(value))
+
+    session_doc = {
         "title": title if title else "Untitled Session",
         "createdAt": now,
         "updatedAt": now,
         "status": "live",
         "speakerMap": {},
+        "docIds": doc_ids,
     }
-    res = await db.sessions.insert_one(doc)
+    res = await db.sessions.insert_one(session_doc)
+
+    if doc_ids:
+        await db.documents.update_many(
+            {"_id": {"$in": doc_ids}},
+            {"$addToSet": {"linkedSessions": res.inserted_id}},
+        )
+
+    documents = []
+    if doc_ids:
+        cursor = db.documents.find({"_id": {"$in": doc_ids}})
+        async for doc in cursor:
+            documents.append(_doc_to_public(doc))
 
     out = {
         "_id": str(res.inserted_id),
-        "title": doc["title"],
-        "createdAt": doc["createdAt"],
-        "updatedAt": doc["updatedAt"],
-        "status": doc["status"],
-        "speakerMap": {},
+        "title": session_doc["title"],
+        "createdAt": session_doc["createdAt"],
+        "updatedAt": session_doc["updatedAt"],
+        "status": session_doc["status"],
+        "speakerMap": session_doc["speakerMap"],
+        "docIds": [str(d) for d in doc_ids],
         "segmentsCount": 0,
+        "documents": documents,
     }
     return to_jsonable(out)
 
@@ -312,24 +426,62 @@ async def stop_session(payload: dict = Body(...)):
     await _stop_capture(session_id)
     return {"status": "stopped", "sessionId": session_id}
 
+
+
+@app.delete("/sessions/{session_id}")
+async def delete_session(session_id: str):
+    db = await get_db()
+    oid = _ensure_object_id(session_id)
+    session = await db.sessions.find_one({"_id": oid})
+    if not session:
+        raise HTTPException(status_code=404)
+
+    segments = []
+    cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}})
+    async for seg in cursor:
+        segments.append(seg)
+
+    doc_ids = session.get("docIds", []) or []
+    if doc_ids and isinstance(doc_ids[0], str):
+        doc_ids = [ObjectId(d) for d in doc_ids]
+    await _push_to_trash(db, resource_type="session", resource_id=oid, payload=session, related={"segments": segments, "docIds": doc_ids})
+
+    await db.sessions.delete_one({"_id": oid})
+    await db.segments.delete_many({"sessionId": {"$in": [session_id, oid]}})
+    if doc_ids:
+        await db.documents.update_many({"_id": {"$in": doc_ids}}, {"$pull": {"linkedSessions": oid}})
+
+    LAST_SEG_TEXT.pop(session_id, None)
+    LAST_SEG_TEND.pop(session_id, None)
+    CAPTURE_PROC.pop(session_id, None)
+
+    return {"status": "trashed", "sessionId": session_id}
+
+
 @app.get("/sessions")
 async def list_sessions():
     db = await get_db()
     sessions: List[dict] = []
     cursor = db.sessions.find().sort("createdAt", -1)
     async for s in cursor:
-        sid_str = str(s["_id"])
-        count = await db.segments.count_documents({"sessionId": {"$in": [sid_str, s["_id"]]}})
-        sessions.append(
-            {
-                "_id": sid_str,
-                "title": s.get("title"),
-                "createdAt": s.get("createdAt"),
-                "updatedAt": s.get("updatedAt"),
-                "status": s.get("status"),
-                "segmentsCount": count,
-            }
-        )
+        sid = s.get("_id")
+        sid_str = str(sid)
+        doc_ids = s.get("docIds", []) or []
+        if doc_ids and isinstance(doc_ids[0], str):
+            doc_ids_obj = [ObjectId(d) for d in doc_ids]
+        else:
+            doc_ids_obj = doc_ids
+        segments_count = await db.segments.count_documents({"sessionId": {"$in": [sid_str, sid]}})
+        sessions.append({
+            "_id": sid_str,
+            "title": s.get("title"),
+            "createdAt": s.get("createdAt"),
+            "updatedAt": s.get("updatedAt"),
+            "status": s.get("status"),
+            "segmentsCount": segments_count,
+            "docIds": [str(d) for d in doc_ids_obj],
+            "documentsCount": len(doc_ids_obj),
+        })
     return to_jsonable(sessions)
 
 @app.get("/sessions/{session_id}")
@@ -345,16 +497,273 @@ async def get_session(session_id: str):
         raise HTTPException(status_code=404)
 
     session["_id"] = str(session["_id"])
+    doc_ids = session.get("docIds", []) or []
+    if doc_ids and isinstance(doc_ids[0], str):
+        doc_ids = [ObjectId(d) for d in doc_ids]
+    session["docIds"] = [str(d) for d in doc_ids]
     session["speakerMap"] = session.get("speakerMap", {})
+
     segments: List[dict] = []
     cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}}).sort("idxStart", 1)
     async for seg in cursor:
         seg["_id"] = str(seg["_id"])
         segments.append(seg)
-
     session["segments"] = segments
     session["segmentsCount"] = len(segments)
+
+    documents: List[dict] = []
+    if doc_ids:
+        cursor_docs = db.documents.find({"_id": {"$in": doc_ids}}).sort("uploadedAt", -1)
+        async for doc in cursor_docs:
+            documents.append(_doc_to_public(doc))
+    session["documents"] = documents
+
     return to_jsonable(session)
+
+
+
+# ---------- documents ----------
+
+@app.get("/documents")
+async def list_documents(sessionId: str | None = None, q: str | None = None, limit: int = 100):
+    db = await get_db()
+    query: Dict[str, object] = {}
+    if sessionId:
+        session_oid = _ensure_object_id(sessionId)
+        query["linkedSessions"] = session_oid
+    if q:
+        query["filenameOriginal"] = {"$regex": q, "$options": "i"}
+    cursor = (
+        db.documents.find(query)
+        .sort("uploadedAt", -1)
+        .limit(max(min(limit, 500), 1))
+    )
+    docs = []
+    async for doc in cursor:
+        docs.append(_doc_to_public(doc))
+    return to_jsonable(docs)
+
+
+@app.get("/documents/{document_id}")
+async def get_document(document_id: str):
+    db = await get_db()
+    oid = _ensure_object_id(document_id)
+    doc = await db.documents.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404)
+    return to_jsonable(_doc_to_public(doc))
+
+
+@app.get("/documents/{document_id}/download")
+async def download_document(document_id: str):
+    db = await get_db()
+    oid = _ensure_object_id(document_id)
+    doc = await db.documents.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404)
+    bucket = AsyncIOMotorGridFSBucket(db, bucket_name=DOCUMENTS_BUCKET)
+    try:
+        grid_out = await bucket.open_download_stream(oid)
+    except Exception:
+        raise HTTPException(status_code=404)
+
+    async def iterator():
+        while True:
+            chunk = await grid_out.readchunk()
+            if not chunk:
+                break
+            yield chunk
+
+    filename = doc.get("filenameOriginal") or grid_out.filename or str(oid)
+    media_type = doc.get("contentType") or "application/octet-stream"
+    headers = {"Content-Disposition": f"attachment; filename=\"{filename}\""}
+    if doc.get("size"):
+        headers["Content-Length"] = str(doc["size"])
+    return StreamingResponse(iterator(), media_type=media_type, headers=headers)
+
+
+@app.post("/documents/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    sessionIds: str | None = Form(None),
+    tags: str | None = Form(None),
+    notes: str | None = Form(None),
+):
+    db = await get_db()
+    bucket = AsyncIOMotorGridFSBucket(db, bucket_name=DOCUMENTS_BUCKET)
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="empty file")
+    grid_id = await bucket.upload_from_stream(
+        file.filename or "upload",
+        contents,
+        metadata={"content_type": file.content_type},
+    )
+
+    session_ids = _parse_form_list(sessionIds)
+    session_oids = [_ensure_object_id(sid) for sid in session_ids]
+    tag_list = _parse_form_list(tags)
+
+    doc = {
+        "_id": grid_id,
+        "filenameOriginal": file.filename or str(grid_id),
+        "contentType": file.content_type or "application/octet-stream",
+        "size": len(contents),
+        "uploadedAt": datetime.utcnow(),
+        "linkedSessions": session_oids,
+        "tags": tag_list,
+        "notes": notes or "",
+    }
+    await db.documents.insert_one(doc)
+
+    if session_oids:
+        await db.sessions.update_many(
+            {"_id": {"$in": session_oids}},
+            {"$addToSet": {"docIds": grid_id}},
+        )
+
+    return to_jsonable(_doc_to_public(doc))
+
+
+@app.delete("/documents/{document_id}")
+async def delete_document(document_id: str):
+    db = await get_db()
+    oid = _ensure_object_id(document_id)
+    doc = await db.documents.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404)
+
+    await db.sessions.update_many({"docIds": oid}, {"$pull": {"docIds": oid}})
+    await _push_to_trash(db, resource_type="document", resource_id=oid, payload=doc)
+    await db.documents.delete_one({"_id": oid})
+    return {"status": "trashed", "documentId": document_id}
+
+
+@app.post("/sessions/{session_id}/documents/link")
+async def link_document(session_id: str, payload: dict = Body(...)):
+    db = await get_db()
+    session_oid = _ensure_object_id(session_id)
+    document_id = payload.get("documentId")
+    if not document_id:
+        raise HTTPException(status_code=400, detail="documentId required")
+    doc_oid = _ensure_object_id(document_id)
+
+    session = await db.sessions.find_one({"_id": session_oid})
+    doc = await db.documents.find_one({"_id": doc_oid})
+    if not session or not doc:
+        raise HTTPException(status_code=404)
+
+    await db.sessions.update_one({"_id": session_oid}, {"$addToSet": {"docIds": doc_oid}})
+    await db.documents.update_one({"_id": doc_oid}, {"$addToSet": {"linkedSessions": session_oid}})
+    return {"ok": True}
+
+
+@app.post("/sessions/{session_id}/documents/unlink")
+async def unlink_document(session_id: str, payload: dict = Body(...)):
+    db = await get_db()
+    session_oid = _ensure_object_id(session_id)
+    document_id = payload.get("documentId")
+    if not document_id:
+        raise HTTPException(status_code=400, detail="documentId required")
+    doc_oid = _ensure_object_id(document_id)
+
+    await db.sessions.update_one({"_id": session_oid}, {"$pull": {"docIds": doc_oid}})
+    await db.documents.update_one({"_id": doc_oid}, {"$pull": {"linkedSessions": session_oid}})
+    return {"ok": True}
+
+
+# ---------- trash ----------
+
+@app.get("/trash")
+async def list_trash(limit: int = 100, resourceType: str | None = None):
+    db = await get_db()
+    query: Dict[str, object] = {}
+    if resourceType:
+        query["resourceType"] = resourceType
+    cursor = db.trash.find(query).sort("createdAt", -1).limit(max(min(limit, 500), 1))
+    items = []
+    async for item in cursor:
+        items.append({
+            "_id": str(item["_id"]),
+            "resourceType": item.get("resourceType"),
+            "resourceId": str(item.get("resourceId")),
+            "payload": to_jsonable(item.get("payload")),
+            "related": to_jsonable(item.get("related")),
+            "createdAt": item.get("createdAt"),
+            "expiresAt": item.get("expiresAt"),
+        })
+    return to_jsonable(items)
+
+
+@app.post("/trash/{trash_id}/restore")
+async def restore_from_trash(trash_id: str):
+    db = await get_db()
+    tid = _ensure_object_id(trash_id)
+    entry = await db.trash.find_one({"_id": tid})
+    if not entry:
+        raise HTTPException(status_code=404)
+
+    resource_type = entry.get("resourceType")
+    payload = entry.get("payload")
+    related = entry.get("related") or {}
+
+    if resource_type == "document" and payload:
+        doc_oid = payload.get("_id")
+        if isinstance(doc_oid, str):
+            doc_oid = ObjectId(doc_oid)
+            payload["_id"] = doc_oid
+        await db.documents.insert_one(payload)
+        linked_sessions = payload.get("linkedSessions", [])
+        if linked_sessions:
+            await db.sessions.update_many(
+                {"_id": {"$in": linked_sessions}},
+                {"$addToSet": {"docIds": doc_oid}},
+            )
+    elif resource_type == "session" and payload:
+        session_doc = payload
+        session_oid = session_doc.get("_id")
+        if isinstance(session_oid, str):
+            session_oid = ObjectId(session_oid)
+            session_doc["_id"] = session_oid
+        session_id_str = str(session_oid)
+        doc_ids = session_doc.get("docIds", []) or []
+        if doc_ids and isinstance(doc_ids[0], str):
+            doc_ids = [ObjectId(d) for d in doc_ids]
+            session_doc["docIds"] = doc_ids
+        await db.sessions.insert_one(session_doc)
+
+        segments = related.get("segments") or []
+        for seg in segments:
+            seg_id = seg.get("_id")
+            if isinstance(seg_id, str):
+                seg["_id"] = ObjectId(seg_id)
+            seg["sessionId"] = session_id_str
+            await db.segments.insert_one(seg)
+
+        if doc_ids:
+            await db.documents.update_many(
+                {"_id": {"$in": doc_ids}},
+                {"$addToSet": {"linkedSessions": session_oid}},
+            )
+    else:
+        raise HTTPException(status_code=400, detail="restore not supported")
+
+    await db.trash.delete_one({"_id": tid})
+    return {"status": "restored", "resourceType": resource_type}
+
+
+
+@app.delete("/trash/{trash_id}")
+async def delete_trash_item(trash_id: str):
+    db = await get_db()
+    tid = _ensure_object_id(trash_id)
+    entry = await db.trash.find_one({"_id": tid})
+    if not entry:
+        raise HTTPException(status_code=404)
+    await _purge_trash_item(db, entry)
+    return {"status": "deleted"}
+
+
 
 
 # ---------- glossary ----------
@@ -836,3 +1245,5 @@ async def realtime(ws: WebSocket):
             await ws.close()
         except Exception:
             pass
+
+
