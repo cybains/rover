@@ -110,7 +110,7 @@ function Pane({ title, items }: { title: string; items: TranscriptSegment[] }) {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon"><Bookmark className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="iconLg" className="rounded-full border border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700"><Bookmark className="h-9 w-9" /></Button>
                       </TooltipTrigger>
                       <TooltipContent>Bookmark</TooltipContent>
                     </Tooltip>
@@ -482,7 +482,7 @@ export default function LearningAppUI() {
                 </Select>
               </div>
               <div className="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
-                <Button variant="outline" onClick={() => setDocPickerOpen(true)} aria-label="Link documents"><Link2 className="h-4 w-4" /></Button>
+                <Button variant="outline" onClick={() => setDocPickerOpen(true)} aria-label="Link documents" className="rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"><Link2 className="h-5 w-5" /></Button>
                 <Button onClick={onClickStart}><Play className="mr-2 h-4 w-4" /> Start</Button>
                 {session && (<>
                   <Button variant="outline" onClick={onClickPauseOrResume}>{(live && !paused) ? (<><Pause className="mr-2 h-4 w-4" /> Pause</>) : (<><Play className="mr-2 h-4 w-4" /> Resume</>)}</Button>
@@ -491,7 +491,7 @@ export default function LearningAppUI() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" aria-label="Bookmark moment"><Bookmark className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="iconLg" aria-label="Bookmark moment" className="rounded-full border border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700"><Bookmark className="h-9 w-9" /></Button>
                     </TooltipTrigger>
                     <TooltipContent>Bookmark (B)</TooltipContent>
                   </Tooltip>
@@ -527,13 +527,13 @@ export default function LearningAppUI() {
               </div>
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild><Button variant="ghost" size="icon"><Highlighter className="h-4 w-4" /></Button></TooltipTrigger>
+                  <TooltipTrigger asChild><Button variant="ghost" size="iconLg" className="rounded-full border border-sky-200 text-sky-600 hover:bg-sky-50 hover:text-sky-700"><Highlighter className="h-9 w-9" /></Button></TooltipTrigger>
                   <TooltipContent>Auto-highlight questions</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild><Button variant="ghost" size="icon"><ListChecks className="h-4 w-4" /></Button></TooltipTrigger>
+                  <TooltipTrigger asChild><Button variant="ghost" size="iconLg" className="rounded-full border border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"><ListChecks className="h-9 w-9" /></Button></TooltipTrigger>
                   <TooltipContent>Enforce glossary</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -562,7 +562,7 @@ export default function LearningAppUI() {
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">Finished</Badge>
                       <Button size="sm" variant="outline" onClick={() => alert("Open session viewer (todo)")}>View</Button>
-                      <Button size="icon" variant="ghost" aria-label="Delete session" onClick={() => deleteSession(s.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="iconLg" variant="ghost" aria-label="Delete session" onClick={() => deleteSession(s.id)} className="rounded-full border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-9 w-9" /></Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -600,7 +600,7 @@ export default function LearningAppUI() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" onClick={() => setOpenDocId(doc.id)}>Preview</Button>
-                      <Button size="icon" variant="ghost" aria-label="Delete doc" onClick={() => deleteDoc(doc.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="iconLg" variant="ghost" aria-label="Delete doc" onClick={() => deleteDoc(doc.id)} className="rounded-full border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-9 w-9" /></Button>
                     </div>
                   </div>
                 </CardContent>
@@ -768,4 +768,9 @@ if (typeof window !== "undefined") {
     console.assert("grid grid-cols-2".includes("grid-cols-2"));
   } catch {}
 }
+
+
+
+
+
 
