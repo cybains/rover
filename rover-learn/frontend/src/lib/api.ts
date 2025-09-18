@@ -107,3 +107,42 @@ export async function getStorageStatus() {
 export async function purgeSessions(before: string) {
   return apiPost(`/sessions/purge`, { before });
 }
+
+export async function listDocuments() {
+  return apiGet(`/documents`);
+}
+
+export async function uploadDocument(options: {
+  file: File;
+  sessionIds?: string[];
+  tags?: string[];
+  notes?: string;
+}) {
+  const form = new FormData();
+  form.append("file", options.file);
+  if (options.sessionIds?.length) {
+    form.append("sessionIds", JSON.stringify(options.sessionIds));
+  }
+  if (options.tags?.length) {
+    form.append("tags", JSON.stringify(options.tags));
+  }
+  if (options.notes) {
+    form.append("notes", options.notes);
+  }
+  const res = await fetch(`${BASE_URL}/documents/upload`, {
+    method: "POST",
+    mode: "cors",
+    body: form,
+  });
+  if (!res.ok) throw new Error(`POST /documents/upload -> ${res.status}`);
+  return res.json();
+}
+
+export async function deleteDocument(documentId: string) {
+  const res = await fetch(`${BASE_URL}/documents/${documentId}`, {
+    method: "DELETE",
+    mode: "cors",
+  });
+  if (!res.ok) throw new Error(`DELETE /documents/${documentId} -> ${res.status}`);
+  return res.json();
+}
