@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
 import {
   Mic,
   Radio,
@@ -39,27 +38,19 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type TranscriptSegment = { id: number; time: string; text: string; speaker: string; q: boolean };
-
-type DocMeta = { id: string; title: string; type: string; size: string; addedAt: string };
-
-type ActiveView = "session" | "sessions" | "docs" | "summaries" | "flashcards" | "quizzes" | "explain" | "bookmarks" | "settings" | "exports" | "developer";
-
-type SimpleSession = { id: string; title: string; subject?: string; course?: string; language?: string; tags?: string; docIds: string[]; finished: boolean; createdAt: string; accumMs: number };
-
-const sampleTranscript: TranscriptSegment[] = [
+const sampleTranscript = [
   { id: 1, time: "00:00:02", text: "Guten Morgen, alle zusammen. Heute sprechen wir über lineare Regression.", speaker: "Dr. Müller", q: false },
   { id: 2, time: "00:00:08", text: "Was sind die Grundannahmen dieses Modells?", speaker: "Student", q: true },
   { id: 3, time: "00:00:12", text: "Die Annahmen umfassen Linearität, Unabhängigkeit, Homoskedastizität und Normalverteilung der Fehler.", speaker: "Dr. Müller", q: false },
 ];
 
-const sampleTranslation: TranscriptSegment[] = [
+const sampleTranslation = [
   { id: 1, time: "00:00:02", text: "Good morning, everyone. Today we will talk about linear regression.", speaker: "Dr. Müller", q: false },
   { id: 2, time: "00:00:08", text: "What are the basic assumptions of this model?", speaker: "Student", q: true },
   { id: 3, time: "00:00:12", text: "The assumptions include linearity, independence, homoskedasticity, and normal distribution of errors.", speaker: "Dr. Müller", q: false },
 ];
 
-const initialDocs: DocMeta[] = [
+const initialDocs = [
   { id: "d1", title: "Linear Regression – Lecture Notes.pdf", type: "pdf", size: "1.2 MB", addedAt: "2025-09-10" },
   { id: "d2", title: "Statistics Glossary.md", type: "md", size: "24 KB", addedAt: "2025-09-12" },
   { id: "d3", title: "Machine Learning Syllabus.pdf", type: "pdf", size: "890 KB", addedAt: "2025-09-14" },
@@ -86,7 +77,7 @@ function StatusPill({ live }: { live: boolean }) {
   );
 }
 
-function Pane({ title, items }: { title: string; items: TranscriptSegment[] }) {
+function Pane({ title, items }: { title: string; items: typeof sampleTranscript }) {
   const listRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -133,8 +124,8 @@ const fmtDuration = (ms: number) => {
   return `${hh}:${mm}:${ss}`;
 };
 
-function DocViewer({ doc, onClose }: { doc: DocMeta; onClose: () => void }) {
-  const [page, setPage] = useState<number>(1);
+function DocViewer({ doc, onClose }: { doc: { id: string; title: string }; onClose: () => void }) {
+  const [page, setPage] = useState(1);
   return (
     <Card className="mb-3">
       <CardHeader className="py-3 flex flex-row items-center justify-between">
@@ -153,19 +144,50 @@ function DocViewer({ doc, onClose }: { doc: DocMeta; onClose: () => void }) {
   );
 }
 
+type ActiveView = "session" | "sessions" | "docs" | "summaries" | "flashcards" | "quizzes" | "explain" | "bookmarks" | "settings" | "exports" | "developer";
+
+type SimpleSession = {
+  id: string;
+  title: string;
+  subject?: string;
+  course?: string;
+  language?: string;
+  tags?: string;
+  docIds: string[];
+  finished: boolean;
+  createdAt: string;
+  accumMs: number;
+};
+
 export default function LearningAppUI() {
-  const [live, setLive] = useState<boolean>(false);
-  const [paused, setPaused] = useState<boolean>(false);
-  const [latency, setLatency] = useState<number>(320);
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<ActiveView>('session');
-  const [firstRun, setFirstRun] = useState<boolean>(true);
-  const [session, setSession] = useState<SimpleSession | null>(null);
-  const [sessions, setSessions] = useState<SimpleSession[]>([]);
-  const [sessionInitOpen, setSessionInitOpen] = useState<boolean>(false);
-  const [docs, setDocs] = useState<DocMeta[]>(initialDocs);
-  const [docSearch, setDocSearch] = useState<string>('');
-  const [docPickerOpen, setDocPickerOpen] = useState<boolean>(false);
+  const [live, setLive] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [latency, setLatency] = useState(320);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeView, setActiveView] = useState<ActiveView>("session");
+  const [firstRun, setFirstRun] = useState(() => typeof window !== "undefined" && localStorage.getItem("ll_first_run_seen") !== "true");
+  const [session, setSession] = useState<SimpleSession | null>(() => {
+    try {
+      if (typeof window === "undefined") return null;
+      const saved = localStorage.getItem("currentSession");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [sessions, setSessions] = useState<SimpleSession[]>(() => {
+    try {
+      if (typeof window === "undefined") return [];
+      const saved = localStorage.getItem("sessions");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [sessionInitOpen, setSessionInitOpen] = useState(false);
+  const [docs, setDocs] = useState(initialDocs);
+  const [docSearch, setDocSearch] = useState("");
+  const [docPickerOpen, setDocPickerOpen] = useState(false);
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [openDocId, setOpenDocId] = useState<string | null>(null);
 
@@ -175,49 +197,34 @@ export default function LearningAppUI() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
     try {
-      setFirstRun(localStorage.getItem('ll_first_run_seen') !== 'true');
-      const savedSession = localStorage.getItem('currentSession');
-      if (savedSession) {
-        setSession(JSON.parse(savedSession) as SimpleSession);
-      }
-      const savedSessions = localStorage.getItem('sessions');
-      if (savedSessions) {
-        setSessions(JSON.parse(savedSessions) as SimpleSession[]);
-      }
-      const storedDocs = localStorage.getItem('ll_docs');
-      if (storedDocs) {
-        setDocs(JSON.parse(storedDocs) as DocMeta[]);
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (session) localStorage.setItem('currentSession', JSON.stringify(session));
-      else localStorage.removeItem('currentSession');
+      if (session) localStorage.setItem("currentSession", JSON.stringify(session));
+      else localStorage.removeItem("currentSession");
     } catch {}
   }, [session]);
   useEffect(() => {
     try {
-      localStorage.setItem('sessions', JSON.stringify(sessions));
+      localStorage.setItem("sessions", JSON.stringify(sessions));
     } catch {}
   }, [sessions]);
   useEffect(() => {
     try {
-      localStorage.setItem('ll_docs', JSON.stringify(docs));
+      localStorage.setItem("ll_docs", JSON.stringify(docs));
     } catch {}
   }, [docs]);
   useEffect(() => {
     try {
-      localStorage.setItem('ll_first_run_seen', String(!firstRun));
+      const storedDocs = localStorage.getItem("ll_docs");
+      if (storedDocs) setDocs(JSON.parse(storedDocs));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("ll_first_run_seen", String(!firstRun));
     } catch {}
   }, [firstRun]);
 
-  const MenuButton = ({ label, icon: Icon, value }: { label: string; icon: LucideIcon; value: ActiveView }) => (
+  const MenuButton = ({ label, icon: Icon, value }: { label: string; icon: any; value: ActiveView }) => (
     <Button
       variant={value === activeView ? "secondary" : "ghost"}
       className="w-full justify-start"
@@ -344,17 +351,17 @@ export default function LearningAppUI() {
             <SheetTitle>Main Menu</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-2">
-            <MenuButton label="Start a Session" icon={Play as LucideIcon} value="session" />
-            <MenuButton label="Sessions" icon={History as LucideIcon} value="sessions" />
-            <MenuButton label="Docs" icon={FileText as LucideIcon} value="docs" />
-            <MenuButton label="Summaries" icon={FileText as LucideIcon} value="summaries" />
-            <MenuButton label="Flashcards" icon={BookOpen as LucideIcon} value="flashcards" />
-            <MenuButton label="Quizzes" icon={ListChecks as LucideIcon} value="quizzes" />
-            <MenuButton label="Explain" icon={Sparkles as LucideIcon} value="explain" />
-            <MenuButton label="Bookmarks" icon={Bookmark as LucideIcon} value="bookmarks" />
-            <MenuButton label="Settings" icon={Settings as LucideIcon} value="settings" />
-            <MenuButton label="Exports" icon={Download as LucideIcon} value="exports" />
-            <MenuButton label="Developer" icon={Wrench as LucideIcon} value="developer" />
+            <MenuButton label="Start a Session" icon={Play} value="session" />
+            <MenuButton label="Sessions" icon={History} value="sessions" />
+            <MenuButton label="Docs" icon={FileText} value="docs" />
+            <MenuButton label="Summaries" icon={FileText} value="summaries" />
+            <MenuButton label="Flashcards" icon={BookOpen} value="flashcards" />
+            <MenuButton label="Quizzes" icon={ListChecks} value="quizzes" />
+            <MenuButton label="Explain" icon={Sparkles} value="explain" />
+            <MenuButton label="Bookmarks" icon={Bookmark} value="bookmarks" />
+            <MenuButton label="Settings" icon={Settings} value="settings" />
+            <MenuButton label="Exports" icon={Download} value="exports" />
+            <MenuButton label="Developer" icon={Wrench} value="developer" />
           </div>
         </SheetContent>
       </Sheet>
@@ -397,12 +404,12 @@ export default function LearningAppUI() {
           </div>
           <DialogFooter>
             <Button onClick={() => {
-              const title = (document.getElementById("session-title") as HTMLInputElement | null)?.value?.trim();
+              const title = (document.getElementById("session-title") as HTMLInputElement)?.value?.trim();
               if (!title) return;
-              const subject = (document.getElementById("session-subject") as HTMLInputElement | null)?.value?.trim();
-              const course = (document.getElementById("session-course") as HTMLInputElement | null)?.value?.trim();
-              const language = (document.getElementById("session-language") as HTMLInputElement | null)?.value?.trim();
-              const tags = (document.getElementById("session-tags") as HTMLInputElement | null)?.value?.trim();
+              const subject = (document.getElementById("session-subject") as HTMLInputElement)?.value?.trim();
+              const course = (document.getElementById("session-course") as HTMLInputElement)?.value?.trim();
+              const language = (document.getElementById("session-language") as HTMLInputElement)?.value?.trim();
+              const tags = (document.getElementById("session-tags") as HTMLInputElement)?.value?.trim();
               const createdAt = new Date().toISOString();
               const newSess: SimpleSession = { id: crypto.randomUUID(), title, subject, course, language, tags, docIds: selectedDocIds, finished: false, createdAt, accumMs: 0 };
               setSession(newSess);
@@ -768,4 +775,3 @@ if (typeof window !== "undefined") {
     console.assert("grid grid-cols-2".includes("grid-cols-2"));
   } catch {}
 }
-

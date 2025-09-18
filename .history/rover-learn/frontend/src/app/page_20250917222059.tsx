@@ -1,4 +1,4 @@
-'use client';
+use client
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
@@ -158,13 +158,29 @@ export default function LearningAppUI() {
   const [paused, setPaused] = useState<boolean>(false);
   const [latency, setLatency] = useState<number>(320);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [activeView, setActiveView] = useState<ActiveView>('session');
-  const [firstRun, setFirstRun] = useState<boolean>(true);
-  const [session, setSession] = useState<SimpleSession | null>(null);
-  const [sessions, setSessions] = useState<SimpleSession[]>([]);
+  const [activeView, setActiveView] = useState<ActiveView>("session");
+  const [firstRun, setFirstRun] = useState<boolean>(() => (typeof window !== "undefined" ? localStorage.getItem("ll_first_run_seen") !== "true" : true));
+  const [session, setSession] = useState<SimpleSession | null>(() => {
+    try {
+      if (typeof window === "undefined") return null;
+      const saved = localStorage.getItem("currentSession");
+      return saved ? (JSON.parse(saved) as SimpleSession) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [sessions, setSessions] = useState<SimpleSession[]>(() => {
+    try {
+      if (typeof window === "undefined") return [];
+      const saved = localStorage.getItem("sessions");
+      return saved ? (JSON.parse(saved) as SimpleSession[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [sessionInitOpen, setSessionInitOpen] = useState<boolean>(false);
   const [docs, setDocs] = useState<DocMeta[]>(initialDocs);
-  const [docSearch, setDocSearch] = useState<string>('');
+  const [docSearch, setDocSearch] = useState<string>("");
   const [docPickerOpen, setDocPickerOpen] = useState<boolean>(false);
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [openDocId, setOpenDocId] = useState<string | null>(null);
@@ -175,45 +191,30 @@ export default function LearningAppUI() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
     try {
-      setFirstRun(localStorage.getItem('ll_first_run_seen') !== 'true');
-      const savedSession = localStorage.getItem('currentSession');
-      if (savedSession) {
-        setSession(JSON.parse(savedSession) as SimpleSession);
-      }
-      const savedSessions = localStorage.getItem('sessions');
-      if (savedSessions) {
-        setSessions(JSON.parse(savedSessions) as SimpleSession[]);
-      }
-      const storedDocs = localStorage.getItem('ll_docs');
-      if (storedDocs) {
-        setDocs(JSON.parse(storedDocs) as DocMeta[]);
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (session) localStorage.setItem('currentSession', JSON.stringify(session));
-      else localStorage.removeItem('currentSession');
+      if (session) localStorage.setItem("currentSession", JSON.stringify(session));
+      else localStorage.removeItem("currentSession");
     } catch {}
   }, [session]);
   useEffect(() => {
     try {
-      localStorage.setItem('sessions', JSON.stringify(sessions));
+      localStorage.setItem("sessions", JSON.stringify(sessions));
     } catch {}
   }, [sessions]);
   useEffect(() => {
     try {
-      localStorage.setItem('ll_docs', JSON.stringify(docs));
+      localStorage.setItem("ll_docs", JSON.stringify(docs));
     } catch {}
   }, [docs]);
   useEffect(() => {
     try {
-      localStorage.setItem('ll_first_run_seen', String(!firstRun));
+      const storedDocs = localStorage.getItem("ll_docs");
+      if (storedDocs) setDocs(JSON.parse(storedDocs) as DocMeta[]);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("ll_first_run_seen", String(!firstRun));
     } catch {}
   }, [firstRun]);
 
@@ -768,4 +769,3 @@ if (typeof window !== "undefined") {
     console.assert("grid grid-cols-2".includes("grid-cols-2"));
   } catch {}
 }
-
