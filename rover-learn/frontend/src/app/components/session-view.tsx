@@ -337,7 +337,7 @@ export default function SessionView({
           <div className="w-full">
             <Progress value={live ? Math.min(100, latency / 12) : 0} />
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>{session ? formatDuration(session.accumMs) : "00:00:00"}</span>
+              <span>{session ? formatDuration(session.accumMs ?? 0) : "00:00:00"}</span>
               <span>{session ? new Date(session.createdAt).toLocaleTimeString() : ""}</span>
             </div>
           </div>

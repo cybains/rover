@@ -1,4 +1,4 @@
-﻿export type TranscriptSegment = {
+export type TranscriptSegment = {
   id: number;
   time: string;
   text: string;
@@ -17,15 +17,24 @@ export type DocMeta = {
   linkedSessions: string[];
 };
 
-export type SimpleSession = {
-  id: string;
-  title: string;
+export type SessionStatus = "live" | "stopped" | "archived" | "trashed" | string;
+
+export type SessionMetadata = {
   subject?: string;
   course?: string;
   language?: string;
   tags?: string;
-  docIds: string[];
-  finished: boolean;
+};
+
+export type SimpleSession = {
+  id: string;
+  title: string;
+  status: SessionStatus;
   createdAt: string;
-  accumMs: number;
+  updatedAt?: string;
+  docIds: string[];
+  segmentsCount?: number;
+  documentsCount?: number;
+  accumMs?: number;
+  metadata?: SessionMetadata;
 };
