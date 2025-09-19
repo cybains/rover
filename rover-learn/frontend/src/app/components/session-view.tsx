@@ -225,7 +225,7 @@ export default function SessionView({
     <>
       <div className="border-b">
         <div className="max-w-7xl mx-auto grid grid-cols-12 items-center gap-3 px-4 py-3">
-          <div className="col-span-12 md:col-span-7 flex items-center gap-2 flex-wrap">
+          <div className="col-span-12 md:col-span-6 flex items-center gap-2 flex-wrap">
             <Badge variant="secondary" className="gap-2">
               <Cpu className="h-3 w-3" /> Local {session ? `• ${session.title}` : ""}
             </Badge>
@@ -239,9 +239,9 @@ export default function SessionView({
               );
             })}
           </div>
-          <div className="col-span-6 md:col-span-3 flex items-center gap-2">
+          <div className="col-span-12 md:col-span-3 flex items-center gap-2 mt-2 md:mt-0">
             <Select defaultValue="mic">
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full md:w-40">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
@@ -258,18 +258,21 @@ export default function SessionView({
               </SelectContent>
             </Select>
           </div>
-          <div className="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
+          <div className="col-span-12 md:col-span-3 flex flex-wrap items-center justify-start md:justify-end gap-2 md:gap-3 mt-2 md:mt-0">
             <Button
               variant="outline"
+              size="iconLg"
               onClick={onLinkDocs}
               aria-label="Link documents"
               className="rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
             >
               <Link2 className="h-5 w-5" />
             </Button>
-            <Button onClick={onStart}>
-              <Play className="mr-2 h-4 w-4" /> Start
-            </Button>
+            {!session && (
+              <Button onClick={onStart}>
+                <Play className="mr-2 h-4 w-4" /> Start
+              </Button>
+            )}
             {session && (
               <>
                 <Button variant="outline" onClick={onPauseResume}>
