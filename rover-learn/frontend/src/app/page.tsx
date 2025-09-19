@@ -159,25 +159,35 @@ export default function LearningAppUI() {
       return;
     }
     try {
-      let hasActiveSession = false;
+      const sessionHistoryRaw = localStorage.getItem('sessions');
+      let sessionHistory: SimpleSession[] = [];
+      if (sessionHistoryRaw) {
+        try {
+          const parsed = JSON.parse(sessionHistoryRaw) as SimpleSession[];
+          if (Array.isArray(parsed)) {
+            sessionHistory = parsed;
+          }
+        } catch {}
+      }
       const savedSession = localStorage.getItem('currentSession');
       if (savedSession) {
         try {
           const parsedSession = JSON.parse(savedSession) as SimpleSession;
-          if (parsedSession && !parsedSession.finished) {
-            setSession(parsedSession);
-            hasActiveSession = true;
-          } else {
-            localStorage.removeItem('currentSession');
+          if (parsedSession) {
+            const finishedSession: SimpleSession = {
+              ...parsedSession,
+              finished: true,
+              createdAt: parsedSession.createdAt || new Date().toISOString(),
+            };
+            sessionHistory = [
+              finishedSession,
+              ...sessionHistory.filter((s) => s.id !== finishedSession.id),
+            ];
           }
-        } catch {
-          localStorage.removeItem('currentSession');
-        }
+        } catch {}
+        localStorage.removeItem('currentSession');
       }
-      const savedSessions = localStorage.getItem('sessions');
-      if (savedSessions) {
-        setSessions(JSON.parse(savedSessions) as SimpleSession[]);
-      }
+      setSessions(sessionHistory);
       const storedDocs = localStorage.getItem('ll_docs');
       if (storedDocs) {
         try {
@@ -186,7 +196,7 @@ export default function LearningAppUI() {
         } catch {}
       }
       localStorage.removeItem('ll_first_run_seen');
-      setFirstRun(!hasActiveSession);
+      setFirstRun(true);
     } catch {}
   }, []);
 
