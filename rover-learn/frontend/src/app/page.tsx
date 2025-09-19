@@ -117,7 +117,23 @@ export default function LearningAppUI() {
   const [latency, setLatency] = useState<number>(320);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<ActiveView>('session');
-  const [firstRun, setFirstRun] = useState<boolean>(true);
+  const [firstRun, setFirstRun] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+    try {
+      const storedSession = localStorage.getItem('currentSession');
+      if (storedSession) {
+        const parsedSession = JSON.parse(storedSession) as SimpleSession;
+        if (parsedSession && !parsedSession.finished) {
+          return false;
+        }
+      }
+    } catch {
+      localStorage.removeItem('currentSession');
+    }
+    return true;
+  });
   const [session, setSession] = useState<SimpleSession | null>(null);
   const [sessions, setSessions] = useState<SimpleSession[]>([]);
   const [sessionInitOpen, setSessionInitOpen] = useState<boolean>(false);
@@ -143,10 +159,20 @@ export default function LearningAppUI() {
       return;
     }
     try {
-      setFirstRun(localStorage.getItem('ll_first_run_seen') !== 'true');
+      let hasActiveSession = false;
       const savedSession = localStorage.getItem('currentSession');
       if (savedSession) {
-        setSession(JSON.parse(savedSession) as SimpleSession);
+        try {
+          const parsedSession = JSON.parse(savedSession) as SimpleSession;
+          if (parsedSession && !parsedSession.finished) {
+            setSession(parsedSession);
+            hasActiveSession = true;
+          } else {
+            localStorage.removeItem('currentSession');
+          }
+        } catch {
+          localStorage.removeItem('currentSession');
+        }
       }
       const savedSessions = localStorage.getItem('sessions');
       if (savedSessions) {
@@ -159,6 +185,8 @@ export default function LearningAppUI() {
           setDocs(parsed.map(normaliseDoc));
         } catch {}
       }
+      localStorage.removeItem('ll_first_run_seen');
+      setFirstRun(!hasActiveSession);
     } catch {}
   }, []);
 
@@ -209,11 +237,6 @@ export default function LearningAppUI() {
       localStorage.setItem('ll_docs', JSON.stringify(docs));
     } catch {}
   }, [docs]);
-  useEffect(() => {
-    try {
-      localStorage.setItem('ll_first_run_seen', String(!firstRun));
-    } catch {}
-  }, [firstRun]);
 
   const MenuButton = ({ label, icon: Icon, value }: { label: string; icon: LucideIcon; value: ActiveView }) => (
     <Button
