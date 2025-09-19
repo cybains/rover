@@ -519,7 +519,7 @@ export default function LearningAppUI() {
       {firstRun && (
         <div className="fixed inset-0 z-40 grid place-items-center bg-gradient-to-b from-background to-muted">
           <div className="w-full max-w-3xl text-center p-8">
-            <div className="mx-auto h-14 w-14 rounded-2xl bg-foreground text-background grid place-items-center text-2xl font-bold">?</div>
+            <div className="mx-auto h-14 w-14 rounded-2xl bg-foreground text-background grid place-items-center text-2xl font-bold">Λ</div>
             <div className="mt-3 text-3xl font-semibold">Lab</div>
             <div className="text-sm text-muted-foreground mb-6">Personal build</div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -538,7 +538,7 @@ export default function LearningAppUI() {
       <div className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
           <button className="flex items-center gap-3 group cursor-pointer" onClick={() => setMenuOpen(true)}>
-            <div className="h-8 w-8 rounded-xl bg-foreground/90 text-background grid place-items-center font-bold group-hover:opacity-90">?</div>
+            <div className="h-8 w-8 rounded-xl bg-foreground/90 text-background grid place-items-center font-bold group-hover:opacity-90">Λ</div>
             <div>
               <div className="font-semibold leading-tight group-hover:underline">Lab</div>
               <div className="text-xs text-muted-foreground">Personal build</div>
@@ -1009,7 +1009,7 @@ export default function LearningAppUI() {
 
       <div className="border-t bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 py-3 text-xs text-muted-foreground flex items-center justify-between">
-          <div className="flex items-center gap-3"><span className="font-medium">Hotkeys:</span><span>Start/Resume ?/Ctrl+K</span><span>Bookmark B</span><span>Open Menu ?/Ctrl+M</span></div>
+          <div className="flex items-center gap-3"><span className="font-medium">Hotkeys:</span><span>Start/Resume ⌘/Ctrl+K</span><span>Bookmark B</span><span>Open Menu ⌘/Ctrl+M</span></div>
           <div>Built for: You · 100% local · Vienna</div>
         </div>
       </div>
