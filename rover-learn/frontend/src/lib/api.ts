@@ -1,6 +1,9 @@
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") || "http://localhost:4000";
 
+const ASR_BASE_URL =
+  process.env.NEXT_PUBLIC_ASR_BASE?.replace(/\/$/, "") || "http://127.0.0.1:5001";
+
 const WS_BASE = (() => {
   try {
     const url = new URL(BASE_URL);
@@ -196,4 +199,33 @@ export async function deleteDocument(documentId: string) {
   });
   if (!res.ok) throw new Error(`DELETE /documents/${documentId} -> ${res.status}`);
   return res.json();
+}
+export async function getAsrHealth() {
+  const res = await fetch(`${ASR_BASE_URL}/health`, { mode: 'cors', cache: 'no-store' });
+  if (!res.ok) throw new Error(`GET /health -> ${res.status}`);
+  return res.json();
+}
+
+export async function startAsrSession() {
+  const res = await fetch(`${ASR_BASE_URL}/session/start`, {
+    method: 'POST',
+    mode: 'cors',
+  });
+  if (!res.ok) throw new Error(`POST /session/start -> ${res.status}`);
+  return res.json();
+}
+
+export async function stopAsrSession(sessionId: string) {
+  const res = await fetch(`${ASR_BASE_URL}/session/stop`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  if (!res.ok) throw new Error(`POST /session/stop -> ${res.status}`);
+  return res.json();
+}
+
+export function streamAsrSession(sessionId: string) {
+  return new EventSource(`${ASR_BASE_URL}/session/${sessionId}/stream`);
 }
