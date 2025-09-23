@@ -37,12 +37,11 @@ import type { DocMeta, SimpleSession, TranscriptSegment } from "@/app/types";
 /* ------------------------- Inlined ASR mini-client ------------------------- */
 
 type AsrEvent = {
-  session_id: string;
+  session_id?: string;
   chunk_index: number;
   start_sec: number;
   end_sec: number;
   text: string;
-  words: { start: number | null; end: number | null; word: string }[];
   final: boolean;
 };
 
@@ -58,8 +57,10 @@ async function asrHealth(): Promise<boolean> {
   }
 }
 
-async function asrStart(): Promise<string> {
-  const r = await fetch(`${ASR_BASE}/session/start`, { method: "POST" });
+async function asrStart(source: string): Promise<string> {
+  const r = await fetch(`${ASR_BASE}/session/start?source=${encodeURIComponent(source)}`, {
+    method: "POST",
+  });
   if (!r.ok) throw new Error(`ASR start failed: ${r.status}`);
   const j = await r.json();
   return j.session_id as string;
@@ -91,17 +92,18 @@ function asrOpenStream(
     try {
       const data = JSON.parse(msg.data) as AsrEvent;
       onEvent(data);
-      if (data.final) {
-        es.close();
-        onClose?.();
-      }
     } catch (e) {
       onError?.(e);
     }
   };
   es.onerror = (e) => {
     onError?.(e);
-    // keep open; server signals final; we close there
+    if ((es as any).readyState === EventSource.CLOSED) {
+      onClose?.();
+    }
+  };
+  es.onopen = () => {
+    // clear previous error state when connection re-establishes
   };
   return es;
 }
@@ -263,9 +265,13 @@ export default function SessionView({
 
   // ASR state
   const [asrId, setAsrId] = useState<string | null>(null);
+  const asrIdRef = useRef<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<TranscriptSegment[]>([]);
   const segCounterRef = useRef(0);
+  const [asrSource, setAsrSource] = useState<string>("mic");
+  const chunkMapRef = useRef<Map<string, number>>(new Map());
+  const sessionKeyRef = useRef<string | null>(null);
 
   const secToClock = (sec: number) => {
     const s = Math.max(0, Math.floor(sec));
@@ -275,25 +281,43 @@ export default function SessionView({
     return `${hh}:${mm}:${ss}`;
   };
 
-  const subscribeAsr = (id: string) => {
-    setLiveTranscript([]);
-    segCounterRef.current = 0;
+  const subscribeAsr = (id: string, { reset }: { reset: boolean }) => {
+    if (reset) {
+      setLiveTranscript([]);
+      segCounterRef.current = 0;
+    }
+    chunkMapRef.current = new Map<string, number>();
+    sessionKeyRef.current = id;
     esRef.current?.close();
     const es = asrOpenStream(
       id,
       (ev: AsrEvent) => {
-        // DO NOT DROP EMPTY TEXT — show a visible heartbeat so the UI advances.
         const visible = ev.text && ev.text.trim().length > 0 ? ev.text : "…";
-        setLiveTranscript((prev) => [
-          ...prev,
-          {
-            id: ++segCounterRef.current,
-            time: secToClock(Math.round(ev.start_sec)),
-            text: visible,
-            speaker: "ASR",
-            q: /\?$/.test((ev.text || "").trim()),
-          },
-        ]);
+        const chunkKey = `${sessionKeyRef.current ?? id}:${ev.chunk_index}`;
+        const timeLabel = secToClock(Math.max(0, Math.floor(ev.start_sec)));
+        const isQuestion = /\?$/.test((ev.text || "").trim());
+        setLiveTranscript((prev) => {
+          const existingId = chunkMapRef.current.get(chunkKey);
+          if (existingId !== undefined) {
+            return prev.map((seg) =>
+              seg.id === existingId
+                ? { ...seg, text: visible, time: timeLabel, q: isQuestion }
+                : seg
+            );
+          }
+          const newId = ++segCounterRef.current;
+          chunkMapRef.current.set(chunkKey, newId);
+          return [
+            ...prev,
+            {
+              id: newId,
+              time: timeLabel,
+              text: visible,
+              speaker: "ASR",
+              q: isQuestion,
+            },
+          ];
+        });
       },
       () => {
         esRef.current?.close();
@@ -314,12 +338,49 @@ export default function SessionView({
     try {
       const ok = await asrHealth();
       if (!ok) console.warn("ASR /health not OK, attempting start anyway…");
-      const id = await asrStart();
+      const id = await asrStart(asrSource);
       setAsrId(id);
-      subscribeAsr(id);
+      asrIdRef.current = id;
+      subscribeAsr(id, { reset: true });
     } catch (e) {
       console.error("Failed to start ASR:", e);
     }
+  };
+
+  const handlePauseResume = async () => {
+    if (!session) {
+      onPauseResume();
+      return;
+    }
+    if (live && !paused) {
+      const current = asrIdRef.current;
+      if (current) {
+        try {
+          await asrStop(current);
+        } catch {
+          // ignore
+        }
+      }
+      esRef.current?.close();
+      esRef.current = null;
+      setAsrId(null);
+      asrIdRef.current = null;
+      onPauseResume();
+      return;
+    } else {
+      try {
+        const ok = await asrHealth();
+        if (!ok) console.warn("ASR /health not OK, attempting start anyway…");
+        const id = await asrStart(asrSource);
+        setAsrId(id);
+        asrIdRef.current = id;
+        subscribeAsr(id, { reset: false });
+      } catch (err) {
+        console.error("Failed to resume ASR:", err);
+        return;
+      }
+    }
+    onPauseResume();
   };
 
   const handleStop = async () => {
@@ -331,6 +392,9 @@ export default function SessionView({
     esRef.current?.close();
     esRef.current = null;
     setAsrId(null);
+    asrIdRef.current = null;
+    chunkMapRef.current = new Map<string, number>();
+    sessionKeyRef.current = null;
 
     // your app’s stop flow
     onStop();
@@ -339,6 +403,10 @@ export default function SessionView({
   // cleanup on unmount
   useEffect(() => {
     return () => {
+      const current = asrIdRef.current;
+      if (current) {
+        void asrStop(current);
+      }
       esRef.current?.close();
     };
   }, []);
@@ -385,7 +453,7 @@ export default function SessionView({
             })}
           </div>
           <div className="col-span-12 md:col-span-3 flex items-center gap-2 mt-2 md:mt-0">
-            <Select defaultValue="mic">
+            <Select value={asrSource} onValueChange={setAsrSource}>
               <SelectTrigger className="w-full md:w-40">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
@@ -395,7 +463,7 @@ export default function SessionView({
                     <Mic className="h-4 w-4" /> Microphone
                   </div>
                 </SelectItem>
-                <SelectItem value="loopback">
+                <SelectItem value="system">
                   <div className="flex items-center gap-2">
                     <Radio className="h-4 w-4" /> System Audio
                   </div>
@@ -420,7 +488,7 @@ export default function SessionView({
             )}
             {session && (
               <>
-                <Button variant="outline" onClick={onPauseResume}>
+                <Button variant="outline" onClick={handlePauseResume}>
                   {live && !paused ? (
                     <>
                       <Pause className="mr-2 h-4 w-4" /> Pause
