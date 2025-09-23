@@ -47,8 +47,7 @@ type AsrEvent = {
 };
 
 const ASR_BASE =
-  (process.env.NEXT_PUBLIC_ASR_BASE as string | undefined) ??
-  "http://127.0.0.1:5001";
+  (process.env.NEXT_PUBLIC_ASR_BASE as string | undefined) ?? "http://127.0.0.1:5001";
 
 async function asrHealth(): Promise<boolean> {
   try {
@@ -74,7 +73,7 @@ async function asrStop(id: string): Promise<void> {
       body: JSON.stringify({ session_id: id }),
     });
   } catch {
-    // ignore network errors on stop
+    // ignore
   }
 }
 
@@ -85,6 +84,9 @@ function asrOpenStream(
   onError?: (e: any) => void
 ): EventSource {
   const es = new EventSource(`${ASR_BASE}/session/${id}/stream`);
+  // expose for quick debugging in DevTools
+  (window as any).__dbg_es = es;
+
   es.onmessage = (msg) => {
     try {
       const data = JSON.parse(msg.data) as AsrEvent;
@@ -198,11 +200,7 @@ function DocViewer({
             {"<"}
           </Button>
           <span className="text-sm">Page {page}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setPage((p) => p + 1)}
-          >
+          <Button size="sm" variant="outline" onClick={() => setPage((p) => p + 1)}>
             {">"}
           </Button>
           <Button size="sm" variant="ghost" onClick={onClose}>
@@ -215,9 +213,7 @@ function DocViewer({
           {fileExtension(doc.filename)} | {formatFileSize(doc.size)} | Uploaded{" "}
           {formatIsoDate(doc.uploadedAt)}
         </div>
-        {doc.notes && (
-          <div className="text-sm text-muted-foreground">{doc.notes}</div>
-        )}
+        {doc.notes && <div className="text-sm text-muted-foreground">{doc.notes}</div>}
         <div className="h-[35vh] overflow-x-auto border rounded grid place-items-center text-sm text-muted-foreground">
           (PDF preview mock)
         </div>
@@ -263,11 +259,9 @@ export default function SessionView({
   formatIsoDate,
   fileExtension,
 }: SessionViewProps) {
-  const activeDoc = openDocId
-    ? docs.find((doc) => doc.id === openDocId)
-    : null;
+  const activeDoc = openDocId ? docs.find((doc) => doc.id === openDocId) : null;
 
-  // ASR state (local to this component)
+  // ASR state
   const [asrId, setAsrId] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<TranscriptSegment[]>([]);
@@ -285,18 +279,19 @@ export default function SessionView({
     setLiveTranscript([]);
     segCounterRef.current = 0;
     esRef.current?.close();
-    esRef.current = asrOpenStream(
+    const es = asrOpenStream(
       id,
       (ev: AsrEvent) => {
-        if (!ev.text) return;
+        // DO NOT DROP EMPTY TEXT — show a visible heartbeat so the UI advances.
+        const visible = ev.text && ev.text.trim().length > 0 ? ev.text : "…";
         setLiveTranscript((prev) => [
           ...prev,
           {
             id: ++segCounterRef.current,
             time: secToClock(Math.round(ev.start_sec)),
-            text: ev.text,
-            speaker: "Speaker",
-            q: /\?$/.test(ev.text.trim()),
+            text: visible,
+            speaker: "ASR",
+            q: /\?$/.test((ev.text || "").trim()),
           },
         ]);
       },
@@ -308,20 +303,17 @@ export default function SessionView({
         console.error("ASR stream error", e);
       }
     );
+    esRef.current = es;
   };
 
   const handleStart = async () => {
-    // keep your app’s start flow
+    // your app’s start flow
     onStart();
 
     // then start ASR + subscribe
     try {
       const ok = await asrHealth();
-      if (!ok) {
-        // still try to start — health might be behind a firewall
-        // eslint-disable-next-line no-console
-        console.warn("ASR /health not OK, attempting start anyway…");
-      }
+      if (!ok) console.warn("ASR /health not OK, attempting start anyway…");
       const id = await asrStart();
       setAsrId(id);
       subscribeAsr(id);
@@ -332,9 +324,7 @@ export default function SessionView({
 
   const handleStop = async () => {
     try {
-      if (asrId) {
-        await asrStop(asrId);
-      }
+      if (asrId) await asrStop(asrId);
     } catch {
       // ignore
     }
@@ -342,7 +332,7 @@ export default function SessionView({
     esRef.current = null;
     setAsrId(null);
 
-    // keep your app’s stop flow
+    // your app’s stop flow
     onStop();
   };
 
@@ -353,15 +343,20 @@ export default function SessionView({
     };
   }, []);
 
-  // simple placeholder translation (until you wire MT)
+  // simple placeholder translation (until MT is wired on the client)
   const sampleTranslation: TranscriptSegment[] = liveTranscript.length
-    ? liveTranscript.map((s) => ({ ...s, speaker: "EN (stub)" }))
+    ? liveTranscript.map((s) => ({
+        ...s,
+        speaker: "MT",
+        // If source looked like a placeholder, mirror it; otherwise mark as "→ EN" mock
+        text: s.text === "…" ? "…" : s.text + "  (→ EN mock)",
+      }))
     : [
         {
           id: 1,
           time: "00:00:00",
           text: "Waiting for audio…",
-          speaker: "ASR",
+          speaker: "MT",
           q: false,
         },
       ];
@@ -475,7 +470,7 @@ export default function SessionView({
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-4">
         <div>
           <Pane
-            title={`Transcript (DE)${session ? ` - ${session.title}` : ""}`}
+            title={`Transcript (source)${session ? ` - ${session.title}` : ""}`}
             items={
               liveTranscript.length > 0
                 ? liveTranscript
@@ -492,7 +487,7 @@ export default function SessionView({
           />
         </div>
         <div>
-          <Pane title="Translation (EN)" items={sampleTranslation} />
+          <Pane title="Translation (auto)" items={sampleTranslation} />
         </div>
       </div>
 
@@ -502,12 +497,8 @@ export default function SessionView({
           <div className="w-full">
             <Progress value={live ? Math.min(100, latency / 12) : 0} />
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>
-                {session ? formatDuration(session.accumMs ?? 0) : "00:00:00"}
-              </span>
-              <span>
-                {session ? new Date(session.createdAt).toLocaleTimeString() : ""}
-              </span>
+              <span>{session ? formatDuration(session.accumMs ?? 0) : "00:00:00"}</span>
+              <span>{session ? new Date(session.createdAt).toLocaleTimeString() : ""}</span>
             </div>
           </div>
           <TooltipProvider>

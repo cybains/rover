@@ -1,177 +1,133 @@
-"""Simple capture agent: Mic/Loopback -> ASR -> Backend (1s chunks, 16 kHz, PCM16)."""
-
-from __future__ import annotations
+#!/usr/bin/env python3
+"""
+Capture agent:
+- Starts an ASR session (mic or system)
+- Subscribes to ASR SSE stream
+- Sends partial and final segments to backend /ingest_segment
+"""
 
 import argparse
-import base64
-import os
+import json
 import sys
 import time
-import warnings
+from typing import Optional
 
-import numpy as np
-import requests
-import soundcard as sc
-
-# silence noisy soundcard warnings
-warnings.simplefilter("ignore", category=UserWarning)
+import httpx
 
 
-def _default_loopback_mic() -> sc.Microphone | None:
-    """Return a loopback microphone from the default speaker (Windows system audio)."""
-    spk = sc.default_speaker()
-    if spk is None:
-        return None
-    return sc.get_microphone(spk.name, include_loopback=True)
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--session", required=True, help="backend sessionId")
+    ap.add_argument("--asr", default="http://localhost:5001", help="ASR base URL")
+    ap.add_argument("--api", default="http://localhost:4000", help="Backend API base URL")
+    ap.add_argument("--source", default="mic", choices=["mic", "system"], help="Audio source")
+    return ap.parse_args()
 
 
-def _recorder_with_blocksize(sr: int, frames_per_chunk: int, source: str):
-    """
-    Returns (recorder, is_stereo).
-    Sets blocksize == frames_per_chunk to stabilize WASAPI buffering.
-    """
-    mode = (source or "auto").lower()
+def main():
+    args = parse_args()
+    session_id = args.session
+    asr_base = args.asr.rstrip("/")
+    api_base = args.api.rstrip("/")
+    source = args.source
 
-    if mode == "mic":
-        mic = sc.default_microphone()
-        if mic is None:
-            print("[agent] microphone not found (check privacy settings).", file=sys.stderr)
-            return None, False
-        print("[agent] using microphone")
-        return mic.recorder(samplerate=sr, channels=1, blocksize=frames_per_chunk), False
+    client = httpx.Client(timeout=10.0)
+    stream_client = httpx.Client(timeout=None)
 
-    if mode == "loopback":
-        lb = _default_loopback_mic()
-        if lb is None:
-            print("[agent] loopback not found (no default speaker).", file=sys.stderr)
-            return None, True
-        print("[agent] using loopback")
-        # some loopback devices insist on 2 channels
-        return lb.recorder(samplerate=sr, channels=2, blocksize=frames_per_chunk), True
-
-    # auto: prefer mic
-    mic = sc.default_microphone()
-    if mic is not None:
-        print("[agent] using microphone (auto)")
-        return mic.recorder(samplerate=sr, channels=1, blocksize=frames_per_chunk), False
-    lb = _default_loopback_mic()
-    if lb is not None:
-        print("[agent] using loopback (auto)")
-        return lb.recorder(samplerate=sr, channels=2, blocksize=frames_per_chunk), True
-
-    print("[agent] no audio devices found", file=sys.stderr)
-    return None, False
-
-
-def _to_b64_pcm16(frames: np.ndarray, stereo: bool) -> str:
-    """Convert float32 frames [-1, 1] to base64 PCM16 mono."""
-    if frames.ndim == 2:
-        frames = frames.mean(axis=1) if stereo else frames[:, 0]
-    frames = np.asarray(frames, dtype=np.float32)
-    np.clip(frames, -1.0, 1.0, out=frames)
-    pcm16 = (frames * 32767.0).astype("<i2")  # int16 little-endian
-    return base64.b64encode(pcm16.tobytes()).decode("ascii")
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Mic/Loopback -> ASR (/transcribe_chunk) -> Backend (/ingest_segment)")
-    ap.add_argument("--session", help="Session ID (required, or set SESSION_ID env)")
-    ap.add_argument("--asr", default="http://localhost:4001", help="ASR base URL")
-    ap.add_argument("--api", default="http://localhost:4000", help="Backend base URL")
-    ap.add_argument("--source", choices=["auto", "mic", "loopback"], default="auto", help="Audio source")
-    ap.add_argument("--sr", type=int, default=16000, help="Sample rate (Hz)")
-    ap.add_argument("--chunk_ms", type=int, default=500, help="Chunk size in ms")
-    args = ap.parse_args()
-
-    session_id = args.session or os.environ.get("SESSION_ID")
-    if not session_id:
-        print("[agent] session id required via --session or SESSION_ID", file=sys.stderr)
-        return 2
-
-    if args.chunk_ms <= 0:
-        print("[agent] chunk_ms must be > 0", file=sys.stderr)
-        return 2
-
-    sr = int(args.sr)
-    frames_per_chunk = int(sr * (args.chunk_ms / 1000.0))
-
-    rec, stereo = _recorder_with_blocksize(sr, frames_per_chunk, args.source)
-    if rec is None:
-        return 1
-
-    print(
-        f"[agent] device: {getattr(rec, 'microphone', None) and rec.microphone.name or 'unknown'}"
-    )
-
-    s = requests.Session()
-    start_t = time.monotonic()
-    consec_err = 0
-    last_ok = time.time()
+    asr_id: Optional[str] = None
 
     try:
-        with rec:
-            while True:
-                # Capture ~chunk_ms of audio
-                frames = rec.record(numframes=frames_per_chunk)  # float32 in [-1, 1]
-                elapsed_ms = (time.monotonic() - start_t) * 1000.0
-                idx = int(round(elapsed_ms / args.chunk_ms))
+        # 1) Start ASR session, pass source (mic/system)
+        r = client.post(f"{asr_base}/session/start", json={"source": source})
+        r.raise_for_status()
+        asr_id = r.json().get("session_id")
 
-                if np.max(np.abs(frames)) < 1e-3:
-                    idx = max(idx, 0)
+        # 2) Open SSE
+        with stream_client.stream("GET", f"{asr_base}/session/{asr_id}/stream") as resp:
+            resp.raise_for_status()
+
+            last_partial_sent = 0.0
+
+            for line in resp.iter_lines():
+                if line is None:
+                    continue
+                if isinstance(line, bytes):
+                    line = line.decode("utf-8", errors="ignore")
+                line = line.strip()
+                if not line or not line.startswith("data:"):
                     continue
 
-                b16 = _to_b64_pcm16(frames, stereo=stereo)
-
-                # --- Send to ASR ---
+                payload = line[5:].strip()
                 try:
-                    r = s.post(
-                        f"{args.asr}/transcribe_chunk",
-                        json={
-                            "audio_b16": b16,
-                            "sample_rate": sr,
-                            "idx": idx,
-                            "chunk_ms": args.chunk_ms,  # align server timeline
-                        },
-                        timeout=10,
-                    )
-                    r.raise_for_status()
-                    payload = r.json()
-                    segments = payload.get("segments", [])
-                    consec_err = 0
-                except Exception as e:
-                    print(f"[agent] ASR error: {e}", file=sys.stderr)
-                    consec_err += 1
-                    if consec_err >= 4:
-                        time.sleep(0.2)
+                    ev = json.loads(payload)
+                except Exception:
                     continue
 
-                # --- Forward to backend ---
-                for seg in segments:
-                    seg["sessionId"] = session_id
+                text = (ev.get("text") or "").strip()
+                lang = (ev.get("lang") or "").lower()
+                t_start = float(ev.get("start_sec") or 0.0)
+                t_end = float(ev.get("end_sec") or max(t_start, t_start + 1.0))
+                chunk_index = int(ev.get("chunk_index") or 0)
+                is_final = bool(ev.get("final"))
+
+                now = time.time()
+
+                # 3a) Partial updates (throttle ~0.6s)
+                if not is_final and text:
+                    if now - last_partial_sent >= 0.6:
+                        try:
+                            client.post(
+                                f"{api_base}/ingest_segment",
+                                json={
+                                    "sessionId": session_id,
+                                    "kind": "partial",
+                                    "lang": lang or "auto",
+                                    "textSrcPartial": text,
+                                    "speaker": "Speaker 1",
+                                },
+                                timeout=3.0,
+                            )
+                        except Exception:
+                            pass
+                        last_partial_sent = now
+
+                # 3b) Final segments
+                if is_final:
                     try:
-                        br = s.post(f"{args.api}/ingest_segment", json=seg, timeout=10)
-                        br.raise_for_status()
-                        last_ok = time.time()
-                        consec_err = 0
-                    except Exception as e:
-                        print(f"[agent] backend ingest error: {e}", file=sys.stderr)
-                        consec_err += 1
-                        if consec_err >= 4:
-                            time.sleep(0.2)
+                        client.post(
+                            f"{api_base}/ingest_segment",
+                            json={
+                                "sessionId": session_id,
+                                "kind": "final",
+                                "idx": chunk_index,
+                                "tStart": t_start,
+                                "tEnd": t_end,
+                                "lang": lang or "auto",
+                                "textSrc": text,
+                                "speaker": "Speaker 1",
+                                "confidence": 0.9,
+                            },
+                            timeout=10.0,
+                        )
+                    except Exception:
+                        pass
 
-                # watchdog: show if nothing ingested for a while
-                if time.time() - last_ok > 10:
-                    print("[agent] no successful ingest for >10s", file=sys.stderr)
-                    last_ok = time.time()
-
-    except KeyboardInterrupt:
-        print("\n[agent] stopped by user")
-    except Exception as e:
-        print(f"[agent] fatal error: {e}", file=sys.stderr)
-        return 1
-
-    return 0
+    finally:
+        # 4) Stop ASR session for cleanup
+        if asr_id:
+            try:
+                client.post(f"{asr_base}/session/stop", json={"session_id": asr_id})
+            except Exception:
+                pass
+        try:
+            client.close()
+        except Exception:
+            pass
+        try:
+            stream_client.close()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

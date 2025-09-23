@@ -1,33 +1,32 @@
 # rover-learn/backend/app.py
 from __future__ import annotations
 
-from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+import asyncio
+import copy
 import json
 import math
-import copy
-import sys
-import asyncio
-import subprocess
+import os
+import re
 import shutil
+import subprocess
+import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional, Dict
-import re
+from typing import Dict, List, Optional
 
-import os
 import httpx
 from bson import ObjectId
-from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form
+from fastapi import Body, FastAPI, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 
 from .db import get_db
-from .utils.glossary import load_glossary, apply_glossary
 from .models import SessionCreate
+from .utils.glossary import apply_glossary, load_glossary
 from .utils.qalink import recompute_qalinks
 from services.llm.client import generate_json
-
 
 # ---------- helpers ----------
 
@@ -41,15 +40,47 @@ def to_jsonable(x):
         return {k: to_jsonable(v) for k, v in x.items()}
     return x
 
+def _ensure_object_id(value: str) -> ObjectId:
+    try:
+        return ObjectId(value)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="invalid object id") from exc
 
-# ---------- app & middleware ----------
+def _parse_form_list(raw: str | None) -> list[str]:
+    if not raw:
+        return []
+    raw = raw.strip()
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+        if isinstance(data, list):
+            return [str(x).strip() for x in data if str(x).strip()]
+    except Exception:
+        pass
+    return [segment.strip() for segment in raw.split(",") if segment.strip()]
+
+# ---------- app & globals ----------
 
 app = FastAPI()
 
+# External services
+ASR_URL = os.getenv("ASR_URL", "http://localhost:5001")
 MT_URL = os.getenv("MT_URL", "http://localhost:4002")
+
+# HTTP clients
 HTTP = httpx.AsyncClient(timeout=3.0)
+HTTP_STREAM = httpx.AsyncClient(timeout=None)
+
+# Realtime sockets
 SESSION_SOCKETS: dict[str, set[WebSocket]] = defaultdict(set)
+
+# Legacy capture proc map (kept for compatibility, unused by the bridge)
 CAPTURE_PROC: dict[str, subprocess.Popen] = {}
+
+# Bridge tasks: sessionId -> asyncio.Task
+BRIDGE_TASKS: dict[str, asyncio.Task] = {}
+
 LAST_INGEST_AT: dict[str, datetime] = {}
 
 # de-dup cache (avoid repeats)
@@ -76,6 +107,7 @@ BACKGROUND_TASKS: list[asyncio.Task] = []
 STORAGE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
 STORAGE_STATUS: Dict[str, int | bool] = {}
 
+# ---------- utils ----------
 
 def load_settings() -> dict:
     try:
@@ -83,46 +115,20 @@ def load_settings() -> dict:
     except Exception:
         return DEFAULT_SETTINGS.copy()
 
-
 def save_settings(data: dict):
     SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     SETTINGS_PATH.write_text(json.dumps(data))
-
 
 def _dir_size(p: Path) -> int:
     if not p.exists():
         return 0
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
-
 def _doc_to_public(doc: dict) -> dict:
     payload = dict(doc)
     payload["_id"] = str(payload["_id"])
     payload["linkedSessions"] = [str(s) for s in payload.get("linkedSessions", [])]
     return payload
-
-
-def _ensure_object_id(value: str) -> ObjectId:
-    try:
-        return ObjectId(value)
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail="invalid object id") from exc
-
-
-def _parse_form_list(raw: str | None) -> list[str]:
-    if not raw:
-        return []
-    raw = raw.strip()
-    if not raw:
-        return []
-    try:
-        data = json.loads(raw)
-        if isinstance(data, list):
-            return [str(x).strip() for x in data if str(x).strip()]
-    except Exception:
-        pass
-    return [segment.strip() for segment in raw.split(",") if segment.strip()]
-
 
 async def _push_to_trash(db, *, resource_type: str, resource_id: ObjectId, payload: dict, related: dict | list | None = None):
     doc_copy = copy.deepcopy(payload)
@@ -138,7 +144,6 @@ async def _push_to_trash(db, *, resource_type: str, resource_id: ObjectId, paylo
     }
     await db.trash.insert_one(entry)
     return entry
-
 
 async def _purge_trash_item(db, item: dict) -> None:
     resource_type = item.get("resourceType")
@@ -156,14 +161,12 @@ async def _purge_trash_item(db, item: dict) -> None:
             pass
     await db.trash.delete_one({"_id": item["_id"]})
 
-
 async def _purge_expired_trash():
     db = await get_db()
     now = datetime.utcnow()
     cursor = db.trash.find({"expiresAt": {"$lte": now}})
     async for item in cursor:
         await _purge_trash_item(db, item)
-
 
 async def _trash_janitor():
     while True:
@@ -192,13 +195,13 @@ async def _compute_storage() -> dict:
         "overLimit": total > STORAGE_THRESHOLD,
     }
 
-
 async def _storage_monitor():
     while True:
         STORAGE_STATUS.update(await _compute_storage())
         await asyncio.sleep(60)
 
-# CORS for local frontend
+# ---------- CORS ----------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -207,6 +210,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------- lifecycle ----------
 
 @app.on_event("startup")
 async def startup_event():
@@ -215,23 +219,25 @@ async def startup_event():
     BACKGROUND_TASKS.append(asyncio.create_task(_storage_monitor()))
     BACKGROUND_TASKS.append(asyncio.create_task(_trash_janitor()))
 
-
 @app.on_event("shutdown")
 async def shutdown_event():
+    # stop all running bridges
+    for sid, task in list(BRIDGE_TASKS.items()):
+        task.cancel()
+    BRIDGE_TASKS.clear()
     await HTTP.aclose()
+    await HTTP_STREAM.aclose()
     for task in BACKGROUND_TASKS:
         task.cancel()
     if BACKGROUND_TASKS:
         await asyncio.gather(*BACKGROUND_TASKS, return_exceptions=True)
     BACKGROUND_TASKS.clear()
 
-
 # ---------- health ----------
 
 @app.get("/health")
 async def health():
     return {"service": "backend", "status": "ok"}
-
 
 # ---------- debug/status ----------
 
@@ -242,20 +248,22 @@ async def ws_status(sessionId: str):
 
 @app.get("/capture/status")
 async def capture_status(sessionId: str):
-    proc = CAPTURE_PROC.get(sessionId)
-    running = bool(proc and proc.poll() is None)
-    pid = proc.pid if running else None
+    # legacy, report bridge status instead of process
+    task = BRIDGE_TASKS.get(sessionId)
+    running = bool(task and not task.done())
     last = LAST_INGEST_AT.get(sessionId)
-    return {"sessionId": sessionId, "running": running, "pid": pid, "lastIngestTs": last.isoformat() if last else None}
-
+    return {
+        "sessionId": sessionId,
+        "running": running,
+        "pid": None,
+        "lastIngestTs": last.isoformat() if last else None,
+    }
 
 # ---------- settings & storage ----------
-
 
 @app.get("/settings")
 async def get_settings_endpoint():
     return load_settings()
-
 
 @app.post("/settings")
 async def post_settings_endpoint(payload: dict = Body(...)):
@@ -266,13 +274,11 @@ async def post_settings_endpoint(payload: dict = Body(...)):
     save_settings(data)
     return data
 
-
 @app.get("/storage/status")
 async def storage_status():
     if not STORAGE_STATUS:
         STORAGE_STATUS.update(await _compute_storage())
     return STORAGE_STATUS
-
 
 @app.post("/sessions/purge")
 async def purge_sessions(payload: dict = Body(...)):
@@ -304,60 +310,122 @@ async def purge_sessions(payload: dict = Body(...)):
     STORAGE_STATUS.update(await _compute_storage())
     return {"deleted": deleted}
 
+# ---------- ASR bridge ----------
 
-# ---------- capture ----------
+async def _stop_bridge(session_id: str):
+    """Cancel SSE bridge task and tell ASR to stop."""
+    # cancel local bridge
+    task = BRIDGE_TASKS.pop(session_id, None)
+    if task and not task.done():
+        task.cancel()
+        with contextlib.suppress(Exception):
+            await task
+    # tell ASR to stop
+    try:
+        await HTTP.post(f"{ASR_URL}/session/stop", json={"sessionId": session_id})
+    except Exception:
+        pass
+
+async def _bridge_asr_stream(session_id: str):
+    """
+    Connect to ASR SSE and forward events to our /ingest_segment.
+    Robust to line breaks and keep-alives; ignores malformed events.
+    """
+    url = f"{ASR_URL}/session/{session_id}/stream"
+    headers = {"Accept": "text/event-stream"}
+    idx_counter = 0
+
+    async with HTTP_STREAM.stream("GET", url, headers=headers) as resp:
+        if resp.status_code != 200:
+            print(f"[bridge] stream open failed {resp.status_code}", file=sys.stderr)
+            return
+        async for line in resp.aiter_lines():
+            if not line:
+                continue
+            # SSE "data: {...}"
+            if line.startswith("data:"):
+                raw = line[5:].strip()
+                try:
+                    event = json.loads(raw)
+                except Exception:
+                    continue
+
+                ev_type = (event.get("type") or "").lower()
+                lang = (event.get("lang") or "").lower()
+                speaker = event.get("speaker") or ""
+                t_start = event.get("tStart") or event.get("start") or 0.0
+                t_end = event.get("tEnd") or event.get("end") or 0.0
+                text = event.get("text") or event.get("textSrc") or ""
+                conf = event.get("confidence", 0.9)
+
+                payload: dict
+                if ev_type == "partial":
+                    payload = {
+                        "sessionId": session_id,
+                        "kind": "partial",
+                        "paraId": event.get("paraId"),
+                        "lang": lang,
+                        "textSrcPartial": text,
+                        "speaker": speaker,
+                    }
+                else:
+                    payload = {
+                        "sessionId": session_id,
+                        "kind": "final",
+                        "paraId": event.get("paraId"),
+                        "idx": event.get("idx", idx_counter),
+                        "tStart": t_start,
+                        "tEnd": t_end,
+                        "lang": lang,
+                        "speaker": speaker,
+                        "textSrc": text,
+                        "confidence": conf,
+                    }
+                    idx_counter += 1
+
+                try:
+                    r = await HTTP.post("http://localhost:4000/ingest_segment", json=payload)
+                    r.raise_for_status()
+                    LAST_INGEST_AT[session_id] = datetime.utcnow()
+                except Exception as e:
+                    print(f"[bridge] ingest error: {e}", file=sys.stderr)
+
+# ---------- capture (legacy shim) ----------
+
+import contextlib
 
 async def _stop_capture(session_id: str):
-    proc = CAPTURE_PROC.pop(session_id, None)
-    if not proc:
-        return
-
-    def _terminate(p: subprocess.Popen):
-        try:
-            p.terminate()
-            p.wait(timeout=3)
-        except Exception:
-            try:
-                p.kill()
-            except Exception:
-                pass
-
-    await asyncio.to_thread(_terminate, proc)
+    # legacy alias -> stop bridge
+    await _stop_bridge(session_id)
 
 @app.post("/capture/start")
 async def start_capture(payload: dict = Body(...)):
+    # kept for compatibility; frontend may still call it
     session_id = (payload or {}).get("sessionId")
     source = (payload or {}).get("source", "auto")
     if not session_id:
         raise HTTPException(status_code=400, detail="sessionId required")
 
-    # already running?
-    proc = CAPTURE_PROC.get(session_id)
-    if proc and proc.poll() is None:
-        return {"ok": True, "pid": proc.pid}
+    # Tell ASR to start
+    try:
+        await HTTP.post(f"{ASR_URL}/session/start", json={"sessionId": session_id, "source": source})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ASR start failed: {e}")
 
-    repo_root = Path(__file__).resolve().parents[1]  # rover-learn/
-    agent = repo_root / "services" / "capture" / "agent.py"
-    cmd = [
-        sys.executable,
-        str(agent),
-        "--session", session_id,
-        "--asr", "http://localhost:4001",
-        "--api", "http://localhost:4000",
-        "--source", source,
-    ]
-    proc = subprocess.Popen(cmd, cwd=str(repo_root))
-    CAPTURE_PROC[session_id] = proc
-    return {"ok": True, "pid": proc.pid}
+    # Start (or reuse) bridge
+    if session_id in BRIDGE_TASKS and not BRIDGE_TASKS[session_id].done():
+        return {"ok": True, "pid": None}
+    task = asyncio.create_task(_bridge_asr_stream(session_id))
+    BRIDGE_TASKS[session_id] = task
+    return {"ok": True, "pid": None}
 
 @app.post("/capture/stop")
 async def stop_capture(payload: dict = Body(...)):
     session_id = (payload or {}).get("sessionId")
     if not session_id:
         raise HTTPException(status_code=400, detail="sessionId required")
-    await _stop_capture(session_id)
+    await _stop_bridge(session_id)
     return {"ok": True}
-
 
 # ---------- sessions ----------
 
@@ -405,6 +473,17 @@ async def start_session(payload: SessionCreate = Body(...)):
         "segmentsCount": 0,
         "documents": documents,
     }
+
+    # Start ASR + bridge immediately so UI gets updates
+    try:
+        await HTTP.post(f"{ASR_URL}/session/start", json={"sessionId": out["_id"], "source": "auto"})
+    except Exception as e:
+        # still return session so UI can show error state
+        print(f"[sessions/start] ASR start failed: {e}", file=sys.stderr)
+    else:
+        if out["_id"] not in BRIDGE_TASKS or BRIDGE_TASKS[out["_id"]].done():
+            BRIDGE_TASKS[out["_id"]] = asyncio.create_task(_bridge_asr_stream(out["_id"]))
+
     return to_jsonable(out)
 
 @app.post("/sessions/stop")
@@ -423,10 +502,9 @@ async def stop_session(payload: dict = Body(...)):
         {"_id": oid},
         {"$set": {"status": "stopped", "updatedAt": datetime.utcnow()}},
     )
-    await _stop_capture(session_id)
+
+    await _stop_bridge(session_id)
     return {"status": "stopped", "sessionId": session_id}
-
-
 
 @app.delete("/sessions/{session_id}")
 async def delete_session(session_id: str):
@@ -435,6 +513,9 @@ async def delete_session(session_id: str):
     session = await db.sessions.find_one({"_id": oid})
     if not session:
         raise HTTPException(status_code=404)
+
+    # ensure stopped
+    await _stop_bridge(session_id)
 
     segments = []
     cursor = db.segments.find({"sessionId": {"$in": [session_id, oid]}})
@@ -453,10 +534,8 @@ async def delete_session(session_id: str):
 
     LAST_SEG_TEXT.pop(session_id, None)
     LAST_SEG_TEND.pop(session_id, None)
-    CAPTURE_PROC.pop(session_id, None)
 
     return {"status": "trashed", "sessionId": session_id}
-
 
 @app.get("/sessions")
 async def list_sessions():
@@ -520,8 +599,6 @@ async def get_session(session_id: str):
 
     return to_jsonable(session)
 
-
-
 # ---------- documents ----------
 
 @app.get("/documents")
@@ -543,7 +620,6 @@ async def list_documents(sessionId: str | None = None, q: str | None = None, lim
         docs.append(_doc_to_public(doc))
     return to_jsonable(docs)
 
-
 @app.get("/documents/{document_id}")
 async def get_document(document_id: str):
     db = await get_db()
@@ -552,7 +628,6 @@ async def get_document(document_id: str):
     if not doc:
         raise HTTPException(status_code=404)
     return to_jsonable(_doc_to_public(doc))
-
 
 @app.get("/documents/{document_id}/download")
 async def download_document(document_id: str):
@@ -580,7 +655,6 @@ async def download_document(document_id: str):
     if doc.get("size"):
         headers["Content-Length"] = str(doc["size"])
     return StreamingResponse(iterator(), media_type=media_type, headers=headers)
-
 
 @app.post("/documents/upload")
 async def upload_document(
@@ -624,7 +698,6 @@ async def upload_document(
 
     return to_jsonable(_doc_to_public(doc))
 
-
 @app.delete("/documents/{document_id}")
 async def delete_document(document_id: str):
     db = await get_db()
@@ -637,7 +710,6 @@ async def delete_document(document_id: str):
     await _push_to_trash(db, resource_type="document", resource_id=oid, payload=doc)
     await db.documents.delete_one({"_id": oid})
     return {"status": "trashed", "documentId": document_id}
-
 
 @app.post("/sessions/{session_id}/documents/link")
 async def link_document(session_id: str, payload: dict = Body(...)):
@@ -657,7 +729,6 @@ async def link_document(session_id: str, payload: dict = Body(...)):
     await db.documents.update_one({"_id": doc_oid}, {"$addToSet": {"linkedSessions": session_oid}})
     return {"ok": True}
 
-
 @app.post("/sessions/{session_id}/documents/unlink")
 async def unlink_document(session_id: str, payload: dict = Body(...)):
     db = await get_db()
@@ -670,7 +741,6 @@ async def unlink_document(session_id: str, payload: dict = Body(...)):
     await db.sessions.update_one({"_id": session_oid}, {"$pull": {"docIds": doc_oid}})
     await db.documents.update_one({"_id": doc_oid}, {"$pull": {"linkedSessions": session_oid}})
     return {"ok": True}
-
 
 # ---------- trash ----------
 
@@ -693,7 +763,6 @@ async def list_trash(limit: int = 100, resourceType: str | None = None):
             "expiresAt": item.get("expiresAt"),
         })
     return to_jsonable(items)
-
 
 @app.post("/trash/{trash_id}/restore")
 async def restore_from_trash(trash_id: str):
@@ -751,8 +820,6 @@ async def restore_from_trash(trash_id: str):
     await db.trash.delete_one({"_id": tid})
     return {"status": "restored", "resourceType": resource_type}
 
-
-
 @app.delete("/trash/{trash_id}")
 async def delete_trash_item(trash_id: str):
     db = await get_db()
@@ -763,15 +830,11 @@ async def delete_trash_item(trash_id: str):
     await _purge_trash_item(db, entry)
     return {"status": "deleted"}
 
-
-
-
 # ---------- glossary ----------
 
 @app.get("/glossary")
 async def glossary():
     return to_jsonable(load_glossary())
-
 
 # ---------- exports ----------
 
@@ -879,15 +942,13 @@ async def get_export(session_id: str):
         "counts": {"segments": count},
     }
 
-
-# ---------- qa / bookmarks ----------
+# ---------- QA / bookmarks ----------
 
 @app.post("/sessions/{session_id}/qa/recompute")
 async def qa_recompute(session_id: str):
     db = await get_db()
     await recompute_qalinks(db, session_id)
     return {"ok": True}
-
 
 @app.post("/sessions/{session_id}/speakers/rename")
 async def rename_speaker(session_id: str, payload: dict = Body(...)):
@@ -917,7 +978,6 @@ async def rename_speaker(session_id: str, payload: dict = Body(...)):
             SESSION_SOCKETS[session_id].discard(ws)
     return {"ok": True}
 
-
 @app.post("/segments/{segment_id}/bookmark")
 async def bookmark_segment(segment_id: str):
     db = await get_db()
@@ -928,7 +988,6 @@ async def bookmark_segment(segment_id: str):
     await db.segments.update_one({"_id": oid}, {"$set": {"bookmark": True}})
     return {"ok": True}
 
-
 @app.delete("/segments/{segment_id}/bookmark")
 async def unbookmark_segment(segment_id: str):
     db = await get_db()
@@ -938,7 +997,6 @@ async def unbookmark_segment(segment_id: str):
         raise HTTPException(status_code=404)
     await db.segments.update_one({"_id": oid}, {"$set": {"bookmark": False}})
     return {"ok": True}
-
 
 @app.get("/sessions/{session_id}/highlights")
 async def session_highlights(session_id: str):
@@ -976,7 +1034,6 @@ async def session_highlights(session_id: str):
         }
     )
 
-
 # ---------- generations ----------
 
 def _build_prompt(kind: str, text: str, options: dict) -> str:
@@ -1001,7 +1058,6 @@ def _build_prompt(kind: str, text: str, options: dict) -> str:
         + text
     )
 
-
 async def _collect_text(session_id: str, para_ids: List[str] | None):
     db = await get_db()
     q = {"sessionId": session_id}
@@ -1018,7 +1074,6 @@ async def _collect_text(session_id: str, para_ids: List[str] | None):
     segs = await cursor.to_list(None)
     text = "\n".join(s.get("textEn", "") for s in segs)
     return text, [str(s.get("_id")) for s in segs]
-
 
 @app.post("/generate/{kind}")
 async def generate(kind: str, payload: dict = Body(...)):
@@ -1047,7 +1102,6 @@ async def generate(kind: str, payload: dict = Body(...)):
     doc["_id"] = str(ins.inserted_id)
     return to_jsonable(doc)
 
-
 @app.get("/sessions/{session_id}/generations")
 async def list_generations(session_id: str, type: str | None = None):
     db = await get_db()
@@ -1061,16 +1115,16 @@ async def list_generations(session_id: str, type: str | None = None):
         items.append(g)
     return to_jsonable(items)
 
-
-# ---------- ingestion ----------
+# ---------- ingestion (unchanged core logic) ----------
 
 @app.post("/ingest_segment")
 async def ingest_segment(payload: dict = Body(...)):
     """
     Ingest a single segment:
       - normalize fields (lang, timestamps, text)
-      - translate DE->EN via Marian
-      - dedup near-identical repeats within 2s
+      - translate based on language rule:
+          EN -> DE
+          any other (incl. DE/auto/empty) -> EN
       - persist, update session.updatedAt, and broadcast over WS
     """
     try:
@@ -1088,11 +1142,14 @@ async def ingest_segment(payload: dict = Body(...)):
             raise HTTPException(status_code=400, detail="invalid sessionId")
 
         kind = payload.get("kind", "final")
+
+        # ---------- PARTIAL ----------
         if kind == "partial":
             para_id = payload.get("paraId")
             lang_raw = (payload.get("lang") or "").strip().lower()
             text_src = str(payload.get("textSrcPartial", "") or "").strip()
             speaker = str(payload.get("speaker", "") or "")
+
             seg = {
                 "kind": "partial",
                 "paraId": para_id,
@@ -1100,18 +1157,16 @@ async def ingest_segment(payload: dict = Body(...)):
                 "textSrcPartial": text_src,
                 "speaker": speaker,
             }
+
+            # Language routing: EN->DE else->EN
+            src_lang = lang_raw or "de"
+            tgt_lang = "de" if src_lang == "en" else "en"
+
             try:
-                if lang_raw == "de" and text_src:
+                if text_src:
                     r = await HTTP.post(
                         f"{MT_URL}/translate_partial",
-                        json={"text": text_src, "src_lang": "de", "tgt_lang": "en"},
-                    )
-                    r.raise_for_status()
-                    seg["textEnPartial"] = r.json().get("translation", text_src)
-                elif text_src:
-                    r = await HTTP.post(
-                        f"{MT_URL}/translate_partial",
-                        json={"text": text_src, "src_lang": lang_raw, "tgt_lang": "en"},
+                        json={"text": text_src, "src_lang": src_lang, "tgt_lang": tgt_lang},
                     )
                     r.raise_for_status()
                     seg["textEnPartial"] = r.json().get("translation", text_src)
@@ -1132,7 +1187,7 @@ async def ingest_segment(payload: dict = Body(...)):
                     SESSION_SOCKETS[session_id].discard(ws)
             return {"ok": True, "partial": True}
 
-        # final segment
+        # ---------- FINAL ----------
         lang_raw = (payload.get("lang") or "").strip().lower()
 
         def _safe_time(x, default: float) -> float:
@@ -1171,11 +1226,15 @@ async def ingest_segment(payload: dict = Body(...)):
         ts_clean = text_src.strip()
         segment["isQuestion"] = bool(ts_clean.endswith("?") or DE_Q_START.match(ts_clean))
 
+        # Language routing: EN->DE else->EN
+        src_lang = (lang_raw or "").lower() or "de"
+        tgt_lang = "de" if src_lang == "en" else "en"
+
         try:
             if text_src:
                 r = await HTTP.post(
                     f"{MT_URL}/translate_final",
-                    json={"text": text_src, "src_lang": lang_raw or "de", "tgt_lang": "en"},
+                    json={"text": text_src, "src_lang": src_lang, "tgt_lang": tgt_lang},
                 )
                 r.raise_for_status()
                 segment["textEn"] = r.json().get("translation", text_src)
@@ -1217,8 +1276,7 @@ async def ingest_segment(payload: dict = Body(...)):
         # Do not 500; surface payload for debugging
         return {"ok": False, "error": str(e), "payload": to_jsonable(payload)}
 
-
-# ---------- realtime ----------
+# ---------- realtime WS ----------
 
 @app.websocket("/realtime")
 async def realtime(ws: WebSocket):
@@ -1232,7 +1290,7 @@ async def realtime(ws: WebSocket):
     try:
         # periodic heartbeat keeps client latency gauge fresh
         while True:
-            await asyncio.sleep(2)  # was larger; make it responsive
+            await asyncio.sleep(2)
             try:
                 await ws.send_json({"type": "heartbeat", "ts": datetime.utcnow().isoformat()})
             except Exception:
@@ -1241,9 +1299,5 @@ async def realtime(ws: WebSocket):
         pass
     finally:
         SESSION_SOCKETS[session_id].discard(ws)
-        try:
+        with contextlib.suppress(Exception):
             await ws.close()
-        except Exception:
-            pass
-
-
