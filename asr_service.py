@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import atexit
+import inspect
 import json
 import logging
 import os
@@ -307,11 +308,52 @@ def _capture_worker(session: SessionState) -> None:
     buf = bytearray()
 
     extra = None
+    loopback_applied = False
     if use_loopback:
-        try:
-            extra = sd.WasapiSettings(loopback=True)
-        except Exception:
-            extra = None
+        wasapi_settings = getattr(sd, "WasapiSettings", None)
+        if wasapi_settings is not None:
+            loopback_kw_supported = False
+            try:
+                sig = inspect.signature(wasapi_settings)
+            except (TypeError, ValueError):
+                sig = None
+            if sig is not None:
+                for param in sig.parameters.values():
+                    if (
+                        param.name == "loopback"
+                        and param.kind in (
+                            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                            inspect.Parameter.KEYWORD_ONLY,
+                        )
+                    ):
+                        loopback_kw_supported = True
+                        break
+            if loopback_kw_supported:
+                try:
+                    extra = wasapi_settings(loopback=True)
+                    loopback_applied = True
+                except Exception as exc:
+                    logger.debug("WasapiSettings(loopback=True) failed: %s", exc)
+                    extra = None
+            else:
+                try:
+                    candidate = wasapi_settings()
+                except Exception as exc:
+                    logger.debug("WasapiSettings() init failed: %s", exc)
+                    candidate = None
+                if candidate is not None and hasattr(candidate, "loopback"):
+                    try:
+                        setattr(candidate, "loopback", True)
+                        extra = candidate
+                        loopback_applied = True
+                    except Exception as exc:
+                        logger.debug("Setting WasapiSettings.loopback failed: %s", exc)
+                        extra = None
+                else:
+                    extra = None
+        else:
+            logger.debug("sounddevice.WasapiSettings unavailable; cannot enable loopback mode")
+        logger.info("Loopback extra settings applied: %s", "yes" if loopback_applied else "no")
 
     try:
         with sd.InputStream(
